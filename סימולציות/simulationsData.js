@@ -23,6 +23,39 @@
 
 window.SIMULATIONS = [
   {
+    id: "gradient",
+    title: "גרדיאנט: לאן הכי תלול?",
+    description: "גוררים גשש על מפת גובה ורואים את ∇f: חץ שתמיד ניצב לקווי הגובה, ולא בהכרח מצביע אל הפסגה. כולל מטפס בעלייה בגרדיאנט.",
+    category: "חשבון וקטורי",
+    tags: ["גרדיאנט", "נגזרת כיוונית", "קווי גובה", "gradient ascent"],
+    thumbnailUrl: "gallery/thumbs/gradient.svg",
+    simulationUrl: "חשבון וקטורי/גרדיאנט.html",
+    accent: "#ffd479",
+    added: "2026-11-12"
+  },
+  {
+    id: "divergence",
+    title: "דיברגנץ: נכנס מול יוצא",
+    description: "עיגול נגרר בתוך זרם מודד כמה יוצא פחות כמה שנכנס. חצים שמתפזרים בלי מקור, וחצים מקבילים עם מקור.",
+    category: "חשבון וקטורי",
+    tags: ["דיברגנץ", "שטף", "משפט גאוס", "שדה וקטורי"],
+    thumbnailUrl: "gallery/thumbs/divergence.svg",
+    simulationUrl: "חשבון וקטורי/דיברגנץ.html",
+    accent: "#46e39a",
+    added: "2026-11-12"
+  },
+  {
+    id: "curl",
+    title: "רוטור: האם הזרם מסובב?",
+    description: "גלגל משוטים בזרם: במערבולת הוא עומד, ובזרימה ישרה עם גזירה הוא מסתובב. סירקולציה, רוטור ומשפט סטוקס.",
+    category: "חשבון וקטורי",
+    tags: ["רוטור", "curl", "סירקולציה", "משפט סטוקס"],
+    thumbnailUrl: "gallery/thumbs/curl.svg",
+    simulationUrl: "חשבון וקטורי/רוטור.html",
+    accent: "#9d8bff",
+    added: "2026-11-12"
+  },
+  {
     id: "sampling-aliasing",
     title: "דגימה והתחזות",
     description: "כמה מהר צריך לדגום? מורידים את תדר הדגימה, רואים את הספקטרום מתשכפל, ומגלים מתי טון מהיר מתחפש לטון איטי.",

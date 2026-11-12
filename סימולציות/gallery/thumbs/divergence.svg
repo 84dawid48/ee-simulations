@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.d{animation:out 2.6s linear infinite}
+@keyframes out{0%{transform:translate(0,0);opacity:0}15%{opacity:1}100%{transform:translate(var(--x),var(--y));opacity:0}}
+.r{transform-origin:320px 180px;animation:br 2.6s ease-in-out infinite}
+@keyframes br{0%,100%{opacity:.75}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".5" r=".7"><stop offset="0" stop-color="#0f2a22"/><stop offset="1" stop-color="#05070d"/></radialGradient><marker id="g" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#46e39a"/></marker></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<g fill="#dcebff">
+<circle class="d" cx="320" cy="180" r="3" style="--x:260px;--y:0px"/><circle class="d" cx="320" cy="180" r="3" style="--x:-260px;--y:0px;animation-delay:-.4s"/><circle class="d" cx="320" cy="180" r="3" style="--x:0px;--y:170px;animation-delay:-.9s"/><circle class="d" cx="320" cy="180" r="3" style="--x:0px;--y:-170px;animation-delay:-1.3s"/>
+<circle class="d" cx="320" cy="180" r="3" style="--x:200px;--y:140px;animation-delay:-.2s"/><circle class="d" cx="320" cy="180" r="3" style="--x:-200px;--y:140px;animation-delay:-1.7s"/><circle class="d" cx="320" cy="180" r="3" style="--x:200px;--y:-140px;animation-delay:-2.1s"/><circle class="d" cx="320" cy="180" r="3" style="--x:-200px;--y:-140px;animation-delay:-1s"/>
+<circle class="d" cx="320" cy="180" r="3" style="--x:250px;--y:70px;animation-delay:-.6s"/><circle class="d" cx="320" cy="180" r="3" style="--x:-250px;--y:-70px;animation-delay:-1.5s"/><circle class="d" cx="320" cy="180" r="3" style="--x:120px;--y:-165px;animation-delay:-2.3s"/><circle class="d" cx="320" cy="180" r="3" style="--x:-120px;--y:165px;animation-delay:-.1s"/>
+</g>
+<circle cx="320" cy="180" r="70" fill="rgba(70,227,154,.12)" stroke="#fff" stroke-width="3"/>
+<g class="r" stroke="#46e39a" stroke-width="5" marker-end="url(#g)">
+<line x1="390" y1="180" x2="430" y2="180" marker-end="url(#g)"/><line x1="250" y1="180" x2="210" y2="180" marker-end="url(#g)"/><line x1="320" y1="110" x2="320" y2="70" marker-end="url(#g)"/><line x1="320" y1="250" x2="320" y2="290" marker-end="url(#g)"/>
+<line x1="369" y1="131" x2="397" y2="103" marker-end="url(#g)"/><line x1="271" y1="131" x2="243" y2="103" marker-end="url(#g)"/><line x1="369" y1="229" x2="397" y2="257" marker-end="url(#g)"/><line x1="271" y1="229" x2="243" y2="257" marker-end="url(#g)"/>
+</g></svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.w{transform-origin:320px 180px;animation:spin 5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.f{stroke-dasharray:22 14;animation:flow 1s linear infinite}.f2{animation-duration:1.6s}.f3{animation-duration:3s}.f4{animation-duration:3s;animation-direction:reverse}.f5{animation-duration:1.6s;animation-direction:reverse}.f6{animation-direction:reverse}
+@keyframes flow{to{stroke-dashoffset:-36}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".5" r=".7"><stop offset="0" stop-color="#1b1640"/><stop offset="1" stop-color="#05070d"/></radialGradient></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<g fill="none" stroke="#8cbeff" stroke-linecap="round">
+<path class="f" d="M0 40H640" stroke-width="4"/><path class="f f2" d="M0 100H640" stroke-width="3.4"/><path class="f f3" d="M0 160H640" stroke-width="2.4" opacity=".7"/><path class="f f4" d="M0 220H640" stroke-width="2.4" opacity=".7"/><path class="f f5" d="M0 280H640" stroke-width="3.4"/><path class="f f6" d="M0 340H640" stroke-width="4"/>
+</g>
+<circle cx="320" cy="180" r="82" fill="rgba(5,7,13,.65)" stroke="#ff9f43" stroke-width="5"/>
+<g class="w" stroke="#ff9f43" stroke-width="7" stroke-linecap="round"><line x1="320" y1="180" x2="402" y2="180"/><line x1="320" y1="180" x2="238" y2="180"/><line x1="320" y1="180" x2="320" y2="98"/><line x1="320" y1="180" x2="320" y2="262"/></g>
+<circle cx="320" cy="180" r="9" fill="#fff"/>
+</svg>

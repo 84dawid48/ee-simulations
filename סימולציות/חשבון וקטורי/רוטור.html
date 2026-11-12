@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>רוטור: האם הזרם מסובב?</title>
+<!--
+  תדריך (קמפץ)
+  1. האהה: הרוטור בנקודה = כמה מהר מסתובב גלגל משוטים זעיר שמונח שם בזרם (קצב הסיבוב שלו הוא חצי מהרוטור).
+  2. הבלבול: "זרם שמסתובב במעגל = רוטור, זרם ישר = בלי". בפועל במערבולת הגלגל לא מסתובב (חוץ מבמרכז), ובזרימה ישרה עם גזירה הוא כן.
+  3. הצורה: זרם חלקיקים דו-ממדי + גלגל משוטים נגרר שמסתובב בזמן אמת לפי הסירקולציה סביבו. פורמט "מכשיר מדידה" + "חזה ואז גלה".
+  4. הבסיס: סוג השדה, גודל הגלגל, חלקיקים. מורחב: מפת צבע של הרוטור, חצי הסירקולציה על השפה, זרימה בצינור, שדה מותאם F = (a·y, b·x), חישוב.
+  5. נדחה: תלת-ממד ורוטור כווקטור, הניסוח המלא של משפט סטוקס (בהסבר בלבד), גלגל שנסחף עם הזרם.
+  6. פיצול: כן, לפי בקשה: גרדיאנט · דיברגנץ · רוטור, שלוש סימולציות נפרדות.
+-->
+<style>
+:root{--bg:#05070d;--card:#0c1222;--line:#1f2b44;--txt:#e3eaf6;--mut:#93a3bf;--acc:#6cb8ff;--grn:#46e39a;--red:#ff4d5e;--yel:#ffd479;--vio:#9d8bff}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:"Segoe UI","Rubik",Arial,sans-serif;padding-top:30px}
+#topbar{position:fixed;top:0;left:0;right:0;height:30px;background:#060912;border-bottom:1px solid var(--line);z-index:100}
+#bsd{position:absolute;top:7px;right:12px;font-size:12px;color:#c9d6ea}
+#copyr{position:absolute;top:4px;left:8px;font-size:12px;color:#dce6f5;background:#10172a;border:1px solid var(--line);border-radius:6px;padding:2px 10px}
+bdi{unicode-bidi:isolate}
+
+/* ===== פתיח ===== */
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+#intro{padding-top:46px;padding-bottom:40px;line-height:1.75}
+#intro h1{font-size:34px;line-height:1.25;margin:0 0 8px;font-weight:700}
+#intro h1 span{background:linear-gradient(90deg,#6cb8ff,#9d8bff,#ff4d5e);-webkit-background-clip:text;background-clip:text;color:transparent}
+#intro .lead{font-size:18px;color:var(--mut);margin:0 0 30px}
+.prob{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.prob p{margin:0 0 10px;font-size:15.5px;color:#d0d9ea}
+.prob p:last-child{margin-bottom:0}
+.prob svg{width:100%;height:auto;display:block;background:#080d18;border:1px solid var(--line);border-radius:12px}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:14px}
+.rd{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.rd .ic{flex:0 0 38px;height:38px;border-radius:10px;background:#101a30;display:grid;place-items:center}
+.rd h3{margin:0 0 2px;font-size:15.5px}
+.rd p{margin:0;font-size:14.5px;color:#c3cfe3}
+@media (max-width:900px){.prob{grid-template-columns:1fr}}
+h2.sec{font-size:21px;margin:40px 0 14px;color:var(--acc)}
+.theory{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}
+.th{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px}
+.th .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;font-size:14px;margin-bottom:6px}
+.th h3{margin:0 0 4px;font-size:16.5px}
+.th p{margin:0;font-size:14.5px;color:#c3cfe3}
+.chain{margin:14px 0 0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+.chain svg{width:100%;height:auto;display:block}
+.law{margin:14px 0 0;text-align:center;font-size:21px;background:linear-gradient(90deg,rgba(108,184,255,.08),rgba(157,139,255,.07),rgba(255,77,94,.06));border:1px solid var(--line);border-radius:16px;padding:14px;font-family:"Cambria Math","Times New Roman",serif}
+.law .eq{direction:ltr;display:inline-block;margin:0 14px}
+.law small{display:block;font-family:"Segoe UI",Arial,sans-serif;font-size:14px;color:var(--mut);margin-top:4px}
+.cta{display:block;width:max-content;margin:34px auto 0;text-decoration:none;color:#fff;font:inherit;font-size:17px;font-weight:600;background:linear-gradient(180deg,#2167b8,#18508f);border:1px solid #3b86e0;border-radius:40px;padding:12px 30px;box-shadow:0 0 30px rgba(59,134,224,.35);cursor:pointer}
+.cta:hover{filter:brightness(1.15)}
+
+/* ===== מעבדה ===== */
+.lab{position:relative;height:calc(100vh - 30px);min-height:600px;border-top:1px solid var(--line)}
+.view{position:absolute;top:14px;bottom:84px;left:14px;right:320px;background:#060a14;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.view canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#cvTop{cursor:grab;touch-action:none}
+#cvTop:active{cursor:grabbing}
+.pnl{position:absolute;top:14px;background:rgba(10,15,28,.86);border:1px solid var(--line);border-radius:18px;padding:16px;backdrop-filter:blur(10px);z-index:10;max-height:calc(100% - 100px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2a3550 transparent}
+.pnl.r{right:14px;width:292px}
+.c-row{margin-bottom:14px}
+.c-lbl{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px;color:#cdd8ea}
+.c-val{font-family:Consolas,monospace;font-size:13.5px;color:#fff;direction:ltr}
+input[type=range]{width:100%;accent-color:var(--acc);margin:0}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{flex:1;background:#0a0f1c;border:1px solid var(--line);color:var(--mut);border-radius:9px;padding:7px 4px;font:inherit;font-size:14px;cursor:pointer;white-space:nowrap}
+.seg button.on{border-color:var(--acc);color:#fff;background:#16243f}
+.sep{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.ttl{font-size:13px;color:var(--mut);margin-bottom:8px}
+.meter{margin-bottom:12px}
+.meter .bar{position:relative;height:12px;background:#141c30;border-radius:7px;overflow:visible}
+.meter .bar i{position:absolute;top:0;bottom:0;right:0;border-radius:7px;transition:width .15s,background .15s}
+.meter .bar b{position:absolute;top:-4px;bottom:-4px;width:2px;background:#fff;opacity:.8}
+.meter .row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--mut);margin-top:5px}
+.meter .row span:last-child{font-family:Consolas,monospace;direction:ltr;color:#fff}
+.chip{display:block;text-align:center;font-size:14px;font-weight:600;border-radius:10px;padding:7px;margin-top:4px}
+.chip.ok{background:rgba(70,227,154,.12);color:var(--grn);border:1px solid rgba(70,227,154,.35)}
+.chip.edge{background:rgba(255,212,121,.12);color:var(--yel);border:1px solid rgba(255,212,121,.35)}
+.chip.bad{background:rgba(255,77,94,.13);color:#ff8a96;border:1px solid rgba(255,77,94,.4)}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:#cdd8ea;margin:8px 0;cursor:pointer}
+.sw{position:relative;display:inline-block;width:34px;height:19px;flex:0 0 auto}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:#2a3550;border-radius:20px;cursor:pointer;transition:.2s}
+.sw span::before{content:"";position:absolute;width:15px;height:15px;top:2px;right:2px;background:#c7d2e6;border-radius:50%;transition:.2s}
+.sw input:checked+span{background:#1f5fa8}
+.sw input:checked+span::before{right:17px;background:#fff}
+.calc{font-family:Consolas,"Cambria Math",monospace;font-size:12.5px;direction:ltr;text-align:left;color:#fff;background:#0a0f1c;border:1px solid var(--line);border-radius:8px;padding:8px 10px;line-height:1.75}
+.calc .k{color:var(--yel)}
+body:not(.adv) .adv-only{display:none!important}
+body.adv .basic-only{display:none!important}
+.morebtn{position:absolute;bottom:14px;left:14px;z-index:12;display:flex;align-items:center;gap:10px;font:inherit;font-size:18px;font-weight:700;color:#fff;border:none;border-radius:40px;padding:15px 28px;cursor:pointer;background:linear-gradient(135deg,#7b2ff7,#e0218a);box-shadow:0 8px 30px rgba(123,47,247,.45);animation:pulse 2.2s infinite}
+.morebtn .ic{font-size:22px}
+.morebtn:hover{filter:brightness(1.15)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(224,33,138,.55),0 8px 30px rgba(123,47,247,.45)}70%{box-shadow:0 0 0 16px rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}100%{box-shadow:0 0 0 0 rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}}
+.lessbtn{position:absolute;bottom:14px;left:14px;z-index:12;font:inherit;font-size:14px;color:#cdd8ea;background:rgba(10,15,28,.88);border:1px solid #3a4a6e;border-radius:30px;padding:9px 18px;cursor:pointer}
+.lessbtn:hover{border-color:var(--acc);color:#fff}
+
+.sbar{position:relative;height:12px;background:#141c30;border-radius:7px}
+.sbar::after{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:2px;background:#fff;opacity:.75}
+.sbar i{position:absolute;top:0;bottom:0;border-radius:7px;transition:left .12s,width .12s}
+.chip.neu{background:rgba(205,216,234,.07);color:#cdd8ea;border:1px solid #3a4a6e}
+.chip.vio{background:rgba(157,139,255,.13);color:#c3b8ff;border:1px solid rgba(157,139,255,.45)}
+.chip.org{background:rgba(255,159,67,.13);color:#ffc08a;border:1px solid rgba(255,159,67,.45)}
+.btn2{width:100%;background:#1a1408;border:1px solid #8a5a1e;color:#ffc08a;border-radius:10px;padding:8px;font:inherit;font-size:14px;cursor:pointer;margin:4px 0 10px}
+.btn2:hover{filter:brightness(1.2)}
+#cvProf{width:100%;height:110px;display:block;background:#0a0f1c;border:1px solid var(--line);border-radius:8px;margin-bottom:10px}
+.law .eq{max-width:100%}
+@media (max-width:600px){.law{font-size:16px}.law .eq{display:block;margin:4px 0}}
+/* ===== ניסויים ===== */
+#exps{padding-top:10px;padding-bottom:30px;line-height:1.75}
+.exps{list-style:none;margin:0;padding:0;counter-reset:ex}
+.exp{counter-increment:ex;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.exp .top{display:flex;align-items:center;gap:14px}
+.exp .top::before{content:counter(ex);flex:0 0 30px;height:30px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;display:grid;place-items:center}
+.exp .task{flex:1;font-size:16px}
+.exp .tag{display:inline-block;font-size:12px;color:#e9b8ff;border:1px solid #5b2d7a;background:#1d0f2a;border-radius:10px;padding:0 8px;margin-left:6px}
+.xbtn{flex:0 0 auto;background:#1a1608;border:1px solid #6b5520;color:var(--yel);border-radius:20px;padding:5px 16px;font:inherit;font-size:14px;cursor:pointer}
+.xbtn:hover{filter:brightness(1.25)}
+.exp .ans{display:none;margin:12px 44px 2px 0;padding:10px 14px;border-right:3px solid var(--yel);background:rgba(255,212,121,.06);border-radius:8px;font-size:15px;color:#d6dcea;line-height:1.7}
+.exp.open .ans{display:block}
+.exp.open .xbtn{background:#2b230b}
+/* בדוק את עצמך */
+#quiz{padding-bottom:60px}
+.qz{background:linear-gradient(135deg,rgba(157,139,255,.10),rgba(108,184,255,.06));border:1px solid #3a3a7a;border-radius:18px;padding:18px}
+.qz p{margin:0 0 12px;font-size:16px}
+.qz .opts{display:flex;gap:8px;flex-wrap:wrap}
+.qz .opts button{background:#0a0f1c;border:1px solid var(--line);color:#e3eaf6;border-radius:12px;padding:8px 18px;font:inherit;font-size:15px;cursor:pointer}
+.qz .opts button:hover{border-color:var(--vio)}
+.qz .opts button.right{border-color:var(--grn);background:rgba(70,227,154,.12)}
+.qz .opts button.wrong{border-color:var(--red);background:rgba(255,77,94,.1)}
+.qz .fb{display:none;margin-top:12px;font-size:15px;color:#d6dcea;line-height:1.7}
+.qz .fb.on{display:block}
+.qz .go{margin-top:10px;background:#0f2a1c;border:1px solid #2f7a52;color:#7dffb4;border-radius:20px;padding:6px 16px;font:inherit;font-size:14px;cursor:pointer}
+@media (max-width:900px){
+  #intro h1{font-size:26px}
+  .lab{height:auto;min-height:0}
+  .view{position:relative;inset:auto;height:70vh;margin:12px}
+  .pnl{position:static;width:auto!important;margin:12px;max-height:none}
+  .morebtn,.lessbtn{position:static;margin:12px auto 18px;animation:none}
+}
+/* ===== הדגמה אוטומטית של ניסוי ===== */
+.pbtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:#0f2a1c;border:1px solid #2f7a52;color:#7dffb4;border-radius:20px;padding:5px 14px;font:inherit;font-size:14px;cursor:pointer}
+.pbtn:hover{filter:brightness(1.25)}
+.pbtn svg{width:12px;height:12px}
+#demoBox{display:none;position:relative;height:190px;border-top:1px solid var(--line);background:linear-gradient(180deg,#0a1322,#070b16);padding:14px 20px;overflow-y:auto;line-height:1.6}
+body.demo #demoBox{display:block}
+.lab{scroll-margin-top:30px}
+body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
+#demoBox .dh{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+#demoBox .dn{flex:0 0 28px;height:28px;border-radius:50%;background:#123a27;color:#7dffb4;font-weight:700;display:grid;place-items:center}
+#demoBox .dt{flex:1;font-size:15.5px;font-weight:600}
+#demoBox .say{font-size:14px;color:#7dffb4;min-height:22px;margin-bottom:6px}
+#demoBox .say::before{content:"▶ ";opacity:.7}
+#demoBox .dx{font-size:15px;color:#d6dcea;line-height:1.7;border-right:3px solid #ffd479;background:rgba(255,212,121,.06);border-radius:8px;padding:8px 12px}
+#demoBox .db{background:#0a0f1c;border:1px solid var(--line);color:#cdd8ea;border-radius:10px;padding:5px 12px;font:inherit;font-size:13.5px;cursor:pointer}
+#demoBox .db:hover{border-color:var(--acc);color:#fff}
+#demoCursor{position:fixed;left:0;top:0;z-index:300;pointer-events:none;opacity:0;transition:opacity .3s}
+#demoCursor.on{opacity:1}
+#demoCursor svg{width:30px;height:30px;filter:drop-shadow(0 0 6px rgba(125,255,180,.9)) drop-shadow(0 2px 3px rgba(0,0,0,.6));transition:transform .12s}
+#demoCursor.down svg{transform:scale(.82)}
+.demoRipple{position:fixed;z-index:299;pointer-events:none;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;border:2px solid #7dffb4;animation:demoRip .55s ease-out forwards}
+@keyframes demoRip{from{transform:scale(.4);opacity:1}to{transform:scale(3.4);opacity:0}}
+</style>
+<script data-goatcounter="https://84dawid48.goatcounter.com/count" data-goatcounter-settings='{"allow_frame": true}' async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div id="topbar"><div id="bsd">בס״ד</div><div id="copyr" title="אין להעתיק, להפיץ או לשנות ללא רשות בכתב">כל הזכויות שמורות לדוד יצחקי · לשימוש אישי בלבד</div></div>
+
+<!-- ===================== פתיח ===================== -->
+<section id="intro" class="wrap">
+  <h1>האם הזרם <span>מסובב</span> את מה שבתוכו?</h1>
+  <p class="lead">זורקים לנהר גלגל משוטים קטן, שהציר שלו נעוץ במקום. האם הוא יתחיל להסתובב? המספר שעונה על זה בכל נקודה נקרא רוטור (curl).</p>
+
+  <h2 class="sec">הבעיה</h2>
+  <div class="prob">
+    <div>
+      <p>בציור יש שני זרמים. משמאל מערבולת: הזרם מסתובב במעגלים סביב המרכז. מימין זרימה ישרה לגמרי: כל החצים אופקיים, אלא שלמעלה הזרם מהיר יותר.</p>
+      <p>בכל אחד שמנו גלגל משוטים קטן, הרחק מהמרכז. האינטואיציה אומרת: "במערבולת הגלגל יסתובב, בזרם הישר לא". <b>מה שקורה באמת הוא ההפך.</b></p>
+      <p><b>המשימה:</b> להבין מה מסובב גלגל, ולמדוד את זה בכל נקודה כמספר אחד.</p>
+    </div>
+    <svg id="probSvg" viewBox="0 0 340 250" aria-label="מערבולת וזרימה ישרה, עם גלגל משוטים בכל אחת"></svg>
+  </div>
+
+  <h2 class="sec">איך לקרוא את המעבדה</h2>
+  <div class="read">
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M3 12H17" stroke="#8cbeff" stroke-width="2"/><path d="M21 12l-6-4v8z" fill="#8cbeff"/></svg></div><div><h3>חצים כחולים = השדה <bdi dir="ltr">F</bdi></h3><p>הכיוון והעוצמה של הזרם בכל נקודה. ארוך = מהיר.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="6" cy="8" r="1.5" fill="#dcebff"/><circle cx="13" cy="14" r="1.5" fill="#dcebff"/><circle cx="18" cy="6" r="1.5" fill="#dcebff"/></svg></div><div><h3>נקודות = חלקיקים</h3><p>"אבק" שנסחף עם הזרם.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="#9d8bff" stroke-width="1.8"/><path d="M12 12L20 12M12 12L12 4M12 12L4 12M12 12L12 20" stroke="#9d8bff" stroke-width="2.2"/></svg></div><div><h3>גלגל המשוטים = הגשש</h3><p>הציר שלו קבוע במקום. גוררים אותו לכל נקודה, והוא מסתובב לפי הזרם סביבו.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="7" cy="12" r="5" fill="#9d8bff"/><circle cx="17" cy="12" r="5" fill="#ff9f43"/></svg></div><div><h3>הצבע של הגלגל</h3><p>סגול = נגד כיוון השעון (רוטור חיובי), כתום = עם כיוון השעון (שלילי), אפור = לא מסתובב.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="2" y="4" width="10" height="16" fill="rgba(157,139,255,.5)"/><rect x="12" y="4" width="10" height="16" fill="rgba(255,159,67,.5)"/></svg></div><div><h3>מפת צבע (מורחב)</h3><p>הרוטור בכל נקודה, באותם צבעים. שקוף = אפס.</p></div></div>
+  </div>
+
+  <h2 class="sec">התאוריה בקצרה</h2>
+  <div class="theory">
+    <div class="th"><div class="n">1</div><h3>סירקולציה</h3><p>הולכים סביב עיגול ומסכמים רק את הרכיב של הזרם <b>לאורך</b> השפה: <bdi dir="ltr">∮F·dl</bdi>. חיובי = הזרם דוחף נגד כיוון השעון.</p></div>
+    <div class="th"><div class="n">2</div><h3>רוטור = סירקולציה לשטח</h3><p>מחלקים בשטח העיגול ומכווצים אותו לנקודה. מספר אחד בכל נקודה: "כמה הזרם מסובב כאן".</p></div>
+    <div class="th"><div class="n">3</div><h3>הנוסחה</h3><p><bdi dir="ltr">(∇×F)<sub>z</sub> = ∂F<sub>y</sub>/∂x − ∂F<sub>x</sub>/∂y</bdi>: כמה הרכיב האנכי גדל ימינה, פחות כמה האופקי גדל למעלה.</p></div>
+    <div class="th"><div class="n">4</div><h3>גלגל המשוטים</h3><p>גלגל זעיר מסתובב במהירות זוויתית של <bdi dir="ltr">ω = ½(∇×F)</bdi>. הוא לא מרגיש לאן הזרם הולך, רק את <b>ההבדל</b> בין הצדדים שלו.</p></div>
+    <div class="th"><div class="n">5</div><h3>למה זה חשוב</h3><p>חוק פאראדיי: <bdi dir="ltr">∇×E = −∂B/∂t</bdi>. ושדה גרדיאנט, <bdi dir="ltr">F = ∇f</bdi>, תמיד בלי רוטור: שדה משמר.</p></div>
+  </div>
+  <div class="law"><span class="eq">(∇×F)<sub>z</sub> = ∂F<sub>y</sub>/∂x − ∂F<sub>x</sub>/∂y = lim<sub>A→0</sub> (1/A) ∮ F·dl</span><small>הרוטור הוא הסירקולציה סביב עיגול קטן, לכל יחידת שטח. גלגל משוטים זעיר מסתובב בחצי מהקצב הזה</small></div>
+  <a class="cta" href="#lab">למעבדה ↓</a>
+</section>
+
+<!-- ===================== מעבדה ===================== -->
+<section class="lab" id="lab">
+  <div class="view" id="view"><canvas id="cvBg"></canvas><canvas id="cvTr"></canvas><canvas id="cvTop"></canvas></div>
+  <div class="pnl r">
+    <div class="c-row"><div class="c-lbl">השדה</div>
+      <div class="seg" id="fieldSeg"><button data-f="rigid" class="on">סיבוב</button><button data-f="vortex">מערבולת</button><button data-f="shear">גזירה</button><button data-f="source">מקור</button><button data-f="pipe" class="adv-only">צינור</button><button data-f="customC" class="adv-only">מותאם</button></div></div>
+    <div class="c-row"><div class="c-lbl"><span>גודל הגלגל <bdi dir="ltr">r</bdi></span><span class="c-val" id="rV"></span></div><input type="range" id="rR" data-k="r" min="0.15" max="1.4" step="0.01"></div>
+    <label class="chk"><label class="sw"><input type="checkbox" id="partChk" data-k="parts"><span></span></label>חלקיקים זורמים</label>
+    <div class="sep">
+      <div class="meter"><div class="ttl">סירקולציה <bdi dir="ltr">∮F·dl</bdi></div><div class="sbar"><i id="circBar"></i></div>
+        <div class="row"><span>סביב שפת הגלגל</span><span id="circV"></span></div></div>
+      <div class="meter"><div class="ttl">רוטור ≈ סירקולציה ÷ שטח</div><div class="sbar"><i id="curlBar"></i></div>
+        <div class="row"><span>לכל יחידת שטח</span><span id="curlV"></span></div></div>
+      <span class="chip neu" id="status"></span>
+    </div>
+    <div class="sep adv-only">
+      <label class="chk"><label class="sw"><input type="checkbox" id="heatChk" data-k="heat"><span></span></label>מפת צבע של הרוטור</label>
+      <label class="chk"><label class="sw"><input type="checkbox" id="loopChk" data-k="loop"><span></span></label>חצי הסירקולציה על השפה</label>
+      <div class="ttl" style="margin-top:10px">שדה מותאם <bdi dir="ltr">F = (a·y, b·x)</bdi></div>
+      <div class="c-row"><div class="c-lbl"><span><bdi dir="ltr">a</bdi></span><span class="c-val" id="aV"></span></div><input type="range" id="rA" data-k="a" min="-1" max="1" step="0.05"></div>
+      <div class="c-row"><div class="c-lbl"><span><bdi dir="ltr">b</bdi></span><span class="c-val" id="bV"></span></div><input type="range" id="rB" data-k="b" min="-1" max="1" step="0.05"></div>
+      <div class="calc" id="calc"></div>
+    </div>
+  </div>
+  <button id="more" class="morebtn basic-only"><span class="ic">🔬</span>אני רוצה לחקור יותר</button>
+  <button id="less" class="lessbtn adv-only">→ לחזור למעבדה הבסיסית</button>
+</section>
+<!-- מסגרת ההסבר של ההדגמה האוטומטית (מופיעה מתחת למעבדה, לא מעליה) -->
+<section id="demoBox" aria-live="polite">
+  <div class="dh"><div class="dn" id="demoNum">1</div><div class="dt" id="demoTitle"></div>
+    <button class="db" id="demoStop">⏹ עצור</button><button class="db" id="demoAgain">↻ שוב</button><button class="db" id="demoClose">✕ סגור</button></div>
+  <div class="say" id="demoSay"></div>
+  <div class="dx" id="demoText"></div>
+</section>
+<div id="demoCursor"><svg viewBox="0 0 24 24"><path d="M4 2l15 11-6.5 1.2L16.5 22l-3 1.3-3.6-7.6L5 20z" fill="#fff" stroke="#0b1a12" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+
+<!-- ===================== ניסויים ===================== -->
+<section id="exps" class="wrap">
+  <h2 class="sec">ניסויים לנסות במעבדה</h2>
+  <ol class="exps">
+    <li class="exp"><div class="top"><div class="task">בשדה "סיבוב", גררו את הגלגל לכל מקום, גם רחוק מהמרכז. הוא תמיד מסתובב נגד כיוון השעון, ובאותו קצב.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">בסיבוב "קשיח", כמו תקליט, <bdi dir="ltr">F = 0.5(−y, x)</bdi>, הזרם בצד החיצוני של הגלגל תמיד מהיר יותר מאשר בצד הפנימי שלו, ובדיוק באותה מידה בכל מקום. לכן הרוטור קבוע: <bdi dir="ltr">∂F<sub>y</sub>/∂x − ∂F<sub>x</sub>/∂y = 0.5 + 0.5 = 1</bdi>. הגלגל מסתובב יחד עם הזורם, בקצב של חצי מהרוטור.</div></li>
+    <li class="exp"><div class="top"><div class="task">עברו ל"מערבולת" ושימו את הגלגל הרחק מהמרכז. הזרם מסתובב במעגלים, אבל <b>הגלגל לא מסתובב</b>. במרכז עצמו הוא מסתובב מהר.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">זו ההפתעה הגדולה. במערבולת הזרם הפנימי מהיר יותר מהחיצוני (<bdi dir="ltr">|F| ∝ 1/r</bdi>). על הגלגל פועלות שתי השפעות הפוכות: הכיוון של הזרם מתעקל ומסובב אותו נגד השעון, והירידה במהירות כלפי חוץ מסובבת אותו עם השעון. הן מבטלות זו את זו בדיוק. כל הרוטור מרוכז ב"ליבה" שבמרכז, כמו השדה המגנטי סביב תיל: הוא מקיף את התיל, אבל הרוטור שלו אפס בכל מקום מחוץ לתיל.</div></li>
+    <li class="exp"><div class="top"><div class="task">עברו ל"גזירה": כל החצים ישרים ואופקיים, ובכל זאת הגלגל מסתובב <b>עם</b> כיוון השעון, בכל מקום.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">כאן <bdi dir="ltr">F = (0.5y, 0)</bdi>: הזרם בחלק העליון של הגלגל מהיר יותר מאשר בחלק התחתון. המשוט העליון נדחף חזק ימינה, התחתון חלש יותר, והגלגל מסתובב עם השעון. הרוטור הוא <bdi dir="ltr">−∂F<sub>x</sub>/∂y = −0.5</bdi>. הגלגל לא שואל אם הזרם "מסתובב", רק אם צד אחד שלו נדחף יותר מהצד השני. כך מסתובב עלה שצף ליד גדת נהר.</div></li>
+    <li class="exp"><div class="top"><div class="task">עברו ל"מקור": הזרם מתפזר החוצה, ובשום מקום הגלגל לא מסתובב.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">במקור <bdi dir="ltr">F = 0.45(x, y)</bdi> הזרם דוחף כל משוט ישר החוצה, לאורך המשוט, ולא לצד. אין סירקולציה, ולכן אין רוטור. לשדה הזה יש דיברגנץ (חומר נוצר) אבל אין רוטור. בסיבוב זה ההפך: יש רוטור ואין דיברגנץ. אלה שני דברים שונים שמודדים על אותו זרם.</div></li>
+    <li class="exp"><div class="top"><div class="task">ב"מערבולת", שימו את הגלגל במרחק 1.2 מהמרכז והגדילו אותו עד שהוא מכיל את המרכז. רק אז הוא מתחיל להסתובב.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">הגלגל הגדול מודד את הסירקולציה סביב השפה שלו, וזה שווה לסכום של הרוטור על כל השטח שבתוכו. זה <b>משפט סטוקס</b> (במישור: משפט גרין). כל עוד הליבה מחוץ לגלגל, הסכום הוא אפס. כשהיא נכנסת, הסירקולציה קופצת. לכן הרוטור מוגדר על עיגול <b>קטן</b>: הוא תכונה מקומית של נקודה, ולא של המסלול הגדול.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>בחרו "צינור" והדליקו את מפת הצבע. גררו את הגלגל מלמעלה למטה: בחצי העליון הוא מסתובב נגד השעון, בחצי התחתון עם השעון, ובאמצע בכלל לא.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">בצינור הזרם הכי מהיר באמצע ונעצר ליד הדפנות: <bdi dir="ltr">F<sub>x</sub> = 1.1(1 − (y/H)²)</bdi>. בחצי העליון המשוט התחתון (קרוב לאמצע) מהיר יותר, והגלגל מסתובב נגד השעון. בחצי התחתון זה הפוך. באמצע שני הצדדים זורמים באותה מהירות, ולכן הרוטור אפס, אף שהזרם שם הכי חזק. הרוטור מקסימלי דווקא ליד הדפנות.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>ב"גזירה", הדליקו "חצי הסירקולציה על השפה". למעלה הזרם ימינה ולמטה שמאלה, ושניהם דוחפים עם כיוון השעון: כל החצים כתומים, והסכום שלהם הוא הסירקולציה.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">החצים על השפה הם הרכיב של <bdi dir="ltr">F</bdi> לאורך השפה (סגול = נגד השעון, כתום = עם השעון). הסירקולציה היא הסכום של כולם סביב העיגול, ובמד היא שלילית. מחלקים בשטח <bdi dir="ltr">πr²</bdi> ומקבלים <bdi dir="ltr">−0.5</bdi>, בדיוק הרוטור מהנוסחה. נסו לשנות את גודל הגלגל: הסירקולציה משתנה, הרוטור לא.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>בחרו "מותאם" עם <bdi dir="ltr">a = b = 0.5</bdi>: הזרם נראה מעוקל, אבל הגלגל עומד. הזיזו את <bdi dir="ltr">a</bdi> ל-0.5−, והגלגל מסתובב. הרוטור הוא בדיוק <bdi dir="ltr">b − a</bdi>.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">בשדה <bdi dir="ltr">F = (a·y, b·x)</bdi> מתקיים <bdi dir="ltr">∂F<sub>y</sub>/∂x = b</bdi> ו-<bdi dir="ltr">∂F<sub>x</sub>/∂y = a</bdi>, ולכן <bdi dir="ltr">∇×F = b − a</bdi>. כש-<bdi dir="ltr">a = b</bdi> הזרם רק "נמתח" באלכסון, ושתי ההשפעות על הגלגל מבטלות זו את זו. זה גם שדה גרדיאנט: <bdi dir="ltr">F = ∇(0.5xy)</bdi>, ולשדה גרדיאנט אין אף פעם רוטור. כש-<bdi dir="ltr">a = −b</bdi> מקבלים סיבוב קשיח.</div></li>
+  </ol>
+</section>
+
+<section id="quiz" class="wrap">
+  <h2 class="sec">בדוק את עצמך</h2>
+  <div class="qz">
+    <p>בשדה "צינור" הזרם הכי מהיר באמצע ונעצר ליד הדפנות, וכולו זורם ימינה. שמים את הגלגל ב<b>חצי העליון</b>, קרוב לדופן. לאיזה כיוון יסתובב?</p>
+    <div class="opts" id="qOpts"><button data-a="ccw">↺ נגד כיוון השעון</button><button data-a="cw">↻ עם כיוון השעון</button><button data-a="none">לא יסתובב, הזרם ישר</button></div>
+    <div class="fb" id="qFb"></div>
+    <button class="go" id="qGo" style="display:none">🔬 בדקו במעבדה</button>
+  </div>
+</section>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const MODE = 'curl';
+const START = {"field":"rigid","probe":[0.9,0.5],"r":0.55,"parts":true,"heat":false,"loop":false,"a":0.5,"b":0.5};
+const ADV_DEF = {"heat":false,"loop":false,"a":0.5,"b":0.5};
+/* ======================================================================
+   מנוע משותף לשדות וקטוריים/סקלריים בדו-ממד (MODE = grad | div | curl)
+   קואורדינטות עולם: y כלפי מעלה, חצי-גובה H = 2.4
+   ====================================================================== */
+const HH = 2.4, EPS = 1e-3, TIME = 1.6;   // TIME: האצת הזמן של החלקיקים ושל הגלגל (אותו קצב לשניהם)
+const S = Object.assign({probe:[0.9, 0.6], r:0.55, parts:true, heat:false, all:false, ang:30,
+  a:0.5, b:0.5, loop:false}, START);
+let adv = false;
+const exp = Math.exp;
+/* ---------- שדות ---------- */
+const SCALARS = {
+  hill:   (x, y) => 2*exp(-(x*x + y*y)/1.6),
+  hills:  (x, y) => 1.7*exp(-((x + 1.3)**2 + (y - 0.3)**2)/0.7) + 1.2*exp(-((x - 1.4)**2 + (y + 0.5)**2)/0.55),
+  ridge:  (x, y) => 2*exp(-(x*x/3 + y*y/0.5)),
+  saddle: (x, y) => 0.35*(x*x - y*y)
+};
+const VECTORS = {
+  src:     (x, y) => { const d = x*x + y*y + 0.35; return [0.9*x/d, 0.9*y/d]; },
+  sink:    (x, y) => { const d = x*x + y*y + 0.35; return [-0.9*x/d, -0.9*y/d]; },
+  uniform: () => [0.9, 0.25],
+  accel:   (x) => [Math.max(0.05, 0.3*x + 1.1), 0],
+  spin:    (x, y) => [-0.45*y, 0.45*x],
+  dipole:  (x, y) => { const a = (x + 1.3)**2 + y*y + 0.25, b = (x - 1.3)**2 + y*y + 0.25; return [0.7*(x + 1.3)/a - 0.7*(x - 1.3)/b, 0.7*y/a - 0.7*y/b]; },
+  rigid:   (x, y) => [-0.5*y, 0.5*x],
+  vortex:  (x, y) => { const d = x*x + y*y + 0.08; return [-0.45*y/d, 0.45*x/d]; },
+  shear:   (x, y) => [0.5*y, 0],
+  pipe:    (x, y) => [1.1*(1 - (y/HH)**2), 0],
+  source:  (x, y) => [0.45*x, 0.45*y],
+  customD: (x, y) => [S.a*x, S.b*y],          // ∇·F = a + b
+  customC: (x, y) => [S.a*y, S.b*x]           // (∇×F)z = b − a
+};
+const f = (x, y) => SCALARS[S.field](x, y);
+const F = (x, y) => MODE === 'grad' ? grad(x, y) : VECTORS[S.field](x, y);
+function grad(x, y){ return [(f(x + EPS, y) - f(x - EPS, y))/(2*EPS), (f(x, y + EPS) - f(x, y - EPS))/(2*EPS)]; }
+function divAt(x, y){ return (F(x + EPS, y)[0] - F(x - EPS, y)[0])/(2*EPS) + (F(x, y + EPS)[1] - F(x, y - EPS)[1])/(2*EPS); }
+function curlAt(x, y){ return (F(x + EPS, y)[1] - F(x - EPS, y)[1])/(2*EPS) - (F(x, y + EPS)[0] - F(x, y - EPS)[0])/(2*EPS); }
+// שטף וסירקולציה על מעגל ברדיוס r סביב (cx,cy)
+function loopInts(cx, cy, r){
+  const M = 96, ds = 2*Math.PI*r/M; let flux = 0, circ = 0;
+  for (let i = 0; i < M; i++){ const t = 2*Math.PI*(i + 0.5)/M, c = Math.cos(t), s = Math.sin(t), v = F(cx + r*c, cy + r*s);
+    flux += (v[0]*c + v[1]*s)*ds; circ += (-v[0]*s + v[1]*c)*ds; }
+  return {flux, circ, area:Math.PI*r*r};
+}
+/* ---------- ציור ---------- */
+const view = $('view'), cvBg = $('cvBg'), cvTr = $('cvTr'), cvTop = $('cvTop');
+let W = 4, SC = 100, cw = 800, ch = 500;
+const X = x => cw/2 + x*SC, Y = y => ch/2 - y*SC, WX = px => (px - cw/2)/SC, WY = py => (ch/2 - py)/SC;
+function sizeAll(){
+  const r = view.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1);
+  cw = r.width; ch = r.height; SC = ch/(2*HH); W = cw/(2*SC);
+  [cvBg, cvTr, cvTop].forEach(c => { c.width = cw*d; c.height = ch*d; c.getContext('2d').setTransform(d, 0, 0, d, 0, 0); });
+}
+function arrow(g, x0, y0, x1, y1, col, wd, head){
+  const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy); if (L < 0.5) return;
+  const ux = dx/L, uy = dy/L, hs = head || Math.min(8, L*0.45);
+  g.strokeStyle = col; g.fillStyle = col; g.lineWidth = wd || 1.4;
+  g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1 - ux*hs*0.6, y1 - uy*hs*0.6); g.stroke();
+  g.beginPath(); g.moveTo(x1, y1); g.lineTo(x1 - ux*hs - uy*hs*0.5, y1 - uy*hs + ux*hs*0.5); g.lineTo(x1 - ux*hs + uy*hs*0.5, y1 - uy*hs - ux*hs*0.5); g.closePath(); g.fill();
+}
+const lerpC = (a, b, t) => a.map((v, i) => v + (b[i] - v)*t);
+function terrain(t){ const P = [[11,21,48],[31,79,138],[47,179,154],[232,210,106]]; t = Math.max(0, Math.min(1, t))*3; const i = Math.min(2, Math.floor(t)); return lerpC(P[i], P[i + 1], t - i); }
+// מצייר מפה של nx×ny תאים כתמונה אחת מוגדלת ומוחלקת (בלי תפרים בין המשבצות)
+const offC = document.createElement('canvas');
+function paint(nx, ny, step, col){
+  offC.width = nx; offC.height = ny; const og = offC.getContext('2d'), im = og.createImageData(nx, ny);
+  for (let k = 0; k < nx*ny; k++){ const c = col(k); im.data[4*k] = c[0]; im.data[4*k + 1] = c[1]; im.data[4*k + 2] = c[2]; im.data[4*k + 3] = 255*c[3]; }
+  og.putImageData(im, 0, 0); const g = cvBg.getContext('2d'); g.imageSmoothingEnabled = true; g.drawImage(offC, 0, 0, nx*step, ny*step);
+}
+function drawBg(){
+  const g = cvBg.getContext('2d'); g.clearRect(0, 0, cw, ch);
+  g.fillStyle = '#060a14'; g.fillRect(0, 0, cw, ch);
+  const step = 5, nx = Math.ceil(cw/step), ny = Math.ceil(ch/step);
+  if (MODE === 'grad'){
+    // מפת גובה
+    let lo = 1e9, hi = -1e9; const vals = new Float32Array(nx*ny);
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++){ const v = f(WX(i*step + step/2), WY(j*step + step/2)); vals[j*nx + i] = v; lo = Math.min(lo, v); hi = Math.max(hi, v); }
+    paint(nx, ny, step, k => { const c = terrain((vals[k] - lo)/(hi - lo || 1)); return [c[0], c[1], c[2], 0.55]; });
+    // קווי גובה (marching squares)
+    const NL = 14; g.lineWidth = 1; g.strokeStyle = 'rgba(255,255,255,.28)';
+    for (let L = 1; L < NL; L++){
+      const lv = lo + (hi - lo)*L/NL; g.beginPath();
+      for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++){
+        const a = vals[j*nx + i], b = vals[j*nx + i + 1], c = vals[(j + 1)*nx + i + 1], d = vals[(j + 1)*nx + i];
+        const pts = []; const e = (p, q, x0, y0, x1, y1) => { if ((p - lv)*(q - lv) < 0){ const t = (lv - p)/(q - p); pts.push([x0 + (x1 - x0)*t, y0 + (y1 - y0)*t]); } };
+        const x0 = i*step + step/2, y0 = j*step + step/2, x1 = x0 + step, y1 = y0 + step;
+        e(a, b, x0, y0, x1, y0); e(b, c, x1, y0, x1, y1); e(c, d, x1, y1, x0, y1); e(d, a, x0, y1, x0, y0);
+        if (pts.length >= 2){ g.moveTo(pts[0][0], pts[0][1]); g.lineTo(pts[1][0], pts[1][1]); }
+        if (pts.length === 4){ g.moveTo(pts[2][0], pts[2][1]); g.lineTo(pts[3][0], pts[3][1]); }
+      }
+      g.stroke();
+    }
+  } else if (S.heat){
+    // מפת חום של הדיברגנץ/הרוטור
+    const q = MODE === 'div' ? divAt : curlAt, vals = new Float32Array(nx*ny); let mx = 1e-6;
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++){ const v = q(WX(i*step + step/2), WY(j*step + step/2)); vals[j*nx + i] = v; mx = Math.max(mx, Math.abs(v)); }
+    mx = Math.max(mx, 0.6);
+    const pos = MODE === 'div' ? [70,227,154] : [157,139,255], neg = MODE === 'div' ? [255,77,94] : [255,159,67];
+    paint(nx, ny, step, k => { const v = vals[k], c = v > 0 ? pos : neg; return [c[0], c[1], c[2], Math.min(1, Math.abs(v)/mx)*0.5]; });
+  }
+  // רשת חצים
+  if (MODE !== 'grad' || S.all){
+    const sp = 46, mags = [];
+    for (let y = HH - 0.25; y > -HH; y -= sp/SC) for (let x = -W + 0.25; x < W; x += sp/SC){ const v = F(x, y); mags.push(Math.hypot(v[0], v[1])); }
+    const ref = Math.max(1e-6, ...mags);   // אורך מונוטוני בעוצמה (חזקה 0.8 כדי שגם חצים חלשים ייראו)
+    for (let y = HH - 0.25; y > -HH; y -= sp/SC) for (let x = -W + 0.25; x < W; x += sp/SC){
+      const v = F(x, y), m = Math.hypot(v[0], v[1]); if (m < 1e-6) continue;
+      const k = Math.pow(m/ref, 0.8), L = k*sp*0.85, px = X(x), py = Y(y);
+      const ex = px + v[0]/m*L, ey = py - v[1]/m*L;
+      arrow(g, px - (ex - px)/2, py - (ey - py)/2, ex - (ex - px)/2, ey - (ey - py)/2, MODE === 'grad' ? `rgba(255,212,121,${0.35 + 0.5*k})` : `rgba(140,190,255,${0.3 + 0.6*k})`, 1.3, 6);
+    }
+  }
+  g.strokeStyle = 'rgba(147,163,191,.25)'; g.lineWidth = 1; g.beginPath(); g.moveTo(X(-W), Y(0)); g.lineTo(X(W), Y(0)); g.moveTo(X(0), Y(-HH)); g.lineTo(X(0), Y(HH)); g.stroke();
+}
+/* ---------- חלקיקים ---------- */
+const NP = 900, P = [];
+function respawn(p, any){
+  // במקור/בור/דיפול: חלקיקים נולדים ליד המקורות כדי שהזרימה תיראה
+  if (!any && (S.field === 'src' || S.field === 'dipole') && Math.random() < 0.7){ const c = S.field === 'src' ? [0, 0] : [-1.3, 0], a = Math.random()*6.283, r = 0.05 + Math.random()*0.25; p.x = c[0] + r*Math.cos(a); p.y = c[1] + r*Math.sin(a); }
+  else { p.x = (Math.random()*2 - 1)*W; p.y = (Math.random()*2 - 1)*HH; }
+  p.age = 0; p.life = 2 + Math.random()*4;
+}
+for (let i = 0; i < NP; i++){ const p = {}; respawn(p, true); p.age = Math.random()*p.life; P.push(p); }
+function stepParticles(dt){
+  const g = cvTr.getContext('2d');
+  g.fillStyle = 'rgba(6,10,20,0.16)'; g.globalCompositeOperation = 'destination-out'; g.fillRect(0, 0, cw, ch); g.globalCompositeOperation = 'source-over';
+  if (!S.parts || MODE === 'grad') return;
+  g.fillStyle = 'rgba(220,235,255,.85)';
+  for (const p of P){
+    const v = F(p.x, p.y); p.x += v[0]*dt*TIME; p.y += v[1]*dt*TIME; p.age += dt;
+    if (p.age > p.life || Math.abs(p.x) > W + 0.2 || Math.abs(p.y) > HH + 0.2 || Math.hypot(v[0], v[1]) > 6) respawn(p);
+    g.fillRect(X(p.x) - 1, Y(p.y) - 1, 2, 2);
+  }
+}
+/* ---------- בדיקה נגררת ---------- */
+let wheelAng = 0, climb = null;
+function drawTop(dt){
+  const g = cvTop.getContext('2d'); g.clearRect(0, 0, cw, ch);
+  const [cx, cy] = S.probe, px = X(cx), py = Y(cy);
+  if (MODE === 'grad'){
+    if (climb){ g.strokeStyle = '#ff9f43'; g.lineWidth = 2.5; g.beginPath(); climb.path.forEach((q, i) => i ? g.lineTo(X(q[0]), Y(q[1])) : g.moveTo(X(q[0]), Y(q[1]))); g.stroke();
+      const q = climb.path[climb.path.length - 1]; g.fillStyle = '#ff9f43'; g.beginPath(); g.arc(X(q[0]), Y(q[1]), 7, 0, 7); g.fill(); }
+    const gv = grad(cx, cy), m = Math.hypot(gv[0], gv[1]);
+    // קו הגובה המקומי (משיק)
+    if (m > 1e-4){ const tx = -gv[1]/m, ty = gv[0]/m; g.strokeStyle = 'rgba(255,255,255,.7)'; g.setLineDash([5, 4]); g.lineWidth = 1.4; g.beginPath(); g.moveTo(px - tx*60, py + ty*60); g.lineTo(px + tx*60, py - ty*60); g.stroke(); g.setLineDash([]); }
+    // ∇f
+    const L = Math.min(150, m*90); if (m > 1e-4) arrow(g, px, py, px + gv[0]/m*L, py - gv[1]/m*L, '#ffd479', 3.2, 12);
+    // כיוון d
+    const a = S.ang*Math.PI/180; arrow(g, px, py, px + Math.cos(a)*70, py - Math.sin(a)*70, '#5ee0ff', 2.4, 10);
+    g.fillStyle = '#fff'; g.beginPath(); g.arc(px, py, 6, 0, 7); g.fill(); g.strokeStyle = '#05070d'; g.lineWidth = 2; g.stroke();
+    if (climb && !climb.done) stepClimb(dt);
+    return;
+  }
+  const R = S.r*SC, I = loopInts(cx, cy, S.r);
+  if (MODE === 'div'){
+    g.strokeStyle = 'rgba(255,255,255,.75)'; g.lineWidth = 1.6; g.beginPath(); g.arc(px, py, R, 0, 7); g.stroke();
+    g.fillStyle = 'rgba(255,255,255,.04)'; g.fill();
+    for (let i = 0; i < 16; i++){ const t = 2*Math.PI*i/16, c = Math.cos(t), s = Math.sin(t), v = F(cx + S.r*c, cy + S.r*s), fn = v[0]*c + v[1]*s;
+      const o = Math.min(56, Math.abs(fn)*34), bx = px + c*R, by = py - s*R; if (o < 2) continue;
+      if (fn > 0) arrow(g, bx, by, bx + c*o, by - s*o, '#46e39a', 2.2, 7);      // יוצא: מהשפה החוצה
+      else arrow(g, bx + c*o, by - s*o, bx, by, '#ff4d5e', 2.2, 7); }           // נכנס: מבחוץ אל השפה
+  } else {
+    const spin = I.circ/I.area/2;           // קצב הסיבוב של הגלגל = חצי מהרוטור הממוצע
+    wheelAng += spin*dt*TIME;
+    const col = Math.abs(spin) < 0.03 ? '#cdd8ea' : (spin > 0 ? '#9d8bff' : '#ff9f43');
+    g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); g.arc(px, py, R, 0, 7); g.stroke();
+    for (let k = 0; k < 4; k++){ const t = wheelAng + k*Math.PI/2; g.lineWidth = 3; g.beginPath(); g.moveTo(px, py); g.lineTo(px + Math.cos(t)*R, py - Math.sin(t)*R); g.stroke();
+      g.fillStyle = col; g.beginPath(); g.arc(px + Math.cos(t)*R, py - Math.sin(t)*R, 4, 0, 7); g.fill(); }
+    if (S.loop){ for (let i = 0; i < 16; i++){ const t = 2*Math.PI*i/16, c = Math.cos(t), s = Math.sin(t), v = F(cx + S.r*c, cy + S.r*s), ft = -v[0]*s + v[1]*c;
+      const L = Math.max(-26, Math.min(26, ft*30)), bx = px + c*R*1.25, by = py - s*R*1.25; if (Math.abs(L) < 2) continue;
+      arrow(g, bx, by, bx + (-s)*L, by - c*L, ft > 0 ? '#9d8bff' : '#ff9f43', 2, 7); } }
+    g.fillStyle = '#fff'; g.beginPath(); g.arc(px, py, 4, 0, 7); g.fill();
+  }
+}
+function stepClimb(dt){
+  const q = climb.path[climb.path.length - 1], gv = grad(q[0], q[1]), m = Math.hypot(gv[0], gv[1]);
+  if (m < 0.03 || climb.path.length > 2000 || Math.abs(q[0]) > W || Math.abs(q[1]) > HH){ climb.done = true; updPanel(); return; }
+  const v = 0.9*dt; climb.path.push([q[0] + gv[0]/m*v, q[1] + gv[1]/m*v]);
+}
+/* ---------- גרירה ---------- */
+let dragging = false;
+function setProbeFromEvent(e){ const r = cvTop.getBoundingClientRect(); S.probe = [Math.max(-W, Math.min(W, WX(e.clientX - r.left))), Math.max(-HH, Math.min(HH, WY(e.clientY - r.top)))]; updPanel(); }
+cvTop.addEventListener('pointerdown', e => { dragging = true; cvTop.setPointerCapture(e.pointerId); setProbeFromEvent(e); });
+cvTop.addEventListener('pointermove', e => { if (dragging) setProbeFromEvent(e); });
+cvTop.addEventListener('pointerup', () => { dragging = false; });
+// לשימוש ההדגמה האוטומטית
+window.PROBE = {pos:() => S.probe.slice(), set:(x, y) => { S.probe = [x, y]; updPanel(); },
+  screen:(x, y) => { const r = cvTop.getBoundingClientRect(); return [r.left + X(x), r.top + Y(y)]; }};
+/* ---------- לולאה ---------- */
+let dirty = true, last = performance.now(), visible = true;
+new IntersectionObserver(e => { visible = e[0].isIntersecting; }).observe(view);
+new ResizeObserver(() => { sizeAll(); dirty = true; }).observe(view);
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt = Math.max(0, Math.min(0.05, (now - last)/1000)); last = now;
+  if (!visible) return;
+  if (dirty){ dirty = false; drawBg(); updPanel(); }
+  stepParticles(dt); drawTop(dt);
+}
+function setField(k){
+  S.field = k; document.querySelectorAll('#fieldSeg button').forEach(b => b.classList.toggle('on', b.dataset.f === k));
+  climb = null; P.forEach(p => respawn(p, true)); cvTr.getContext('2d').clearRect(0, 0, cw, ch); dirty = true;
+}
+$('fieldSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setField(b.dataset.f); });
+function bindRange(id, key, fmt, redrawBg){ const el = $(id); if (!el) return; el.value = S[key];
+  el.addEventListener('input', () => { S[key] = +el.value; if (redrawBg) dirty = true; updPanel(); }); }
+function bindChk(id, key, redrawBg){ const el = $(id); if (!el) return; el.checked = S[key];
+  el.addEventListener('change', () => { S[key] = el.checked; if (redrawBg) dirty = true; if (key === 'parts') cvTr.getContext('2d').clearRect(0, 0, cw, ch); updPanel(); }); }
+function syncUI(){ document.querySelectorAll('[data-k]').forEach(el => { const k = el.dataset.k; if (el.type === 'checkbox') el.checked = S[k]; else el.value = S[k]; }); }
+function setMode(on){
+  adv = on; document.body.classList.toggle('adv', on);
+  if (!on){ Object.assign(S, ADV_DEF); syncUI();
+    climb = null; if (S.field.startsWith('custom')) setField(START.field); }
+  dirty = true; $('lab').scrollIntoView({behavior:'smooth'});
+}
+$('more').addEventListener('click', () => setMode(true));
+$('less').addEventListener('click', () => setMode(false));
+document.querySelectorAll('.exp .xbtn').forEach(b => b.addEventListener('click', () => { const li = b.closest('.exp'); li.classList.toggle('open'); b.textContent = li.classList.contains('open') ? 'סגור' : 'הסבר'; }));
+const sgn = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2);
+
+/* ---------- SVG לפתיח: רשת חצים של שדה מתוך המעבדה ---------- */
+function svgArrows(Fn, o){   // o: {x0,y0,w,h, ww,wh (חצי רוחב/גובה בעולם), nx,ny, col, mk}
+  const pts = [], nx = o.nx || 9, ny = o.ny || 6;
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++){ const x = -o.ww + (i + 0.5)*2*o.ww/nx, y = o.wh - (j + 0.5)*2*o.wh/ny; pts.push([x, y, Fn(x, y)]); }
+  const ms = pts.map(p => Math.hypot(p[2][0], p[2][1])).sort((a, b) => a - b), ref = ms[Math.floor(ms.length*0.85)] || 1, cell = Math.min(o.w/nx, o.h/ny)*0.78;
+  let h = '';
+  for (const [x, y, v] of pts){ const m = Math.hypot(v[0], v[1]); if (m < 1e-6) continue; const L = Math.min(1, m/ref)*cell, ux = v[0]/m, uy = -v[1]/m;
+    const cx = o.x0 + (x + o.ww)/(2*o.ww)*o.w, cy = o.y0 + (o.wh - y)/(2*o.wh)*o.h;
+    h += '<line x1="' + (cx - ux*L/2).toFixed(1) + '" y1="' + (cy - uy*L/2).toFixed(1) + '" x2="' + (cx + ux*L/2).toFixed(1) + '" y2="' + (cy + uy*L/2).toFixed(1) + '" stroke="' + o.col + '" stroke-width="1.5" marker-end="url(#' + o.mk + ')"/>'; }
+  return h;
+}
+const svgMarker = (id, col) => '<marker id="' + id + '" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="' + col + '"/></marker>';
+function sbar(id, v){ const el = $(id), k = Math.max(-1, Math.min(1, v)); el.style.left = (k >= 0 ? 50 : 50 + 50*k) + '%'; el.style.width = Math.abs(50*k) + '%'; }
+
+/* ======================================================================
+   חלק ייחודי לסימולציה הזו
+   ====================================================================== */
+
+bindRange('rR', 'r');
+bindChk('partChk', 'parts');
+bindChk('heatChk', 'heat', true);
+bindChk('loopChk', 'loop');
+['rA', 'rB'].forEach(id => $(id).addEventListener('input', e => { S[id === 'rA' ? 'a' : 'b'] = +e.target.value; if (S.field !== 'customC') setField('customC'); dirty = true; updPanel(); }));
+syncUI();
+setField(S.field);
+const sq = v => Math.sign(v)*Math.sqrt(Math.abs(v)/3);
+function updPanel(){
+  const [x, y] = S.probe, I = loopInts(x, y, S.r), cu = I.circ/I.area;
+  $('rV').textContent = S.r.toFixed(2);
+  $('circV').textContent = sgn(I.circ); sbar('circBar', sq(I.circ)); $('circBar').style.background = I.circ >= 0 ? '#9d8bff' : '#ff9f43';
+  $('curlV').textContent = sgn(cu); sbar('curlBar', sq(cu)); $('curlBar').style.background = cu >= 0 ? '#9d8bff' : '#ff9f43';
+  const st = $('status');
+  if (cu > 0.06){ st.className = 'chip vio'; st.textContent = '↺ הגלגל מסתובב נגד כיוון השעון'; }
+  else if (cu < -0.06){ st.className = 'chip org'; st.textContent = '↻ הגלגל מסתובב עם כיוון השעון'; }
+  else { st.className = 'chip neu'; st.textContent = 'הגלגל לא מסתובב'; }
+  if (!adv) return;
+  $('aV').textContent = S.a.toFixed(2); $('bV').textContent = S.b.toFixed(2);
+  const e = 1e-3, dyx = (F(x + e, y)[1] - F(x - e, y)[1])/(2*e), dxy = (F(x, y + e)[0] - F(x, y - e)[0])/(2*e), k = t => '<span class="k">' + t + '</span>';
+  $('calc').innerHTML = k('∂Fy/∂x') + ' = ' + dyx.toFixed(3) + '<br>' + k('∂Fx/∂y') + ' = ' + dxy.toFixed(3) + '<br>' + k('∇×F') + '    = ' + (dyx - dxy).toFixed(3) + '  (במרכז)<br>' +
+    k('∮F·dl') + '  = ' + I.circ.toFixed(3) + '<br>' + k('÷ πr²') + '  = ' + cu.toFixed(3) + '  (r = ' + S.r.toFixed(2) + ')<br>' + k('ω גלגל') + ' = ' + (cu/2).toFixed(3) + ' rad/s';
+}
+/* פתיח: מערבולת מול גזירה, מתוך השדות של המעבדה */
+(function(){
+  const wheel = (cx, cy, col) => { let h = '<circle cx="' + cx + '" cy="' + cy + '" r="15" fill="rgba(5,7,13,.6)" stroke="' + col + '" stroke-width="2"/>';
+    for (let i = 0; i < 4; i++){ const t = 0.4 + i*Math.PI/2; h += '<line x1="' + cx + '" y1="' + cy + '" x2="' + (cx + 15*Math.cos(t)).toFixed(1) + '" y2="' + (cy - 15*Math.sin(t)).toFixed(1) + '" stroke="' + col + '" stroke-width="2.4"/>'; }
+    return h + '<text x="' + (cx + 20) + '" y="' + (cy - 14) + '" fill="#fff" font-size="16" font-weight="700">?</text>'; };
+  const A = {x0:6, y0:14, w:158, h:200, ww:1.6, wh:2.0, nx:6, ny:8, col:'#8cbeff', mk:'mkB'}, B = Object.assign({}, A, {x0:176});
+  let h = '<defs>' + svgMarker('mkB', '#8cbeff') + '</defs>';
+  h += '<rect x="' + A.x0 + '" y="' + A.y0 + '" width="' + A.w + '" height="' + A.h + '" rx="8" fill="#0a1020" stroke="#1f2b44"/><rect x="' + B.x0 + '" y="' + B.y0 + '" width="' + B.w + '" height="' + B.h + '" rx="8" fill="#0a1020" stroke="#1f2b44"/>';
+  h += svgArrows(VECTORS.vortex, A) + svgArrows(VECTORS.shear, B);
+  h += wheel(A.x0 + A.w/2 + 0.95/1.6*A.w/2, A.y0 + A.h/2 - 0.5/2*A.h/2, '#cdd8ea') + wheel(B.x0 + B.w/2, B.y0 + B.h/2 - 0.9/2*B.h/2, '#cdd8ea');
+  h += '<text x="' + (A.x0 + A.w/2) + '" y="238" fill="#cdd8ea" font-size="13" text-anchor="middle">מערבולת</text><text x="' + (B.x0 + B.w/2) + '" y="238" fill="#cdd8ea" font-size="13" text-anchor="middle">זרימה ישרה (גזירה)</text>';
+  $('probSvg').innerHTML = h;
+})();
+/* בדוק את עצמך */
+$('qOpts').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#qOpts button').forEach(x => x.classList.remove('right', 'wrong'));
+  const ok = b.dataset.a === 'ccw'; b.classList.add(ok ? 'right' : 'wrong');
+  if (!ok) document.querySelector('#qOpts button[data-a="ccw"]').classList.add('right');
+  $('qFb').innerHTML = (ok ? '✓ נכון! ' : '✗ לא בדיוק. ') + "המשוט התחתון של הגלגל קרוב יותר לאמצע הצינור, ושם הזרם מהיר יותר. הוא נדחף ימינה חזק יותר מהמשוט העליון, והגלגל מסתובב נגד השעון. בנוסחה: <bdi dir=\"ltr\">∂F<sub>x</sub>/∂y &lt; 0</bdi> בחצי העליון, ולכן <bdi dir=\"ltr\">∇×F = −∂F<sub>x</sub>/∂y &gt; 0</bdi>. זרם ישר לגמרי, ובכל זאת יש רוטור.";
+  $('qFb').classList.add('on'); $('qGo').style.display = '';
+});
+$('qGo').addEventListener('click', () => { setMode(true); setField('pipe'); PROBE.set(0, 1.5); $('lab').scrollIntoView({behavior:'smooth'}); });
+if (location.hash === '#adv') setMode(true);
+requestAnimationFrame(frame);
+</script>
+<script>
+/* ======================================================================
+   הדגמה אוטומטית: כפתור "▶ הדגמה" ליד כל ניסוי. סמן "רפאים" מבצע את הניסוי במעבדה
+   בזמן אמת (כולל גרירה של הגשש בתוך השדה), וההסבר מוצג במסגרת מתחת למעבדה.
+   ====================================================================== */
+(function(){
+'use strict';
+  const fb = k => document.querySelector('#fieldSeg button[data-f="' + k + '"]');
+  // גרירת הגשש לאורך מסלול: path(k) מחזיר נקודה בעולם עבור k בין 0 ל-1
+  async function pathProbe(path, dur){
+    const p0 = path(0); await moveTo(...PROBE.screen(...PROBE.pos()));
+    cur.classList.add('down');
+    try { await anim(dur || 1500, k => { const p = path(k); PROBE.set(p[0], p[1]); place(...PROBE.screen(p[0], p[1])); }); }
+    finally { cur.classList.remove('down'); }
+    await sleep(250);
+  }
+  const dragProbe = (x, y, dur) => { const [x0, y0] = PROBE.pos(); return pathProbe(k => [x0 + (x - x0)*k, y0 + (y - y0)*k], dur); };
+  const orbit = (cx, cy, r, turns, dur) => { const [x0, y0] = PROBE.pos(), a0 = Math.atan2(y0 - cy, x0 - cx);
+    return dragProbe(cx + r*Math.cos(a0), cy + r*Math.sin(a0), 700).then(() => pathProbe(k => [cx + r*Math.cos(a0 + 2*Math.PI*turns*k), cy + r*Math.sin(a0 + 2*Math.PI*turns*k)], dur)); };
+  const SCRIPTS = [
+    async () => { await click(fb('rigid')); await dragProbe(0.9, 0.5, 900); say('הגלגל מסתובב נגד כיוון השעון'); await sleep(2500);
+      say('גוררים אותו רחוק מהמרכז...'); await dragProbe(-2.6, -1.4, 4500); say('אותו קצב בדיוק: הרוטור קבוע בכל מקום'); await sleep(3000); },
+    async () => { await click(fb('vortex')); await dragProbe(1.5, 0.4, 1200); say('הזרם מסתובב במעגלים... והגלגל עומד!'); await sleep(3500);
+      say('גוררים במעגל סביב המרכז: עדיין לא מסתובב'); await orbit(0, 0, 1.55, 0.5, 6000); say('ועכשיו למרכז עצמו...'); await dragProbe(0, 0, 3000);
+      say('בליבה הגלגל מסתובב מהר: כל הרוטור מרוכז שם'); await sleep(3000); },
+    async () => { await click(fb('shear')); await dragProbe(0.4, 0.6, 1000); say('כל החצים ישרים ואופקיים'); await sleep(2000);
+      say('ובכל זאת הגלגל מסתובב עם כיוון השעון'); await sleep(2500); await dragProbe(-1.8, -1.2, 4000); say('בכל מקום: למעלה הזרם תמיד מהיר יותר מלמטה'); await sleep(2500); },
+    async () => { await click(fb('source')); await dragProbe(1.0, 0.6, 1000); say('הזרם מתפזר החוצה...'); await sleep(2000);
+      await orbit(0, 0, 1.2, 0.6, 6000); say('בשום מקום הגלגל לא מסתובב: אין רוטור'); await sleep(2500); },
+    async () => { await click(fb('vortex')); await dragSlider(byId('rR'), 0.4, 900); await dragProbe(1.2, 0, 1200); say('גלגל קטן, הרחק מהמרכז: עומד'); await sleep(2200);
+      say('מגדילים את הגלגל לאט...'); await dragSlider(byId('rR'), 1.4, 6000); say('ברגע שהמרכז בפנים, יש סירקולציה והגלגל מסתובב'); await sleep(3000);
+      await dragSlider(byId('rR'), 0.55, 1500); },
+    async () => { await ensureAdv(); await click(fb('pipe')); await toggle(byId('heatChk'), true); say('צינור: הזרם הכי מהיר באמצע'); await dragProbe(0, 1.6, 1500); await sleep(1800);
+      say('בחצי העליון: נגד השעון'); await sleep(2000); say('גוררים למטה...'); await dragProbe(0, -1.6, 7000); say('באמצע עמד, ובחצי התחתון: עם השעון'); await sleep(2500); },
+    async () => { await ensureAdv(); await click(fb('shear')); await dragProbe(0, 0, 1000); await toggle(byId('loopChk'), true); say('הרכיב של הזרם לאורך השפה'); await sleep(3000);
+      say('למעלה ימינה, למטה שמאלה: הכול עם כיוון השעון (כתום), הסכום שלילי'); await sleep(3000); say('משנים את גודל הגלגל: הסירקולציה משתנה, הרוטור נשאר 0.5−');
+      await dragSlider(byId('rR'), 1.2, 3500); await dragSlider(byId('rR'), 0.3, 3500); await dragSlider(byId('rR'), 0.55, 1000); await toggle(byId('loopChk'), false); },
+    async () => { await ensureAdv(); await dragSlider(byId('rA'), 0.5, 900); await dragSlider(byId('rB'), 0.5, 900); await dragProbe(0.8, 0.6, 1000);
+      say('a = b: הזרם מעוקל, אבל הגלגל עומד'); await sleep(3000); say('מזיזים את a לאט...'); await dragSlider(byId('rA'), -0.5, 6000);
+      say('a = −b: סיבוב קשיח, רוטור = b − a = 1'); await sleep(3000); }
+  ];
+  const byId = id => document.getElementById(id);
+  const LAB = document.querySelector('section.lab'), VIEW = LAB.querySelector('.view');
+  const cur = byId('demoCursor'), D = {alive:0, i:-1, x:0, y:0};
+  const sleep = ms => { const tok = D.alive; return new Promise(r => setTimeout(r, ms)).then(() => { if (D.alive !== tok) throw 'stop'; }); };
+  const ease = k => k*k*(3 - 2*k);
+  function anim(dur, fn){
+    const tok = D.alive;
+    return new Promise((res, rej) => { const t0 = performance.now();
+      (function step(now){ if (D.alive !== tok) return rej('stop'); const k = Math.min(1, (now - t0)/dur); fn(ease(k)); if (k < 1) requestAnimationFrame(step); else res(); })(t0); });
+  }
+  function place(x, y){ D.x = x; D.y = y; cur.style.transform = 'translate(' + (x - 3) + 'px,' + (y - 2) + 'px)'; }
+  function moveTo(x, y, dur){ const x0 = D.x, y0 = D.y; dur = dur || Math.min(1100, 350 + Math.hypot(x - x0, y - y0)*0.9); return anim(dur, k => place(x0 + (x - x0)*k, y0 + (y - y0)*k)); }
+  const center = el => { const r = el.getBoundingClientRect(); return [r.left + r.width/2, r.top + r.height/2]; };
+  function ripple(){ const r = document.createElement('div'); r.className = 'demoRipple'; r.style.left = D.x + 'px'; r.style.top = D.y + 'px'; document.body.appendChild(r); setTimeout(() => r.remove(), 600); }
+  async function press(){ cur.classList.add('down'); ripple(); await sleep(140); cur.classList.remove('down'); }
+  async function click(el){ if (!el) return; await moveTo(...center(el)); await press(); el.click(); await sleep(400); }
+  async function select(el, v){ if (el.value === v) return; await moveTo(...center(el)); await press(); el.value = v; el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(500); }
+  async function toggle(el, want){                   // מתג (checkbox מוסתר בתוך label)
+    if (el.checked === want) return;
+    await moveTo(...center(el.closest('label') || el)); await press(); el.click(); await sleep(400);
+  }
+  async function dragSlider(el, to, dur){            // גרירה אמיתית: אירועי input בזמן אמת ו-change בסוף
+    const r = el.getBoundingClientRect(), mn = +el.min, mx = +el.max, rtl = getComputedStyle(el).direction === 'rtl';
+    const xOf = v => { const f = (v - mn)/(mx - mn); return rtl ? r.right - 8 - f*(r.width - 16) : r.left + 8 + f*(r.width - 16); };
+    const from = +el.value, y = r.top + r.height/2;
+    await moveTo(xOf(from), y); cur.classList.add('down');
+    try { await anim(dur || 1500, k => { const v = from + (to - from)*k; el.value = v; el.dispatchEvent(new Event('input', {bubbles:true})); place(xOf(+el.value), y); }); }
+    finally { cur.classList.remove('down'); }
+    el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(300);
+  }
+  async function waitFor(fn, limit){ const t0 = performance.now(); while (!fn() && performance.now() - t0 < (limit || 30000)) await sleep(200); }
+  async function ensureAdv(){ if (!document.body.classList.contains('adv')){ say('פותחים את המצב המורחב'); await click(byId('more')); await sleep(900); } }
+  const say = t => { byId('demoSay').textContent = t; };
+  const seg = (id, attr, v) => document.querySelector('#' + id + ' button[data-' + attr + '="' + v + '"]');
+  const viewBtn = v => document.querySelector('#views button[data-view="' + v + '"]');
+
+  async function runDemo(i){
+    stopDemo(false);
+    const tok = D.alive; D.i = i;
+    const li = document.querySelectorAll('.exp')[i];
+    byId('demoNum').textContent = i + 1; byId('demoTitle').innerHTML = li.querySelector('.task').innerHTML;
+    byId('demoText').innerHTML = li.querySelector('.ans').innerHTML; say('עוברים למעבדה...');
+    byId('demoStop').style.display = '';
+    document.body.classList.add('demo');
+    LAB.scrollIntoView({behavior:'smooth', block:'start'});
+    try {
+      await sleep(850);
+      const r = VIEW.getBoundingClientRect(); place(r.left + r.width/2, r.top + r.height/2); cur.classList.add('on');
+      await SCRIPTS[i]();
+      if (D.alive === tok){ cur.classList.remove('on'); byId('demoStop').style.display = 'none'; }
+    } catch (e) { if (e !== 'stop') console.warn(e); }
+  }
+  function stopDemo(close){ D.alive++; cur.classList.remove('on', 'down'); if (close){ document.body.classList.remove('demo'); D.i = -1; } }
+  byId('demoStop').addEventListener('click', () => { stopDemo(false); say('ההדגמה נעצרה. אפשר להמשיך לשחק במעבדה בעצמכם.'); byId('demoStop').style.display = 'none'; });
+  byId('demoAgain').addEventListener('click', () => { if (D.i >= 0) runDemo(D.i); });
+  byId('demoClose').addEventListener('click', () => stopDemo(true));
+  document.querySelectorAll('.exp').forEach((li, i) => {
+    if (!SCRIPTS[i]) return;
+    const b = document.createElement('button'); b.className = 'pbtn'; b.type = 'button'; b.title = 'הדגמה אוטומטית במעבדה';
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>הדגמה';
+    li.querySelector('.top').insertBefore(b, li.querySelector('.xbtn'));
+    b.addEventListener('click', () => runDemo(i));
+  });
+  if (location.hash.startsWith('#demo')) setTimeout(() => runDemo(+location.hash.slice(5) || 0), 400);
+
+
+})();
+</script>
+</body>
+</html>
