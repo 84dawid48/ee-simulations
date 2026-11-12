@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.c{animation:slide 1.6s linear infinite}
+.e{animation:drift 6s ease-in-out infinite alternate}
+@keyframes slide{from{transform:translateX(0)}to{transform:translateX(64px)}}
+@keyframes drift{from{transform:translateX(-30px)}to{transform:translateX(30px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".45" r=".8"><stop offset="0" stop-color="#101a36"/><stop offset="1" stop-color="#05070d"/></radialGradient>
+<linearGradient id="m" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".3" stop-color="#fff"/><stop offset=".7" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<mask id="k"><rect x="120" y="0" width="400" height="360" fill="url(#m)"/></mask></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<line x1="20" y1="180" x2="620" y2="180" stroke="#4a5d84" stroke-opacity=".5"/>
+<g class="e">
+<path d="M120 180 C220 180 250 70 320 70 S420 180 520 180" fill="none" stroke="#5ee0ff" stroke-width="2.5" stroke-dasharray="8 6"/>
+<path d="M120 180 C220 180 250 290 320 290 S420 180 520 180" fill="none" stroke="#5ee0ff" stroke-width="2.5" stroke-dasharray="8 6"/>
+<g mask="url(#k)"><g class="c"><path d="M-8 180 q16 -100 32 0 t32 0 q16 -100 32 0 t32 0 q16 -100 32 0 t32 0 q16 -100 32 0 t32 0 q16 -100 32 0 t32 0 q16 -100 32 0 t32 0 q16 -100 32 0 t32 0 q16 -100 32 0 t32 0 q16 -100 32 0 t32 0 q16 -100 32 0 t32 0" fill="none" stroke="#e3eaf6" stroke-width="3.2" transform="translate(56 0)"/></g></g>
+<path d="M310 46h20l-10 16z" fill="#5ee0ff"/>
+</g>
+<circle cx="372" cy="104" r="9" fill="#ff9f43" stroke="#05070d" stroke-width="3"/>
+</svg>

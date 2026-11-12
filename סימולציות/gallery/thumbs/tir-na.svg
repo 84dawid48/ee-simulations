@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.r{stroke-dasharray:14 10;animation:run 1.1s linear infinite}
+.l{animation:fade 2.4s ease-in-out infinite}
+@keyframes run{to{stroke-dashoffset:-48}}
+@keyframes fade{0%,100%{opacity:.25}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".5" r=".8"><stop offset="0" stop-color="#0f1a33"/><stop offset="1" stop-color="#05070d"/></radialGradient></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<rect x="190" y="100" width="450" height="160" fill="#13203a"/><rect x="190" y="135" width="450" height="90" fill="#1b3f70"/>
+<path d="M190 180 L40 95 A170 170 0 0 0 40 265 Z" fill="rgba(70,227,154,.13)" stroke="#46e39a" stroke-opacity=".6" stroke-dasharray="6 5"/>
+<path d="M70 230 L190 180 L298 135 L406 225 L514 135 L622 225" fill="none" stroke="#46e39a" stroke-width="4" class="r"/>
+<path d="M120 290 L190 180" fill="none" stroke="#ff6b6b" stroke-width="3" opacity=".8"/>
+<path d="M190 180 L232 135 L274 225" fill="none" stroke="#ff6b6b" stroke-width="3" opacity=".6"/>
+<path d="M232 135 L262 100" stroke="#ff4d5e" stroke-width="3" class="l"/><path d="M274 225 L304 260" stroke="#ff4d5e" stroke-width="3" class="l"/>
+</svg>
