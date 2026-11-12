@@ -23,6 +23,17 @@
 
 window.SIMULATIONS = [
   {
+    id: "comb-sorter",
+    title: "ממיין צירופי: כמה זמן מחכים לתוצאה?",
+    description: "Bubble Sort בחומרה: גל של שינויים עובר ברשת המשווים. למה המעגל מבטיח תוצאה רק אחרי 2n − 3 משווים, כמה פעמים זה באמת קורה, ומה קורה כשהשעון מהיר מדי.",
+    category: "תכן מעגלים ספרתיים",
+    tags: ["מעגל צירופי", "השהיה", "תפוקה", "מסלול קריטי", "Bubble Sort"],
+    thumbnailUrl: "gallery/thumbs/comb-sorter.svg",
+    simulationUrl: "תכן מעגלים ספרתיים/ממיין צירופי – חלק א.html",
+    accent: "#fbbf24",
+    added: "2026-11-12"
+  },
+  {
     id: "fabry-perot-laser",
     title: "לייזר פברי-פרו: סף ומודים אורכיים",
     description: "האור מסתובב במהוד: מתחת לסף הוא דועך, מעליו הוא מצטבר וההגבר ננעל על ההפסדים. ספקטרום עם מסרק המודים, עקומת L-I וניסוי \"המראה המלוכלכת\".",
@@ -277,6 +288,14 @@ window.COURSES = [
     thumbnailUrl: "gallery/courses/electro-optics.svg",
     accent: "#a855f7",
     sims: ["prism-rainbow", "malus", "fabry-perot"]
+  },
+  {
+    id: "digital-design",
+    title: "תכן מעגלים ספרתיים",
+    description: "השהיה, תפוקה ו-pipeline: למה מעגל מהיר רק כמו המסלול הארוך שלו, ואיך חותכים אותו לשלבים.",
+    thumbnailUrl: "gallery/courses/digital-design.svg",
+    accent: "#fbbf24",
+    sims: ["comb-sorter"]
   },
   {
     id: "machine-learning",

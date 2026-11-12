@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.w{animation:sw 3.2s linear infinite}@keyframes sw{from{transform:translateX(-120px)}to{transform:translateX(560px)}}
+.c{animation:fl 3.2s linear infinite}
+@keyframes fl{0%,100%{fill:#16213b}8%{fill:#d9a72a}20%{fill:#16213b}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".45" r=".85"><stop offset="0" stop-color="#231a08"/><stop offset="1" stop-color="#05070d"/></radialGradient>
+<linearGradient id="wf" x1="0" x2="1"><stop offset="0" stop-color="#fbbf24" stop-opacity="0"/><stop offset=".8" stop-color="#fbbf24" stop-opacity=".22"/><stop offset="1" stop-color="#fbbf24" stop-opacity="0"/></linearGradient></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<g stroke="#46e39a" stroke-opacity=".7" stroke-width="2"><line x1="40" y1="60" x2="600" y2="60"/><line x1="40" y1="120" x2="600" y2="120"/><line x1="40" y1="180" x2="600" y2="180"/><line x1="40" y1="240" x2="600" y2="240"/><line x1="40" y1="300" x2="600" y2="300"/></g>
+<g stroke="#8fb3ff" stroke-width="1.5">
+<rect class="c" style="animation-delay:-3.0s" x="80" y="226" width="34" height="88" rx="4"/><rect class="c" style="animation-delay:-2.75s" x="130" y="166" width="34" height="88" rx="4"/><rect class="c" style="animation-delay:-2.5s" x="180" y="106" width="34" height="88" rx="4"/><rect class="c" style="animation-delay:-2.25s" x="230" y="46" width="34" height="88" rx="4"/>
+<rect class="c" style="animation-delay:-2.0s" x="300" y="226" width="34" height="88" rx="4"/><rect class="c" style="animation-delay:-1.75s" x="350" y="166" width="34" height="88" rx="4"/><rect class="c" style="animation-delay:-1.5s" x="400" y="106" width="34" height="88" rx="4"/>
+<rect class="c" style="animation-delay:-1.25s" x="460" y="226" width="34" height="88" rx="4"/><rect class="c" style="animation-delay:-1.0s" x="510" y="166" width="34" height="88" rx="4"/>
+<rect class="c" style="animation-delay:-.75s" x="560" y="226" width="34" height="88" rx="4"/></g>
+<polyline points="97,270 147,210 197,150 247,90 417,150 527,210 577,270" fill="none" stroke="#ff4d5e" stroke-width="4" stroke-linejoin="round" stroke-opacity=".85"/>
+<rect class="w" x="0" y="30" width="120" height="300" fill="url(#wf)"/>
+</svg>
