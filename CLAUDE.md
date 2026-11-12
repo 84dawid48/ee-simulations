@@ -83,7 +83,7 @@
 - במובייל הפאנלים נערמים מתחת לתצוגה.
 - **מונחים:** אותם מונחים בעברית בכל הסימולציות. מונח חדש מוסבר בפעם הראשונה שהוא מופיע.
 - **שמירה:** בתיקיית הנושא המתאימה בתוך `C:\Users\PC\OneDrive\Desktop\work in claude\סימולציות`, בשם קובץ בעברית שמתאר את הנושא.
-- **גלריה:** מוסיפים אובייקט ל-`simulationsData.js`.
+- **גלריה:** מוסיפים אובייקט ל-`simulationsData.js` (ב-`window.SIMULATIONS`), ומכניסים את ה-id שלו לרשימת `sims` של הקורס המתאים ב-`window.COURSES`, במקום שמתאים לסדר הלימוד. קורס חדש: אובייקט חדש ב-`COURSES` ותמונה מונפשת ב-`gallery/courses/`.
 - **מדידת כניסות:** השורה הזו בדיוק, לפני `</head>`:
   `<script data-goatcounter="https://84dawid48.goatcounter.com/count" data-goatcounter-settings='{"allow_frame": true}' async src="//gc.zgo.at/count.js"></script>`
 - **פרסום:** בסוף העבודה עושים commit ו-`git push`. האתר באוויר ב-GitHub Pages: https://84dawid48.github.io/ee-simulations/
