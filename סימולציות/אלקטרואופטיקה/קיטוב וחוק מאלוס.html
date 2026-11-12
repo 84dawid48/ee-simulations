@@ -665,7 +665,7 @@ if (location.hash === '#adv') setMode(true);
     stopDemo(false);
     const tok = D.alive; D.i = i;
     const li = document.querySelectorAll('.exp')[i];
-    byId('demoNum').textContent = i + 1; byId('demoTitle').textContent = li.querySelector('.task').textContent;
+    byId('demoNum').textContent = i + 1; byId('demoTitle').innerHTML = li.querySelector('.task').innerHTML;
     byId('demoText').innerHTML = li.querySelector('.ans').innerHTML; say('עוברים למעבדה...');
     byId('demoStop').style.display = '';
     document.body.classList.add('demo');

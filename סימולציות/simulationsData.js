@@ -23,6 +23,17 @@
 
 window.SIMULATIONS = [
   {
+    id: "sampling-aliasing",
+    title: "דגימה והתחזות",
+    description: "כמה מהר צריך לדגום? מורידים את תדר הדגימה, רואים את הספקטרום מתשכפל, ומגלים מתי טון מהיר מתחפש לטון איטי.",
+    category: "אותות ומערכות",
+    tags: ["נייקוויסט", "התחזות", "שחזור", "DSP"],
+    thumbnailUrl: "gallery/thumbs/sampling.svg",
+    simulationUrl: "אותות ומערכות/דגימה והתחזות.html",
+    accent: "#ffb347",
+    added: "2026-11-12"
+  },
+  {
     id: "prism-rainbow",
     title: "פריזמה וקשת בענן",
     description: "עוקבים אחרי קרני אור דרך מנסרה וטיפת מים, ומגלים למה הקשת מופיעה תמיד בזווית של כ-42°.",

@@ -767,7 +767,7 @@ async function runDemo(i){
   stopDemo(false);
   const tok = ++D.alive; D.i = i;
   const li = document.querySelectorAll('.exp')[i];
-  $('demoNum').textContent = i + 1; $('demoTitle').textContent = li.querySelector('.task').textContent;
+  $('demoNum').textContent = i + 1; $('demoTitle').innerHTML = li.querySelector('.task').innerHTML;
   $('demoText').innerHTML = li.querySelector('.ans').innerHTML; say('עוברים למעבדה...');
   document.body.classList.add('demo');
   $('lab').scrollIntoView({behavior:'smooth', block:'start'});

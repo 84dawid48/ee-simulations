@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.d{animation:pop 2.4s ease-in-out infinite}.d:nth-child(2n){animation-delay:-.8s}.d:nth-child(3n){animation-delay:-1.6s}
+.al{stroke-dasharray:10 7;animation:run 1.4s linear infinite}
+.rep{transform-box:view-box;animation:sl 5s ease-in-out infinite}
+@keyframes pop{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes run{to{stroke-dashoffset:-34}}
+@keyframes sl{0%,100%{transform:translateX(0)}50%{transform:translateX(-18px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="#13163a"/><stop offset="1" stop-color="#05070d"/></radialGradient></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<path d="M20 120 L620 120" stroke="#4a5d84" stroke-opacity=".6"/>
+<path d="M20 120 C35 60 55 60 70 120 S105 180 120 120 S155 60 170 120 S205 180 220 120 S255 60 270 120 S305 180 320 120 S355 60 370 120 S405 180 420 120 S455 60 470 120 S505 180 520 120 S555 60 570 120 S605 180 620 120" fill="none" stroke="#6cb8ff" stroke-width="3"/>
+<path class="al" d="M20 120 C80 40 140 40 200 120 S320 200 380 120 S500 40 560 120 S600 160 620 150" fill="none" stroke="#ffb347" stroke-width="3"/>
+<g fill="#fff"><circle class="d" cx="20" cy="120" r="6"/><circle class="d" cx="95" cy="66" r="6"/><circle class="d" cx="170" cy="120" r="6"/><circle class="d" cx="245" cy="174" r="6"/><circle class="d" cx="320" cy="120" r="6"/><circle class="d" cx="395" cy="66" r="6"/><circle class="d" cx="470" cy="120" r="6"/><circle class="d" cx="545" cy="174" r="6"/></g>
+<path d="M20 320 L620 320" stroke="#4a5d84"/>
+<rect x="250" y="222" width="140" height="98" fill="none" stroke="#ffd479" stroke-width="2" stroke-dasharray="6 4"/>
+<path d="M270 320 L320 240 L370 320" fill="none" stroke="#6cb8ff" stroke-width="3"/>
+<g class="rep"><path d="M110 320 L160 240 L210 320" fill="none" stroke="#9d8bff" stroke-width="2.5"/><path d="M430 320 L480 240 L530 320" fill="none" stroke="#9d8bff" stroke-width="2.5"/>
+<path d="M370 320 L390 288 L410 320Z" fill="rgba(255,77,94,.45)"/><path d="M230 320 L250 288 L270 320Z" fill="rgba(255,77,94,.45)"/></g>
+</svg>
