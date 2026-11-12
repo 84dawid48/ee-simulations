@@ -19,6 +19,11 @@
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--txt);font-family:"Segoe UI","Rubik",Arial,sans-serif;padding-top:30px}
 #topbar{position:fixed;top:0;left:0;right:0;height:30px;background:#060912;border-bottom:1px solid var(--line);z-index:100}
+#brand{position:absolute;top:3px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;height:24px;text-decoration:none;color:#e8edf5;direction:ltr;opacity:.92}
+#brand:hover{opacity:1}
+#brand img{width:22px;height:22px;display:block}
+#brand svg{width:39px;height:13px;display:block}
+@media (max-width:700px){#brand{left:auto;right:44px;transform:none}#brand svg{display:none}}
 #bsd{position:absolute;top:7px;right:12px;font-size:12px;color:#c9d6ea}
 #copyr{position:absolute;top:4px;left:8px;font-size:12px;color:#dce6f5;background:#10172a;border:1px solid var(--line);border-radius:6px;padding:2px 10px}
 bdi{unicode-bidi:isolate}
@@ -164,10 +169,13 @@ body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
 .demoRipple{position:fixed;z-index:299;pointer-events:none;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;border:2px solid #7dffb4;animation:demoRip .55s ease-out forwards}
 @keyframes demoRip{from{transform:scale(.4);opacity:1}to{transform:scale(3.4);opacity:0}}
 </style>
+<link rel="icon" href="../gallery/brand/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../gallery/brand/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../gallery/brand/apple-touch-icon.png">
 <script data-goatcounter="https://84dawid48.goatcounter.com/count" data-goatcounter-settings='{"allow_frame": true}' async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
-<div id="topbar"><div id="bsd">בס״ד</div><div id="copyr" title="אין להעתיק, להפיץ או לשנות ללא רשות בכתב">כל הזכויות שמורות לדוד יצחקי · לשימוש אישי בלבד</div></div>
+<div id="topbar"><a id="brand" href="../index.html" target="_top" title="LIMA Simulative Labs: לכל הסימולציות"><img src="../gallery/brand/lima-icon.svg" alt="LIMA"><svg viewBox="0 0 226 76" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="5.5" stroke-miterlimit="2"><path d="M3 16V72H40"/><path d="M64 27V72"/><path d="M88 72V16L117 60L146 16V72"/><path d="M168 72L195 16L222 72"/><path d="M178 52H212"/></g><circle cx="64" cy="17" r="5.225" fill="currentColor"/></svg></a><div id="bsd">בס״ד</div><div id="copyr" title="אין להעתיק, להפיץ או לשנות ללא רשות בכתב">כל הזכויות שמורות לדוד יצחקי · לשימוש אישי בלבד</div></div>
 
 <!-- ===================== פתיח ===================== -->
 <section id="intro" class="wrap">
