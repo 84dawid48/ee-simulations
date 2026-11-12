@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.s{animation:sl 1s steps(1) infinite}@keyframes sl{0%{transform:translateX(0)}}
+.g{animation:gx 1.2s linear infinite}@keyframes gx{from{transform:translateX(0)}to{transform:translateX(44px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".45" r=".85"><stop offset="0" stop-color="#1c1030"/><stop offset="1" stop-color="#05070d"/></radialGradient><clipPath id="c"><rect x="40" y="40" width="560" height="280"/></clipPath></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<g clip-path="url(#c)"><g class="g">
+<g id="row" fill-opacity=".9">
+<rect x="-4" y="44" width="40" height="30" fill="#38bdf8"/><rect x="40" y="44" width="40" height="30" fill="#f472b6"/><rect x="84" y="44" width="40" height="30" fill="#a3e635"/><rect x="128" y="44" width="40" height="30" fill="#fbbf24"/><rect x="172" y="44" width="40" height="30" fill="#c084fc"/><rect x="216" y="44" width="40" height="30" fill="#2dd4bf"/><rect x="260" y="44" width="40" height="30" fill="#fb7185"/><rect x="304" y="44" width="40" height="30" fill="#facc15"/><rect x="348" y="44" width="40" height="30" fill="#38bdf8"/><rect x="392" y="44" width="40" height="30" fill="#f472b6"/><rect x="436" y="44" width="40" height="30" fill="#a3e635"/><rect x="480" y="44" width="40" height="30" fill="#fbbf24"/><rect x="524" y="44" width="40" height="30" fill="#c084fc"/><rect x="568" y="44" width="40" height="30" fill="#2dd4bf"/>
+</g>
+<use href="#row" x="44" y="34"/><use href="#row" x="88" y="68"/><use href="#row" x="132" y="102"/><use href="#row" x="176" y="136"/><use href="#row" x="220" y="170"/><use href="#row" x="264" y="204"/><use href="#row" x="308" y="238"/>
+</g></g>
+</svg>

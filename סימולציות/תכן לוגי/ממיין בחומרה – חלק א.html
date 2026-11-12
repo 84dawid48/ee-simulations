@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ממיין צירופי: כמה זמן מחכים לתוצאה?</title>
+<!--
+  תדריך (קמפץ)
+  1. האהה: ממיין צירופי של n מספרים (Bubble Sort בחומרה, n(n−1)/2 משווים) מבטיח תוצאה רק אחרי המסלול הארוך ביותר, (2n − 3)·t₀. רוב הקלטים מתייצבים מהר יותר, אבל המעגל לא יודע מתי, ולכן קלט חדש נכנס רק כל (2n − 3)·t₀: השהיה Θ(n), תפוקה Θ(1/n).
+  2. הבלבול: "כל המשווים עובדים במקביל, אז זה מהיר", "המסלול הארוך כמעט אף פעם לא קורה, אז אפשר להתעלם ממנו", "יותר חומרה = פחות זמן".
+  3. הצורה: סיפור עם ציר זמן. גל של שינויים עובר ברשת המשווים (מודל השהיה של t₀ לכל משווה), והאותות נצבעים כתום עד שהם מגיעים לערך הסופי. למטה ציר זמן של הפעילות, עם הזמן בפועל מול הזמן המובטח. במצב המורחב גם "שבור את זה" (שעון מהיר מדי) ו"חזה ואז גלה" (כמה פעמים קורה המקרה הגרוע?). דו-ממד.
+  4. הבסיס: מספר הכניסות n, סוג הקלט (אקראי / ממוין / הפוך) וכפתור "שלח קלט חדש". מורחב: סידור "לפי זמן" (ציר x = עומק), הדגשת המסלול הארוך, מחזור שעון T שדוגם את המוצא, היסטוגרמה של זמני ההתייצבות, ומעקב אחרי מספר בודד.
+  5. נדחה: ה-pipeline (שקפים 12–16) עובר לחלק ב. השהיות שונות לכל משווה ו-contamination delay. תלת-ממד (אין בו ממד שלישי פיזיקלי, רק יסתיר את הרשת).
+  6. פיצול: כן. חלק א: הממיין הצירופי (השקפים 9–11). חלק ב: הממיין ב-pipeline (שקפים 12–16). מקור: "3-Pipeline", בר-אילן.
+-->
+<style>
+:root{--bg:#05070d;--card:#0c1222;--line:#1f2b44;--txt:#e3eaf6;--mut:#93a3bf;--acc:#6cb8ff;--grn:#46e39a;--red:#ff4d5e;--yel:#ffd479;--vio:#9d8bff}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:"Segoe UI","Rubik",Arial,sans-serif;padding-top:30px}
+#topbar{position:fixed;top:0;left:0;right:0;height:30px;background:#060912;border-bottom:1px solid var(--line);z-index:100}
+#bsd{position:absolute;top:7px;right:12px;font-size:12px;color:#c9d6ea}
+#copyr{position:absolute;top:4px;left:8px;font-size:12px;color:#dce6f5;background:#10172a;border:1px solid var(--line);border-radius:6px;padding:2px 10px}
+bdi{unicode-bidi:isolate}
+
+/* ===== פתיח ===== */
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+#intro{padding-top:46px;padding-bottom:40px;line-height:1.75}
+#intro h1{font-size:34px;line-height:1.25;margin:0 0 8px;font-weight:700}
+#intro h1 span{background:linear-gradient(90deg,#6cb8ff,#9d8bff,#ff4d5e);-webkit-background-clip:text;background-clip:text;color:transparent}
+#intro .lead{font-size:18px;color:var(--mut);margin:0 0 30px}
+.prob{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.prob p{margin:0 0 10px;font-size:15.5px;color:#d0d9ea}
+.prob p:last-child{margin-bottom:0}
+.prob svg{width:100%;height:auto;display:block;background:#080d18;border:1px solid var(--line);border-radius:12px}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:14px}
+.rd{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.rd .ic{flex:0 0 38px;height:38px;border-radius:10px;background:#101a30;display:grid;place-items:center}
+.rd h3{margin:0 0 2px;font-size:15.5px}
+.rd p{margin:0;font-size:14.5px;color:#c3cfe3}
+@media (max-width:900px){.prob{grid-template-columns:1fr}}
+h2.sec{font-size:21px;margin:40px 0 14px;color:var(--acc)}
+.theory{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}
+.th{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px}
+.th .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;font-size:14px;margin-bottom:6px}
+.th h3{margin:0 0 4px;font-size:16.5px}
+.th p{margin:0;font-size:14.5px;color:#c3cfe3}
+.chain{margin:14px 0 0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+.chain svg{width:100%;height:auto;display:block}
+.law{margin:14px 0 0;text-align:center;font-size:21px;background:linear-gradient(90deg,rgba(108,184,255,.08),rgba(157,139,255,.07),rgba(255,77,94,.06));border:1px solid var(--line);border-radius:16px;padding:14px;font-family:"Cambria Math","Times New Roman",serif}
+.law .eq{direction:ltr;display:inline-block;margin:0 14px}
+.law small{display:block;font-family:"Segoe UI",Arial,sans-serif;font-size:14px;color:var(--mut);margin-top:4px}
+.cta{display:block;width:max-content;margin:34px auto 0;text-decoration:none;color:#fff;font:inherit;font-size:17px;font-weight:600;background:linear-gradient(180deg,#2167b8,#18508f);border:1px solid #3b86e0;border-radius:40px;padding:12px 30px;box-shadow:0 0 30px rgba(59,134,224,.35);cursor:pointer}
+.cta:hover{filter:brightness(1.15)}
+
+/* ===== מעבדה ===== */
+.lab{position:relative;height:calc(100vh - 30px);min-height:600px;border-top:1px solid var(--line)}
+.view{position:absolute;top:14px;bottom:84px;left:14px;right:320px;display:grid;grid-template-rows:1fr 1fr;gap:10px}
+.plot{position:relative;background:#080d18;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.plot canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.plot .pt{position:absolute;top:8px;right:12px;font-size:13px;color:var(--mut);pointer-events:none}
+.pnl{position:absolute;top:14px;background:rgba(10,15,28,.86);border:1px solid var(--line);border-radius:18px;padding:16px;backdrop-filter:blur(10px);z-index:10;max-height:calc(100% - 100px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2a3550 transparent}
+.pnl.r{right:14px;width:292px}
+.c-row{margin-bottom:14px}
+.c-lbl{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px;color:#cdd8ea}
+.c-val{font-family:Consolas,monospace;font-size:13.5px;color:#fff;direction:ltr}
+input[type=range]{width:100%;accent-color:var(--acc);margin:0}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{flex:1;background:#0a0f1c;border:1px solid var(--line);color:var(--mut);border-radius:9px;padding:7px 4px;font:inherit;font-size:14px;cursor:pointer;white-space:nowrap}
+.seg button.on{border-color:var(--acc);color:#fff;background:#16243f}
+.sep{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.ttl{font-size:13px;color:var(--mut);margin-bottom:8px}
+.meter{margin-bottom:12px}
+.meter .bar{position:relative;height:12px;background:#141c30;border-radius:7px;overflow:visible}
+.meter .bar i{position:absolute;top:0;bottom:0;right:0;border-radius:7px;transition:width .15s,background .15s}
+.meter .bar b{position:absolute;top:-4px;bottom:-4px;width:2px;background:#fff;opacity:.8}
+.meter .row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--mut);margin-top:5px}
+.meter .row span:last-child{font-family:Consolas,monospace;direction:ltr;color:#fff}
+.chip{display:block;text-align:center;font-size:14px;font-weight:600;border-radius:10px;padding:7px;margin-top:4px}
+.chip.ok{background:rgba(70,227,154,.12);color:var(--grn);border:1px solid rgba(70,227,154,.35)}
+.chip.edge{background:rgba(255,212,121,.12);color:var(--yel);border:1px solid rgba(255,212,121,.35)}
+.chip.bad{background:rgba(255,77,94,.13);color:#ff8a96;border:1px solid rgba(255,77,94,.4)}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:#cdd8ea;margin:8px 0;cursor:pointer}
+.sw{position:relative;display:inline-block;width:34px;height:19px;flex:0 0 auto}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:#2a3550;border-radius:20px;cursor:pointer;transition:.2s}
+.sw span::before{content:"";position:absolute;width:15px;height:15px;top:2px;right:2px;background:#c7d2e6;border-radius:50%;transition:.2s}
+.sw input:checked+span{background:#1f5fa8}
+.sw input:checked+span::before{right:17px;background:#fff}
+.calc{font-family:Consolas,"Cambria Math",monospace;font-size:12.5px;direction:ltr;text-align:left;color:#fff;background:#0a0f1c;border:1px solid var(--line);border-radius:8px;padding:8px 10px;line-height:1.75}
+.calc .k{color:var(--yel)}
+body:not(.adv) .adv-only{display:none!important}
+body.adv .basic-only{display:none!important}
+.morebtn{position:absolute;bottom:14px;left:14px;z-index:12;display:flex;align-items:center;gap:10px;font:inherit;font-size:18px;font-weight:700;color:#fff;border:none;border-radius:40px;padding:15px 28px;cursor:pointer;background:linear-gradient(135deg,#7b2ff7,#e0218a);box-shadow:0 8px 30px rgba(123,47,247,.45);animation:pulse 2.2s infinite}
+.morebtn .ic{font-size:22px}
+.morebtn:hover{filter:brightness(1.15)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(224,33,138,.55),0 8px 30px rgba(123,47,247,.45)}70%{box-shadow:0 0 0 16px rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}100%{box-shadow:0 0 0 0 rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}}
+.lessbtn{position:absolute;bottom:14px;left:14px;z-index:12;font:inherit;font-size:14px;color:#cdd8ea;background:rgba(10,15,28,.88);border:1px solid #3a4a6e;border-radius:30px;padding:9px 18px;cursor:pointer}
+.lessbtn:hover{border-color:var(--acc);color:#fff}
+
+#brand{position:absolute;top:3px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;height:24px;text-decoration:none;color:#e8edf5;direction:ltr;opacity:.92}
+#brand:hover{opacity:1}
+#brand img{width:22px;height:22px;display:block}
+#brand svg{width:39px;height:13px;display:block}
+@media (max-width:700px){#brand{left:auto;right:44px;transform:none}#brand svg{display:none}}
+.plot.full{grid-row:1/-1}
+#cv3d{display:none;cursor:grab;touch-action:none}
+.view.v3 #cv3d{display:block}
+.view.v3 .hide3d{visibility:hidden}
+#v3load{position:absolute;inset:0;display:grid;place-items:center;color:var(--mut);font-size:15px;pointer-events:none}
+.pbtn2{position:absolute;top:8px;left:10px;z-index:3;background:rgba(10,15,28,.8);border:1px solid var(--line);color:#cdd8ea;border-radius:9px;padding:4px 10px;font:inherit;font-size:13px;cursor:pointer}
+.pbtn2:hover{border-color:var(--acc);color:#fff}
+.meter .bar.neutral{overflow:hidden}
+.law .eq{max-width:100%}
+@media (max-width:600px){.law{font-size:16px}.law .eq{display:block;margin:4px 0}}
+/* ===== ניסויים ===== */
+#exps{padding-top:10px;padding-bottom:30px;line-height:1.75}
+.exps{list-style:none;margin:0;padding:0;counter-reset:ex}
+.exp{counter-increment:ex;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.exp .top{display:flex;align-items:center;gap:14px}
+.exp .top::before{content:counter(ex);flex:0 0 30px;height:30px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;display:grid;place-items:center}
+.exp .task{flex:1;font-size:16px}
+.exp .tag{display:inline-block;font-size:12px;color:#e9b8ff;border:1px solid #5b2d7a;background:#1d0f2a;border-radius:10px;padding:0 8px;margin-left:6px}
+.xbtn{flex:0 0 auto;background:#1a1608;border:1px solid #6b5520;color:var(--yel);border-radius:20px;padding:5px 16px;font:inherit;font-size:14px;cursor:pointer}
+.xbtn:hover{filter:brightness(1.25)}
+.exp .ans{display:none;margin:12px 44px 2px 0;padding:10px 14px;border-right:3px solid var(--yel);background:rgba(255,212,121,.06);border-radius:8px;font-size:15px;color:#d6dcea;line-height:1.7}
+.exp.open .ans{display:block}
+.exp.open .xbtn{background:#2b230b}
+/* בדוק את עצמך */
+#quiz{padding-bottom:60px}
+.qz{background:linear-gradient(135deg,rgba(157,139,255,.10),rgba(108,184,255,.06));border:1px solid #3a3a7a;border-radius:18px;padding:18px}
+.qz p{margin:0 0 12px;font-size:16px}
+.qz .opts{display:flex;gap:8px;flex-wrap:wrap}
+.qz .opts button{background:#0a0f1c;border:1px solid var(--line);color:#e3eaf6;border-radius:12px;padding:8px 18px;font:inherit;font-size:15px;cursor:pointer}
+.qz .opts button:hover{border-color:var(--vio)}
+.qz .opts button.right{border-color:var(--grn);background:rgba(70,227,154,.12)}
+.qz .opts button.wrong{border-color:var(--red);background:rgba(255,77,94,.1)}
+.qz .fb{display:none;margin-top:12px;font-size:15px;color:#d6dcea;line-height:1.7}
+.qz .fb.on{display:block}
+.qz .go{margin-top:10px;background:#0f2a1c;border:1px solid #2f7a52;color:#7dffb4;border-radius:20px;padding:6px 16px;font:inherit;font-size:14px;cursor:pointer}
+@media (max-width:900px){
+  #intro h1{font-size:26px}
+  .lab{height:auto;min-height:0}
+  .view{position:relative;inset:auto;height:70vh;margin:12px}
+  .pnl{position:static;width:auto!important;margin:12px;max-height:none}
+  .morebtn,.lessbtn{position:static;margin:12px auto 18px;animation:none}
+}
+
+.sendbtn{display:block;width:100%;margin:2px 0 4px;background:linear-gradient(90deg,#2a1f05,#3a2a08);border:1px solid #fbbf24;color:#ffe08a;border-radius:12px;padding:10px;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+.sendbtn:hover{background:#4a360a;color:#fff}
+#cvN{cursor:default}
+.plink{display:inline-block;margin-top:6px;font-size:15px;color:#9fc4ff;text-decoration:none;border-bottom:1px dashed #4a6aa0}
+.plink:hover{color:#fff}/* ===== הדגמה אוטומטית של ניסוי ===== */
+.pbtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:#0f2a1c;border:1px solid #2f7a52;color:#7dffb4;border-radius:20px;padding:5px 14px;font:inherit;font-size:14px;cursor:pointer}
+.pbtn:hover{filter:brightness(1.25)}
+.pbtn svg{width:12px;height:12px}
+#demoBox{display:none;position:relative;height:190px;border-top:1px solid var(--line);background:linear-gradient(180deg,#0a1322,#070b16);padding:14px 20px;overflow-y:auto;line-height:1.6}
+body.demo #demoBox{display:block}
+.lab{scroll-margin-top:30px}
+body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
+#demoBox .dh{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+#demoBox .dn{flex:0 0 28px;height:28px;border-radius:50%;background:#123a27;color:#7dffb4;font-weight:700;display:grid;place-items:center}
+#demoBox .dt{flex:1;font-size:15.5px;font-weight:600}
+#demoBox .say{font-size:14px;color:#7dffb4;min-height:22px;margin-bottom:6px}
+#demoBox .say::before{content:"▶ ";opacity:.7}
+#demoBox .dx{font-size:15px;color:#d6dcea;line-height:1.7;border-right:3px solid #ffd479;background:rgba(255,212,121,.06);border-radius:8px;padding:8px 12px}
+#demoBox .db{background:#0a0f1c;border:1px solid var(--line);color:#cdd8ea;border-radius:10px;padding:5px 12px;font:inherit;font-size:13.5px;cursor:pointer}
+#demoBox .db:hover{border-color:var(--acc);color:#fff}
+#demoCursor{position:fixed;left:0;top:0;z-index:300;pointer-events:none;opacity:0;transition:opacity .3s}
+#demoCursor.on{opacity:1}
+#demoCursor svg{width:30px;height:30px;filter:drop-shadow(0 0 6px rgba(125,255,180,.9)) drop-shadow(0 2px 3px rgba(0,0,0,.6));transition:transform .12s}
+#demoCursor.down svg{transform:scale(.82)}
+.demoRipple{position:fixed;z-index:299;pointer-events:none;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;border:2px solid #7dffb4;animation:demoRip .55s ease-out forwards}
+@keyframes demoRip{from{transform:scale(.4);opacity:1}to{transform:scale(3.4);opacity:0}}
+</style>
+<link rel="icon" href="../gallery/brand/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../gallery/brand/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../gallery/brand/apple-touch-icon.png">
+<script data-goatcounter="https://84dawid48.goatcounter.com/count" data-goatcounter-settings='{"allow_frame": true}' async src="//gc.zgo.at/count.js"></script>
+<!--TEX-HEAD-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>.katex{font-size:1.07em;direction:ltr;unicode-bidi:isolate}.law .katex{font-size:1.12em}.katex-display{margin:.4em 0}.calc .katex{font-size:1em}</style>
+<!--/TEX-HEAD-->
+</head>
+<body>
+<div id="topbar"><a id="brand" href="../index.html" target="_top" title="LIMA Simulative Labs: לכל הסימולציות"><img src="../gallery/brand/lima-icon.svg" alt="LIMA"><svg viewBox="0 0 226 76" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="5.5" stroke-miterlimit="2"><path d="M3 16V72H40"/><path d="M64 27V72"/><path d="M88 72V16L117 60L146 16V72"/><path d="M168 72L195 16L222 72"/><path d="M178 52H212"/></g><circle cx="64" cy="17" r="5.225" fill="currentColor"/></svg></a><div id="bsd">בס״ד</div><div id="copyr" title="אין להעתיק, להפיץ או לשנות ללא רשות בכתב">כל הזכויות שמורות לדוד יצחקי · לשימוש אישי בלבד</div></div>
+
+<!-- ===================== פתיח ===================== -->
+<section id="intro" class="wrap">
+  <h1>28 משווים עובדים במקביל. <span>כמה זמן מחכים</span> למספרים ממוינים?</h1>
+  <p class="lead">לוקחים את Bubble Sort ו"יוצקים" אותו לחומרה: כל השוואה בקוד הופכת למשווה, וכל המשווים מחוברים ברשת אחת בלי שעון. נשמע שהכול קורה בבת אחת. אז למה המעגל הזה איטי, ולמה אי אפשר להכניס אליו קלט חדש מתי שרוצים?</p>
+  <a class="plink" href="ממיין בחומרה – חלק ב.html">חלק ב: הממיין ב-pipeline ←</a>
+
+  <h2 class="sec">הבעיה</h2>
+  <div class="prob">
+    <div>
+      <p>אבן הבניין היא <b>משווה</b>: נכנסים אליו שני מספרים, <bdi dir="ltr">A</bdi> ו-<bdi dir="ltr">B</bdi>, ויוצאים הגדול (<bdi dir="ltr">H</bdi>, למעלה) והקטן (<bdi dir="ltr">L</bdi>, למטה). לוקח לו <bdi dir="ltr">t₀</bdi> להגיב לשינוי בכניסות.</p>
+      <p>בציור, ממיין של 4 מספרים: כל עמודה היא סיבוב אחד של הלולאה החיצונית, שמבעבע את הגדול ביותר למעלה. אבל משווה לא יכול לענות לפני שהגיעו אליו הכניסות שלו, והקו האדום הוא שרשרת ההמתנה הארוכה ביותר.</p>
+      <p><b>המשימה:</b> למדוד כמה זמן לוקח למוצא להתייצב, להבין למה המעגל חייב תמיד לחכות <bdi dir="ltr">(2n − 3)·t₀</bdi>, ומה זה אומר על קצב הקלטים (התפוקה).</p>
+    </div>
+    <svg id="probSvg" viewBox="0 0 340 230" aria-label="ממיין של ארבעה מספרים: שש משווים בשלוש עמודות, והמסלול הארוך ביותר באדום"></svg>
+  </div>
+
+  <h2 class="sec">איך לקרוא את המעבדה</h2>
+  <div class="read">
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2" fill="#1d2a48" stroke="#8fb3ff"/><text x="8" y="10" font-size="6" fill="#cdd8ea">A H</text><text x="8" y="18" font-size="6" fill="#cdd8ea">B L</text></svg></div><div><h3>משווה</h3><p>תיבה שמחברת שני קווים סמוכים. בתוכה הערכים שיוצאים ממנה: הגדול למעלה, הקטן למטה. הבזק צהוב = המוצא שלה השתנה עכשיו.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 8h20" stroke="#ff9f43" stroke-width="3"/><path d="M2 16h20" stroke="#46e39a" stroke-width="3"/></svg></div><div><h3>צבע הקו</h3><p>ירוק: האות כבר בערך הסופי שלו. כתום: עדיין לא.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="2" y="7" width="8" height="10" rx="3" fill="#2a3550"/><rect x="14" y="7" width="8" height="10" rx="3" fill="#123a28"/></svg></div><div><h3>כניסות ויציאות</h3><p>משמאל המספרים שנכנסים, מימין מה שיוצא כרגע. המוצא ממוין כשהגדול למעלה.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="3" y="12" width="3" height="8" fill="#fbbf24"/><rect x="8" y="8" width="3" height="12" fill="#fbbf24"/><rect x="13" y="14" width="3" height="6" fill="#fbbf24"/><path d="M20 3v18" stroke="#ff4d5e" stroke-dasharray="3 2"/></svg></div><div><h3>ציר הזמן</h3><p>כמה משווים השתנו בכל צעד של <bdi dir="ltr">t₀</bdi>. ירוק: מתי המוצא באמת התייצב. אדום מקווקו: הזמן המובטח.</p></div></div>
+  </div>
+
+  <h2 class="sec">התאוריה בקצרה</h2>
+  <div class="theory">
+    <div class="th"><div class="n">1</div><h3>מקוד לחומרה</h3><p>כל איטרציה של הלולאה החיצונית היא עמודה של משווים, שמבעבעת את הגדול ביותר למעלה. בסך הכול <bdi dir="ltr">n(n − 1)/2 = Θ(n²)</bdi> משווים.</p></div>
+    <div class="th"><div class="n">2</div><h3>מעגל צירופי</h3><p>אין רגיסטרים בפנים. המוצא נכון רק אחרי שכל השינויים עברו בכל השרשראות, וזמן ההשהיה (propagation delay) נקבע לפי <b>המסלול הארוך ביותר</b>, לא לפי המקרה הממוצע.</p></div>
+    <div class="th"><div class="n">3</div><h3>המסלול הארוך</h3><p>למעלה לאורך העמודה הראשונה (<bdi dir="ltr">n − 1</bdi> משווים), ואז באלכסון דרך הראש של כל עמודה (עוד <bdi dir="ltr">n − 2</bdi>): <bdi dir="ltr">2n − 3</bdi> משווים.</p></div>
+    <div class="th"><div class="n">4</div><h3>השהיה ותפוקה</h3><p>בעיה חדשה נכנסת רק כשהקודמת הסתיימה והכול יציב. השהיה <bdi dir="ltr">Θ(n)</bdi>, ולכן תפוקה <bdi dir="ltr">Θ(1/n)</bdi>, למרות שכל המשווים "עובדים במקביל".</p></div>
+  </div>
+  <div class="law"><span class="eq">T<sub>pd</sub> = (2n − 3)·t₀</span><span class="eq">Throughput = 1/T<sub>pd</sub> = Θ(1/n)</span><small>המעגל מהיר כמו המסלול הארוך ביותר שלו, גם אם רוב הקלטים לא צריכים אותו</small></div>
+  <a class="cta" href="#lab">למעבדה ↓</a>
+</section>
+
+<!-- ===================== מעבדה ===================== -->
+<section class="lab" id="lab">
+  <div class="view" id="view" style="grid-template-rows:1.7fr 1fr">
+    <div class="plot"><canvas id="cvN"></canvas></div>
+    <div class="plot"><canvas id="cvB"></canvas></div>
+  </div>
+  <div class="pnl r">
+    <div class="c-row"><div class="c-lbl"><span>מספר הכניסות <bdi dir="ltr">n</bdi></span><span class="c-val" id="nV"></span></div><input type="range" id="rN" data-k="n" min="3" max="10" step="1"></div>
+    <div class="c-row"><div class="c-lbl">הקלט הבא</div><div class="seg" data-seg="pat"><button data-v="rnd" class="on">אקראי</button><button data-v="sorted">ממוין</button><button data-v="rev">הפוך</button></div></div>
+    <button id="send" class="sendbtn">▶ שלח קלט חדש</button>
+    <div class="sep">
+      <div class="meter"><div class="ttl">המוצא התייצב בפועל אחרי</div><div class="bar"><i id="sBar"></i></div>
+        <div class="row"><span id="sRow"></span><span id="sV"></span></div></div>
+      <div class="meter"><div class="ttl">המעגל מבטיח תוצאה רק אחרי</div><div class="bar"><i id="dBar"></i></div>
+        <div class="row"><span id="dRow"></span><span id="dV"></span></div></div>
+      <span class="chip neu" id="status"></span>
+    </div>
+    <div class="sep adv-only">
+      <div class="c-row"><div class="c-lbl">סידור המשווים</div><div class="seg" data-seg="lay"><button data-v="slide" class="on">כמו בשקף</button><button data-v="time">לפי זמן</button></div></div>
+      <label class="chk"><label class="sw"><input type="checkbox" id="cCrit" data-k="crit"><span></span></label>המסלול הארוך ביותר</label>
+      <label class="chk"><label class="sw"><input type="checkbox" id="cFollow" data-k="follow"><span></span></label>מעקב אחרי מספר (לחיצה על כניסה)</label>
+      <div class="c-row" style="margin-top:12px"><div class="c-lbl"><span>מחזור שעון <bdi dir="ltr">T</bdi> (דגימת המוצא)</span><span class="c-val" id="TV"></span></div><input type="range" id="rT" data-k="T" min="1" max="13" step="1"></div>
+      <div class="c-row"><div class="c-lbl">הגרף התחתון</div><div class="seg" data-seg="bot"><button data-v="act" class="on">פעילות בזמן</button><button data-v="hist">כמה פעמים? (2000 קלטים)</button></div></div>
+      <div class="calc" id="calc"></div>
+    </div>
+  </div>
+  <button id="more" class="morebtn basic-only"><span class="ic">🔬</span>אני רוצה לחקור יותר</button>
+  <button id="less" class="lessbtn adv-only">→ לחזור למעבדה הבסיסית</button>
+</section>
+<!-- מסגרת ההסבר של ההדגמה האוטומטית (מופיעה מתחת למעבדה, לא מעליה) -->
+<section id="demoBox" aria-live="polite">
+  <div class="dh"><div class="dn" id="demoNum">1</div><div class="dt" id="demoTitle"></div>
+    <button class="db" id="demoStop">⏹ עצור</button><button class="db" id="demoAgain">↻ שוב</button><button class="db" id="demoClose">✕ סגור</button></div>
+  <div class="say" id="demoSay"></div>
+  <div class="dx" id="demoText"></div>
+</section>
+<div id="demoCursor"><svg viewBox="0 0 24 24"><path d="M4 2l15 11-6.5 1.2L16.5 22l-3 1.3-3.6-7.6L5 20z" fill="#fff" stroke="#0b1a12" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+
+<!-- ===================== ניסויים ===================== -->
+<section id="exps" class="wrap">
+  <h2 class="sec">ניסויים לנסות במעבדה</h2>
+  <ol class="exps">
+    <li class="exp"><div class="top"><div class="task">עם <bdi dir="ltr">n = 8</bdi>, לחצו "שלח קלט חדש". גל של הבזקים עובר ברשת משמאל לימין, והקווים הופכים מכתום לירוק. המוצא מתייצב בדרך כלל אחרי 9 עד 12 צעדים, אבל ההבטחה היא 13.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">כל משווה מגיב <bdi dir="ltr">t₀</bdi> אחרי שהכניסות שלו השתנו, ולכן השינוי מתפשט בשרשראות. במודל הזה כל משווה מחשב בכל צעד מחדש את <bdi dir="ltr">max</bdi> ו-<bdi dir="ltr">min</bdi> של מה שיש בכניסות שלו ברגע זה, כולל ערכים זמניים ("קפיצות", glitches) שעוד לא סופיים. ההבטחה של <bdi dir="ltr">2n − 3 = 13</bdi> צעדים היא העומק של הרשת: אחרי 13 צעדים גם המשווה האחרון בשרשרת הארוכה ביותר כבר קיבל כניסות סופיות.</div></li>
+    <li class="exp"><div class="top"><div class="task">לחצו כמה פעמים ברצף. זמן ההתייצבות בפועל משתנה מקלט לקלט, אבל המדד השני תקוע על 13.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">המעגל לא "יודע" מתי הוא סיים: אין לו אות "מוכן". מי שמשתמש בו חייב להניח את המקרה הגרוע ולחכות תמיד <bdi dir="ltr">(2n − 3)·t₀</bdi> לפני שהוא קורא את המוצא ומכניס קלט חדש. לכן התפוקה היא בעיה אחת כל <bdi dir="ltr">13·t₀</bdi>, ולא לפי הזמן הממוצע.</div></li>
+    <li class="exp"><div class="top"><div class="task">הגדילו את n מ-4 ל-10 וצפו בשני המספרים: המשווים קופצים מ-6 ל-45, אבל הזמן המובטח עולה רק מ-5 ל-17.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">מספר המשווים הוא <bdi dir="ltr">n(n − 1)/2 = Θ(n²)</bdi>, והעומק הוא <bdi dir="ltr">2n − 3 = Θ(n)</bdi>. החומרה גדלה ריבועית, ובכל זאת הזמן ממשיך לגדול ליניארית. הסיבה: "במקביל" לא אומר "בבת אחת". משווה לא יכול לענות לפני שהגיעו אליו הכניסות שלו, והשרשרת הארוכה גדלה עם n. תפוקה של <bdi dir="ltr">Θ(1/n)</bdi> היא בדיוק מה שכתוב בשקף 11.</div></li>
+    <li class="exp"><div class="top"><div class="task">בחרו "ממוין" ואחריו "הפוך". הכניסה ההפוכה (הקטן למעלה) מפעילה כמעט את כל המשווים, ושוב המוצא מתייצב לפני 13 או ב-13 בדיוק, לא אחרי.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">בקלט "ממוין" (הגדול כבר למעלה) אף משווה לא צריך להחליף, ובקלט "הפוך" כל משווה מחליף. אבל גם בקלט הכי "קשה" הזמן לא עובר את העומק של הרשת. החסם <bdi dir="ltr">2n − 3</bdi> נובע מהמבנה (כמה משווים יש בשרשרת הארוכה), לא מהנתונים. הנתונים רק קובעים אם מגיעים אליו.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>במצב המורחב הדליקו "המסלול הארוך ביותר": למעלה לאורך העמודה הראשונה, ואז באלכסון דרך הראש של כל עמודה. עכשיו עברו לסידור "לפי זמן".</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">המסלול: <bdi dir="ltr">n − 1</bdi> משווים בעמודה הראשונה, ועוד <bdi dir="ltr">n − 2</bdi> ראשי עמודות: <bdi dir="ltr">2n − 3</bdi>. בסידור "לפי זמן" כל משווה מוזז ימינה לפי העומק שלו, כלומר לפי הצעד הראשון שבו מובטח שהכניסות שלו סופיות. הרוחב של הציור הוא בדיוק <bdi dir="ltr">2n − 3</bdi> עמודות, והגל של השינויים עובר בו כמו חזית. זה גם הסידור שבו נשתמש בחלק ב, כשנחתוך את הרשת לשלבי pipeline.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>בשקף נשאל "כמה פעמים זה קורה?" והתשובה שם היא "Very small / Never ??". חזו, ואז עברו לגרף "כמה פעמים?": עם n = 8, בכ-6% מהקלטים המוצא משתנה עד הצעד ה-13 ממש.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">ההיסטוגרמה מריצה 2000 זוגות של (קלט קודם, קלט חדש) אקראיים, וסופרת מתי המוצא השתנה בפעם האחרונה. רוב המקרים מסתיימים ב-10–12 צעדים, והזנב שמגיע ל-13 דק. אבל הוא לא אפס. ואפילו אם היה אפס בבדיקה כזו, לא היה מותר להתעלם ממנו: ניתוח תזמון מבטיח נכונות לכל קלט, לא לרוב הקלטים.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>שברו את זה: קבעו מחזור שעון <bdi dir="ltr">T = 12</bdi> ושלחו קלטים. מדי פעם המוצא שנדגם מסומן ✗. ב-<bdi dir="ltr">T = 10</bdi> רוב הקלטים נכשלים.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">כשהמוצא נדגם לפני שהמעגל התייצב, נקלט ערך זמני. בהיסטוגרמה, כל מה שמימין לקו <bdi dir="ltr">T</bdi> הוא קלט שהמוצא שלו עוד השתנה אחרי הדגימה, כלומר כמעט תמיד תוצאה שגויה (האחוז המדויק בתיבת החישוב): ב-<bdi dir="ltr">T = 12</bdi> בערך 1 מכל 20, וב-<bdi dir="ltr">T = 10</bdi> יותר ממחצית. לכן מחזור השעון של מעגל צירופי נקבע לפי המסלול הארוך: <bdi dir="ltr">T ≥ T<sub>pd</sub></bdi> (ובמעגל אמיתי גם זמני ה-setup וה-clock-to-Q של הרגיסטרים).</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>הדליקו "מעקב אחרי מספר" ולחצו על כמה מספרים בכניסה. רוב המספרים עוברים דרך מעט משווים, אבל לפעמים מספר קטן שנכנס למטה עושה "זיגזג" לאורך כל התחתית ועובר 13 משווים.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">מספר שיוצא מתחתית משווה (<bdi dir="ltr">L</bdi>) ממשיך לעמודה הבאה, ומספר שיוצא מלמעלה (<bdi dir="ltr">H</bdi>) מבעבע בתוך אותה עמודה. כשמספר מנצח פעם אחת ומפסיד פעם אחת לסירוגין בשורות התחתונות, הוא עובר <bdi dir="ltr">2n − 3</bdi> משווים. בבדיקה על כל <bdi dir="ltr">8! = 40320</bdi> הסידורים, זה קורה בדיוק ב-1440 מהם (1 מכל 28). גם מספר בודד יכול לעבור את כל אורך המסלול, וזו עוד סיבה שאי אפשר להתעלם ממנו.</div></li>
+  </ol>
+</section>
+
+<section id="quiz" class="wrap">
+  <h2 class="sec">בדוק את עצמך</h2>
+  <div class="qz">
+    <p>ממיין צירופי כזה ל-<bdi dir="ltr">n = 16</bdi> מספרים, כשכל משווה מגיב תוך <bdi dir="ltr">t₀</bdi>. כמה משווים יש בו, וכל כמה זמן אפשר להכניס אליו קלט חדש?</p>
+    <div class="opts" id="qOpts"><button data-a="a">120 משווים, כל <bdi dir="ltr">29·t₀</bdi></button><button data-a="b">120 משווים, כל <bdi dir="ltr">t₀</bdi> (הם עובדים במקביל)</button><button data-a="c">256 משווים, כל <bdi dir="ltr">16·t₀</bdi></button><button data-a="d">120 משווים, כל <bdi dir="ltr">15·t₀</bdi></button></div>
+    <div class="fb" id="qFb"></div>
+    <button class="go" id="qGo" style="display:none">🔬 בדקו במעבדה</button>
+  </div>
+</section>
+
+<script>
+const START = {"n":8,"pat":"rnd","lay":"slide","crit":false,"T":13,"bot":"act","follow":false};
+const ADV_DEF = {"lay":"slide","crit":false,"bot":"act","follow":false};
+"use strict";
+/* ======================================================================
+   שכבה משותפת לסימולציות תקשורת אופטית: מצב, פקדים, מצב מורחב, ציור, תלת-ממד
+   ====================================================================== */
+const $ = id => document.getElementById(id);
+let adv = false;
+const S = Object.assign({}, START);
+// מסנכרן את הפקדים (data-k) ואת כפתורי הבחירה (data-seg) לערכים שב-S
+function syncUI(){
+  document.querySelectorAll('[data-k]').forEach(el => { const k = el.dataset.k; if (!(k in S)) return; if (el.type === 'checkbox') el.checked = !!S[k]; else el.value = S[k]; });
+  document.querySelectorAll('[data-seg]').forEach(seg => { const k = seg.dataset.seg; seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === String(S[k]))); });
+}
+function bindAll(onChange){
+  document.querySelectorAll('input[data-k]').forEach(el => el.addEventListener(el.type === 'checkbox' ? 'change' : 'input', () => {
+    const k = el.dataset.k; S[k] = el.type === 'checkbox' ? el.checked : +el.value; onChange(k); }));
+  document.querySelectorAll('[data-seg]').forEach(seg => seg.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return; const k = seg.dataset.seg, v = b.dataset.v;
+    S[k] = v !== '' && !isNaN(+v) ? +v : v; syncUI(); onChange(k); }));
+}
+function setMode(on){
+  adv = on; document.body.classList.toggle('adv', on);
+  if (!on){ Object.assign(S, ADV_DEF); syncUI(); }
+  if (window.onModeChange) onModeChange(on);
+  $('lab').scrollIntoView({behavior:'smooth'});
+}
+$('more').addEventListener('click', () => setMode(true));
+$('less').addEventListener('click', () => setMode(false));
+document.querySelectorAll('.exp .xbtn').forEach(b => b.addEventListener('click', () => { const li = b.closest('.exp'); li.classList.toggle('open'); b.textContent = li.classList.contains('open') ? 'סגור' : 'הסבר'; }));
+const sgn = v => Math.abs(v) < 0.005 ? '0.00' : (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const deg = r => r*180/Math.PI, rad = d => d*Math.PI/180;
+function bar(id, frac, col){ const el = $(id); el.style.width = clamp(frac, 0, 1)*100 + '%'; if (col) el.style.background = col; }
+// קנבס בגודל התצוגה, חד גם במסכי רטינה
+function fitCanvas(cv){
+  const r = cv.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1), w = Math.max(1, r.width), h = Math.max(1, r.height);
+  if (cv.width !== Math.round(w*d) || cv.height !== Math.round(h*d)){ cv.width = Math.round(w*d); cv.height = Math.round(h*d); }
+  const g = cv.getContext('2d'); g.setTransform(d, 0, 0, d, 0, 0); g.direction = 'ltr'; return {g, w, h};   // ltr: מספרים ויחידות בסדר הנכון
+}
+function arrow(g, x0, y0, x1, y1, col, wd, head){
+  const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy); if (L < 0.5) return;
+  const ux = dx/L, uy = dy/L, hs = head || Math.min(9, L*0.45);
+  g.strokeStyle = col; g.fillStyle = col; g.lineWidth = wd || 1.6;
+  g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1 - ux*hs*0.6, y1 - uy*hs*0.6); g.stroke();
+  g.beginPath(); g.moveTo(x1, y1); g.lineTo(x1 - ux*hs - uy*hs*0.5, y1 - uy*hs + ux*hs*0.5); g.lineTo(x1 - ux*hs + uy*hs*0.5, y1 - uy*hs - ux*hs*0.5); g.closePath(); g.fill();
+}
+const svgMarker = (id, col) => '<marker id="' + id + '" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="' + col + '"/></marker>';
+/* ---------- תלת-ממד: Three.js נטען רק כשפותחים את המבט ---------- */
+const V3 = {on:false, ready:false, loading:null};
+function loadScript(src){ return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+function load3D(){
+  if (!V3.loading) V3.loading = (window.THREE ? Promise.resolve() : loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'))
+    .then(() => THREE.OrbitControls ? 0 : loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js'));
+  return V3.loading;
+}
+function make3D(cv){
+  const R = new THREE.WebGLRenderer({canvas:cv, antialias:true}); R.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); R.setClearColor(0x080d18, 1);
+  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(38, 1, 0.05, 400);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.65)); const dl = new THREE.DirectionalLight(0xffffff, 0.7); dl.position.set(3, 8, 5); scene.add(dl);
+  const ctl = new THREE.OrbitControls(cam, cv); ctl.enableDamping = true; ctl.dampingFactor = 0.08; ctl.enablePan = false;
+  Object.assign(V3, {cv, R, scene, cam, ctl, ready:true});
+  return V3;
+}
+function size3D(w, h){ if (!V3.ready) return; V3.R.setSize(w, h, false); V3.cam.aspect = w/h; V3.cam.updateProjectionMatrix(); }
+// מעבר בין מבט שטוח לתלת-ממד (כפתורי #views)
+function setView(v){
+  S.view = v; syncUI(); V3.on = v === '3d'; document.querySelector('.lab .view').classList.toggle('v3', V3.on);
+  if (V3.on && !V3.ready){ $('v3load').style.display = '';
+    load3D().then(() => { if (!V3.ready){ make3D($('cv3d')); SIM3.build(); } $('v3load').style.display = 'none'; dirty = true; })
+      .catch(err => { console.error(err); $('v3load').textContent = 'לא הצלחתי לטעון את התלת-ממד. בדקו את החיבור לאינטרנט.'; }); }
+  dirty = true;
+}
+const SIM3 = {};
+/* ---------- לולאת אנימציה ---------- */
+let dirty = true, last = performance.now(), visible = true;
+new IntersectionObserver(e => { visible = e[0].isIntersecting; }).observe(document.querySelector('.lab .view'));
+new ResizeObserver(() => { dirty = true; }).observe(document.querySelector('.lab .view'));
+function loop(now){
+  requestAnimationFrame(loop);
+  const dt = clamp((now - last)/1000, 0, 0.05); last = now;
+  if (visible) tick(dt);
+}
+
+/* ======================================================================
+   חלק ייחודי לסימולציה הזו
+   ====================================================================== */
+
+/* ---------- הרשת: Bubble Sort בחומרה. משווה (c, r) פועל על הקווים r, r+1 (0 = למעלה): H נשאר בשורה r, L יורד לשורה r+1 ---------- */
+let net, inp = [], prev = [], ST = [], CH = [], setOut = 0, layK = 0, tNow = 0, flashT = 0, track = -1, trackPath = [], trackOut = {}, HIST = {};
+const STEP = 0.5;                                    // שניות לכל t₀ באנימציה
+function build(n){
+  const comps = [], last = []; for (let r = 0; r < n; r++) last[r] = {k:-1, i:r};
+  for (let c = 0; c < n - 1; c++) for (let r = n - 2; r >= c; r--){ const k = comps.length; comps.push({c, r, A:last[r], B:last[r + 1], d:0}); last[r] = {k, s:'H'}; last[r + 1] = {k, s:'L'}; }
+  comps.forEach(o => { const dd = s => s.k < 0 ? 0 : comps[s.k].d; o.d = 1 + Math.max(dd(o.A), dd(o.B)); });
+  const crit = []; for (let r = n - 2; r >= 0; r--) crit.push(comps.findIndex(o => o.c === 0 && o.r === r)); for (let c = 1; c < n - 1; c++) crit.push(comps.findIndex(o => o.c === c && o.r === c));
+  return {n, comps, outs:last.slice(), D:Math.max(...comps.map(o => o.d)), crit};
+}
+const val = (s, st, x) => s.k < 0 ? x[s.i] : (s.s === 'H' ? st.H[s.k] : st.L[s.k]);
+function stable(x){ const st = {H:[], L:[]}; net.comps.forEach((o, k) => { const a = val(o.A, st, x), b = val(o.B, st, x); st.H[k] = Math.max(a, b); st.L[k] = Math.min(a, b); }); return st; }
+function stepOnce(st, x){ const nx = {H:[], L:[]}; net.comps.forEach((o, k) => { const a = val(o.A, st, x), b = val(o.B, st, x); nx.H[k] = Math.max(a, b); nx.L[k] = Math.min(a, b); }); return nx; }
+const outsOf = (st, x) => net.outs.map(s => val(s, st, x));
+// מודל השהיה של t₀ לכל משווה: בכל צעד כל משווה מחשב מחדש מהכניסות שלו בצעד הקודם
+function simulate(){
+  ST = [stable(prev)]; CH = [[]]; setOut = 0; let po = outsOf(ST[0], prev);
+  for (let t = 1; t <= net.D + 1; t++){ const s = stepOnce(ST[t - 1], inp); ST.push(s); CH.push(net.comps.map((o, k) => k).filter(k => s.H[k] !== ST[t - 1].H[k] || s.L[k] !== ST[t - 1].L[k]));
+    const o = outsOf(s, inp); if (o.join() !== po.join()) setOut = t; po = o; }
+  tNow = 0; computeTrack(); updPanel(); dirty = true;
+}
+// המסע של מספר אחד: דרך אילו משווים הוא עובר (במצב הסופי)
+function computeTrack(){
+  trackPath = []; trackOut = {}; if (track < 0) return; const id = [], st = ST[ST.length - 1];
+  const who = (s) => s.k < 0 ? s.i : (s.s === 'H' ? id[s.k].h : id[s.k].l);
+  net.comps.forEach((o, k) => { const a = who(o.A), b = who(o.B), va = val(o.A, st, inp), vb = val(o.B, st, inp); id[k] = va >= vb ? {h:a, l:b} : {h:b, l:a}; if (a === track || b === track){ trackPath.push(k); trackOut[k] = id[k].h === track ? o.r : o.r + 1; } });
+}
+const rnd = () => { const s = new Set(); while (s.size < S.n) s.add(1 + Math.floor(Math.random()*99)); return [...s]; };
+function makeInput(p){ const x = rnd(); if (p === 'sorted') x.sort((a, b) => b - a); if (p === 'rev') x.sort((a, b) => a - b); return x; }
+function send(){ prev = inp.length === S.n ? inp : rnd(); inp = makeInput(S.pat); simulate(); }
+function rebuild(){ const wasSafe = !net || S.T >= net.D; net = build(S.n); const rT = $('rT'); rT.max = net.D; if (wasSafe || S.T > net.D || S.T < 1) S.T = net.D; syncUI(); prev = rnd(); inp = rnd(); track = -1; simulate(); }
+// היסטוגרמה: מתי המוצא השתנה בפעם האחרונה, על 2000 זוגות אקראיים (נשמרת לכל n)
+function histFor(n){
+  if (HIST[n]) return HIST[n]; const keep = [prev, inp, ST, CH, setOut]; const h = new Array(net.D + 2).fill(0), ok = new Array(net.D + 2).fill(0);
+  for (let i = 0; i < 2000; i++){ prev = rnd(); inp = rnd(); let st = stable(prev), po = outsOf(st, prev), last = 0; const srt = [...inp].sort((a, b) => b - a).join();
+    for (let t = 1; t <= net.D + 1; t++){ st = stepOnce(st, inp); const o = outsOf(st, inp); if (o.join() !== po.join()) last = t; if (o.join() === srt) ok[t]++; po = o; } h[last]++; }
+  [prev, inp, ST, CH, setOut] = keep; h.ok = ok; return HIST[n] = h;
+}
+function onChange(k){
+  if (k === 'n'){ rebuild(); return; }
+  if (k === 'pat'){ send(); return; }
+  if (k === 'follow' && !S.follow){ track = -1; trackPath = []; }
+  dirty = true; updPanel();
+}
+bindAll(onChange);
+$('send').addEventListener('click', send);
+window.onModeChange = on => { if (!on){ track = -1; trackPath = []; S.T = net.D; syncUI(); } dirty = true; updPanel(); };
+const clockOn = () => adv && S.T < net.D;
+function updPanel(){
+  const D = net.D, nC = net.comps.length;
+  $('nV').textContent = S.n; $('TV').innerHTML = S.T + '·t₀' + (S.T >= D ? ' (בטוח)' : '');
+  const done = tNow >= setOut;
+  bar('sBar', setOut/D, '#46e39a'); $('sV').textContent = (done ? setOut : '…') + ' · t₀'; $('sRow').textContent = done ? (setOut < D ? 'הפעם הספיק פחות מהמובטח' : 'הפעם בדיוק המקרה הגרוע') : 'מחכים...';
+  bar('dBar', 1, '#ff4d5e'); $('dV').textContent = D + ' · t₀'; $('dRow').textContent = 'תפוקה: קלט חדש רק פעם ב-' + D + ' צעדים';
+  $('status').className = 'chip neu'; $('status').textContent = nC + ' משווים · המסלול הארוך: ' + D + ' משווים';
+  if (!adv) return;
+  const h = histFor(S.n), tot = h.reduce((a, b) => a + b, 0), bad = tot - h.ok[S.T];
+  const k = s => '<span class="k">' + s + '</span>';
+  $('calc').innerHTML = k('comparators') + ' = n(n−1)/2 = ' + nC + '<br>' + k('T_pd') + ' = (2n−3)·t₀ = ' + D + '·t₀<br>' + k('throughput') + ' = 1/' + D + ' per t₀<br>' +
+    k('P(worst)') + ' = ' + (100*h[D]/tot).toFixed(1) + '% of inputs<br>' + k('T = ' + S.T) + ' → wrong ≈ ' + (100*bad/tot).toFixed(1) + '%';
+}
+/* ---------- מיקומים: "כמו בשקף" (עמודות, מדרגה בתוך עמודה) או "לפי זמן" (x לפי העומק) ---------- */
+let G = {};
+function geom(w, h){
+  const n = net.n, m = net.comps.length, D = net.D, xL = 62, xR = w - 62, top = 26, bot = h - 22, s = (bot - top)/(n - 1);
+  const units = m + (n - 2)*1.0 + 0.8, st = (xR - xL - 20)/units, bw1 = Math.min(34, st*0.8);
+  const colX = []; let x = xL + 16; for (let c = 0; c < n - 1; c++){ colX[c] = x; x += (n - 1 - c)*st + st*1.0; }
+  const dt = (xR - xL - 20)/D, bw2 = Math.min(34, dt*0.78);
+  const e = layK*layK*(3 - 2*layK);
+  const P = net.comps.map(o => { const x1 = colX[o.c] + (n - 2 - o.r)*st, x2 = xL + 14 + (o.d - 1)*dt; return {x:x1 + (x2 - x1)*e, w:bw1 + (bw2 - bw1)*e}; });
+  return G = {xL, xR, top, s, y:r => top + r*s, P};
+}
+function drawN(){
+  const {g, w, h} = fitCanvas($('cvN')); g.clearRect(0, 0, w, h); if (!net) return;
+  const {xL, xR, y, s, P} = geom(w, h), n = net.n, ti = Math.min(Math.floor(tNow), ST.length - 1), st = ST[ti], fin = ST[ST.length - 1], fl = 1 - (tNow - ti);
+  const bh = Math.min(10, s*0.26);
+  // קווים: מקטע לכל שורה בין משווה למשווה
+  const last = []; for (let r = 0; r < n; r++) last[r] = {x:xL + 4, src:{k:-1, i:r}};
+  const seg = (r, x2) => { const L = last[r], v = val(L.src, st, inp), vf = val(L.src, fin, inp); g.strokeStyle = v === vf ? 'rgba(70,227,154,.85)' : '#ff9f43'; g.lineWidth = v === vf ? 1.6 : 2.4; g.beginPath(); g.moveTo(L.x, y(r)); g.lineTo(x2, y(r)); g.stroke(); };
+  net.comps.forEach((o, k) => { seg(o.r, P[k].x); seg(o.r + 1, P[k].x); last[o.r] = {x:P[k].x + P[k].w, src:{k, s:'H'}}; last[o.r + 1] = {x:P[k].x + P[k].w, src:{k, s:'L'}}; });
+  for (let r = 0; r < n; r++) seg(r, xR - 4);
+  // המסלול הארוך
+  if (adv && S.crit){ g.strokeStyle = 'rgba(255,77,94,.9)'; g.lineWidth = 4; g.lineJoin = 'round'; g.beginPath();
+    net.crit.forEach((k, i) => { const o = net.comps[k], cx = P[k].x + P[k].w/2, cy = (y(o.r) + y(o.r + 1))/2; i ? g.lineTo(cx, cy) : g.moveTo(cx, cy); }); g.stroke(); }
+  if (trackPath.length){ g.strokeStyle = 'rgba(56,225,255,.95)'; g.lineWidth = 3.5; g.beginPath();
+    let row = track; g.moveTo(xL - 6, y(row)); trackPath.forEach(k => { g.lineTo(P[k].x, y(row)); g.lineTo(P[k].x + P[k].w/2, y(row)); row = trackOut[k]; g.lineTo(P[k].x + P[k].w/2, y(row)); g.lineTo(P[k].x + P[k].w, y(row)); }); g.lineTo(xR - 4, y(row)); g.stroke(); }
+  // המשווים
+  const chg = new Set(CH[ti] || []), fs = Math.min(12, P[0].w*0.42);
+  net.comps.forEach((o, k) => { const x = P[k].x, bw = P[k].w, y0 = y(o.r) - bh, y1 = y(o.r + 1) + bh, ok = st.H[k] === fin.H[k] && st.L[k] === fin.L[k];
+    const onTrack = trackPath.includes(k), onCrit = adv && S.crit && net.crit.includes(k);
+    g.fillStyle = '#16213b'; g.fillRect(x, y0, bw, y1 - y0);
+    if (chg.has(k) && ti > 0 && tNow <= setOut + 1.2){ g.fillStyle = 'rgba(255,212,80,' + (0.25 + 0.6*fl) + ')'; g.fillRect(x, y0, bw, y1 - y0); }
+    g.strokeStyle = onTrack ? '#38e1ff' : onCrit ? '#ff4d5e' : ok ? 'rgba(70,227,154,.7)' : '#ff9f43'; g.lineWidth = onTrack || onCrit ? 2.2 : 1.3; g.strokeRect(x, y0, bw, y1 - y0);
+    if (bw >= 15){ g.fillStyle = '#eef3fb'; g.font = '600 ' + fs + 'px Consolas,monospace'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText(st.H[k], x + bw/2, y(o.r) + (y1 - y0)*0.18); g.fillText(st.L[k], x + bw/2, y(o.r + 1) - (y1 - y0)*0.18); }
+    if (bw >= 28 && s > 44){ g.fillStyle = 'rgba(147,163,191,.55)'; g.font = '9px Consolas,monospace'; g.textAlign = 'left'; g.textBaseline = 'alphabetic'; g.fillText('A', x + 2, y0 + 10); g.fillText('B', x + 2, y1 - 3); g.textAlign = 'right'; g.fillText('H', x + bw - 2, y0 + 10); g.fillText('L', x + bw - 2, y1 - 3); }
+  });
+  g.textBaseline = 'alphabetic';
+  // כניסות ויציאות
+  const chip = (x, yy, t, bg, bd) => { g.fillStyle = bg; g.strokeStyle = bd; g.lineWidth = 1.4; g.beginPath(); g.roundRect(x - 22, yy - 12, 44, 24, 7); g.fill(); g.stroke(); g.fillStyle = '#fff'; g.font = '700 14px Consolas,monospace'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(t, x, yy + 1); g.textBaseline = 'alphabetic'; };
+  inp.forEach((v, r) => chip(xL - 30, y(r), v, r === track ? '#0e3a48' : '#1f2a44', r === track ? '#38e1ff' : '#3a4a70'));
+  const sorted = [...inp].sort((a, b) => b - a), samp = clockOn() && tNow >= S.T, so = samp ? outsOf(ST[S.T], inp) : outsOf(st, inp);
+  so.forEach((v, r) => { const ok = v === sorted[r]; chip(xR + 30, y(r), v, ok ? '#123a28' : '#3a2410', ok ? '#46e39a' : '#ff9f43'); });
+  if (samp){ const good = so.join() === sorted.join(); g.fillStyle = good ? '#46e39a' : '#ff4d5e'; g.font = '700 13px Segoe UI,Arial'; g.textAlign = 'center'; g.fillText((good ? '✓' : '✗') + ' T=' + S.T, xR + 30, 13); }
+}
+/* תווית עברית על קנבס: כיוון מימין לשמאל רק לטקסט הזה */
+function heb(g, t, x, y, al){ g.save(); g.direction = 'rtl'; g.textAlign = al || 'right'; g.fillText(t, x, y); g.restore(); }
+/* עברית + ביטוי: העברית מימין, הביטוי (משמאל לימין) משמאלה. al = הצד שבו העוגן x */
+function mix(g, he, ma, x, y, al){ g.save(); g.direction = 'ltr'; const wh = g.measureText(he).width, wm = g.measureText(ma).width, x0 = al === 'left' ? x : x - wh - 5 - wm;
+  g.textAlign = 'left'; g.fillText(ma, x0, y); g.direction = 'rtl'; g.textAlign = 'right'; g.fillText(he, x0 + wm + 5 + wh, y); g.restore(); }
+/* ---------- ציר הזמן או ההיסטוגרמה ---------- */
+function drawB(){
+  const {g, w, h} = fitCanvas($('cvB')); g.clearRect(0, 0, w, h); if (!net) return;
+  const D = net.D, m = 46, base = h - 30, top = 22, X = t => m + t/(D + 1.5)*(w - 2*m);
+  g.fillStyle = '#7f8fab'; g.font = '12px Consolas,monospace'; g.textAlign = 'center'; for (let t = 0; t <= D + 1; t++) g.fillText(t, X(t), h - 12);
+  g.textAlign = 'right'; g.fillText('t/t₀', w - 6, h - 12);
+  const red = () => { g.strokeStyle = '#ff4d5e'; g.setLineDash([6, 4]); g.lineWidth = 1.8; g.beginPath(); g.moveTo(X(D), top - 8); g.lineTo(X(D), base); g.stroke(); g.setLineDash([]);
+    g.fillStyle = '#ff8a96'; g.font = '12px Segoe UI,Arial'; mix(g, 'מובטח:', '(2n−3)·t₀ = ' + D + '·t₀', X(D) - 6, top + 2); };
+  if (adv && S.bot === 'hist'){
+    const hh = histFor(S.n), tot = hh.reduce((a, b) => a + b, 0), mx = Math.max(...hh), bw = (X(1) - X(0))*0.7;
+    hh.forEach((c, t) => { if (!c) return; const hgt = c/mx*(base - top - 18); g.fillStyle = clockOn() && t > S.T ? '#ff4d5e' : t === D ? '#ff9f43' : '#fbbf24'; g.fillRect(X(t) - bw/2, base - hgt, bw, hgt);
+      g.fillStyle = '#cdd8ea'; g.font = '11px Consolas,monospace'; g.textAlign = 'center'; g.fillText((100*c/tot).toFixed(1) + '%', X(t), base - hgt - 4); });
+    red(); g.fillStyle = '#93a3bf'; g.font = '12px Segoe UI,Arial'; heb(g, 'מתי המוצא השתנה בפעם האחרונה (2000 קלטים אקראיים)', m, top + 2, 'left');
+    if (clockOn()){ g.strokeStyle = '#38e1ff'; g.lineWidth = 2; g.beginPath(); g.moveTo(X(S.T + 0.5), top + 10); g.lineTo(X(S.T + 0.5), base); g.stroke(); g.fillStyle = '#38e1ff'; g.font = '12px Segoe UI,Arial'; mix(g, 'אדום = המוצא עוד השתנה אחרי הדגימה', 'T = ' + S.T + '·t₀:', m, top + 22, 'left'); }
+    g.strokeStyle = 'rgba(147,163,191,.4)'; g.beginPath(); g.moveTo(m, base); g.lineTo(w - m, base); g.stroke(); return;
+  }
+  const cnt = CH.map(c => c.length), mx = Math.max(4, ...cnt), bw = (X(1) - X(0))*0.62;
+  cnt.forEach((c, t) => { if (t === 0 || t > tNow) return; const hgt = c/mx*(base - top - 14); g.fillStyle = '#fbbf24'; g.fillRect(X(t) - bw/2, base - hgt, bw, hgt);
+    if (c){ g.fillStyle = '#cdd8ea'; g.font = '11px Consolas,monospace'; g.textAlign = 'center'; g.fillText(c, X(t), base - hgt - 4); } });
+  g.strokeStyle = 'rgba(147,163,191,.4)'; g.beginPath(); g.moveTo(m, base); g.lineTo(w - m, base); g.stroke();
+  red();
+  if (tNow >= setOut){ g.strokeStyle = '#46e39a'; g.lineWidth = 2.4; g.beginPath(); g.moveTo(X(setOut), top + 8); g.lineTo(X(setOut), base); g.stroke();
+    g.fillStyle = '#7dffb4'; g.font = '12px Segoe UI,Arial'; mix(g, 'המוצא התייצב:', setOut + '·t₀', X(setOut) - 6, top + 22); }
+  if (clockOn()){ g.strokeStyle = '#38e1ff'; g.lineWidth = 2; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(X(S.T), top + 30); g.lineTo(X(S.T), base); g.stroke(); g.setLineDash([]); g.fillStyle = '#38e1ff'; g.font = '12px Segoe UI,Arial'; mix(g, 'דגימה:', 'T = ' + S.T + '·t₀', X(S.T) + 5, top + 40, 'left'); }
+  g.fillStyle = 'rgba(255,255,255,.75)'; g.fillRect(X(Math.min(tNow, D + 1.5)) - 1, top - 6, 2, base - top + 6);
+  g.fillStyle = '#93a3bf'; g.font = '12px Segoe UI,Arial'; heb(g, 'משווים שהשתנו בכל צעד', m, top + 2, 'left');
+}
+/* לחיצה על מספר בכניסה: מעקב (במצב המורחב) */
+$('cvN').addEventListener('click', e => { if (!adv || !S.follow || !G.y) return; const r = $('cvN').getBoundingClientRect(), x = e.clientX - r.left, yy = e.clientY - r.top;
+  for (let i = 0; i < net.n; i++) if (Math.abs(x - (G.xL - 30)) < 26 && Math.abs(yy - G.y(i)) < 14){ track = track === i ? -1 : i; computeTrack(); dirty = true; return; } });
+$('cvN').addEventListener('mousemove', e => { if (!adv || !S.follow || !G.y) { $('cvN').style.cursor = 'default'; return; } const r = $('cvN').getBoundingClientRect(), x = e.clientX - r.left; $('cvN').style.cursor = Math.abs(x - (G.xL - 30)) < 26 ? 'pointer' : 'default'; });
+function tick(dt){
+  const tgt = adv && S.lay === 'time' ? 1 : 0; if (layK !== tgt){ layK = clamp(layK + Math.sign(tgt - layK)*dt/0.8, 0, 1); }
+  const was = tNow; if (tNow < net.D + 1.5) tNow = Math.min(net.D + 1.5, tNow + dt/STEP);
+  if ((was < setOut) !== (tNow < setOut) || Math.floor(was) !== Math.floor(tNow)) updPanel();
+  drawN(); drawB();
+}
+rebuild();
+/* פתיח: ממיין של 4 מספרים, והמסלול הארוך באדום */
+(function(){
+  const n = 4, nt = build(n), y = r => 30 + r*50, xs = {}; let h = '', x = 46;
+  for (let c = 0; c < n - 1; c++){ nt.comps.forEach((o, k) => { if (o.c === c) xs[k] = x + (n - 2 - o.r)*40; }); x += (n - 1 - c)*40 + 26; }
+  for (let r = 0; r < n; r++) h += '<line x1="14" y1="' + y(r) + '" x2="326" y2="' + y(r) + '" stroke="#5b6b8c" stroke-width="1.5"/>';
+  nt.comps.forEach((o, k) => { h += '<rect x="' + xs[k] + '" y="' + (y(o.r) - 9) + '" width="30" height="' + (y(o.r + 1) - y(o.r) + 18) + '" rx="3" fill="#1d2a48" stroke="#8fb3ff"/>' +
+    '<text x="' + (xs[k] + 3) + '" y="' + (y(o.r) + 4) + '" font-size="9" fill="#cdd8ea" direction="ltr" text-anchor="start">A  H</text><text x="' + (xs[k] + 3) + '" y="' + (y(o.r + 1) + 2) + '" font-size="9" fill="#cdd8ea" direction="ltr" text-anchor="start">B  L</text>'; });
+  h += '<polyline fill="none" stroke="#ff4d5e" stroke-width="3" stroke-linejoin="round" points="' + nt.crit.map(k => (xs[k] + 15) + ',' + ((y(nt.comps[k].r) + y(nt.comps[k].r + 1))/2)).join(' ') + '"/>';
+  h += '<text x="170" y="222" fill="#ff8a96" font-size="12" text-anchor="middle" direction="ltr">longest path: 2n − 3 = 5 comparators</text>';
+  $('probSvg').innerHTML = h;
+})();
+/* בדוק את עצמך */
+$('qOpts').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#qOpts button').forEach(x => x.classList.remove('right', 'wrong'));
+  const ok = b.dataset.a === 'a'; b.classList.add(ok ? 'right' : 'wrong');
+  if (!ok) document.querySelector('#qOpts button[data-a="a"]').classList.add('right');
+  $('qFb').innerHTML = (ok ? '✓ נכון! ' : '✗ לא בדיוק. ') + "<bdi dir=\"ltr\">n(n − 1)/2 = 16·15/2 = 120</bdi> משווים, והמסלול הארוך הוא <bdi dir=\"ltr\">2n − 3 = 29</bdi> משווים, ולכן קלט חדש רק כל <bdi dir=\"ltr\">29·t₀</bdi>. (15 הם רק העמודה הראשונה, בלי האלכסון.) \"במקביל\" לא עוזר כל עוד אין רגיסטרים בפנים, וזה בדיוק הנושא של חלק ב. במעבדה: n = 10 נותן 45 משווים ו-17. <a class=\"plink\" href=\"ממיין בחומרה – חלק ב.html\">לחלק ב: איך מכניסים קלט בכל t₀ ←</a>";
+  $('qFb').classList.add('on'); $('qGo').style.display = '';
+});
+$('qGo').addEventListener('click', () => { if (adv) setMode(false); S.n = 10; syncUI(); onChange('n'); $('lab').scrollIntoView({behavior:'smooth'}); });
+syncUI();
+if (location.hash === '#adv') setMode(true);
+requestAnimationFrame(loop);
+</script>
+<script>
+/* ======================================================================
+   הדגמה אוטומטית: כפתור "▶ הדגמה" ליד כל ניסוי. סמן "רפאים" מבצע את הניסוי במעבדה בזמן אמת,
+   וההסבר מוצג במסגרת מתחת למעבדה.
+   ====================================================================== */
+(function(){
+'use strict';
+  const sv = (k, v) => document.querySelector('[data-seg="' + k + '"] button[data-v="' + v + '"]');
+  async function orbitCam(degs, dur){ const c = V3.cam, t = V3.ctl.target, r0 = c.position.clone().sub(t), a0 = Math.atan2(r0.x, r0.z), rr = Math.hypot(r0.x, r0.z);
+    await anim(dur || 3000, k => { const a = a0 + degs*Math.PI/180*k; c.position.set(t.x + rr*Math.sin(a), c.position.y, t.z + rr*Math.cos(a)); c.lookAt(t); }); }
+  async function to3D(){ await ensureAdv(); if (S.view !== '3d') await click(viewBtn('3d')); await waitFor(() => V3.ready, 20000); await sleep(600); }
+
+  const S3 = [];
+  const SCRIPTS = [
+    async () => { await dragSlider(byId('rN'), 8, 900); await click(sv('pat', 'rnd')); say('קלט חדש נכנס: הגל של השינויים מתחיל להתפשט'); await sleep(4200);
+      say('הקווים הופכים מכתום לירוק, צעד אחרי צעד'); await sleep(3500); say('המוצא התייצב. ההבטחה של המעגל: רק אחרי 13·t₀'); await sleep(3500); },
+    async () => { await dragSlider(byId('rN'), 8, 700); for (let i = 0; i < 3; i++){ await click(byId('send')); say('קלט ' + (i + 1) + ': מחכים לרגע שבו המוצא מתייצב...'); await sleep(7600); }
+      say('הזמן בפועל משתנה, אבל המעגל לא יודע מתי סיים: תמיד מחכים 13·t₀'); await sleep(4000); },
+    async () => { await dragSlider(byId('rN'), 4, 1200); say('n = 4: שישה משווים, מובטח 5·t₀'); await sleep(3500); await dragSlider(byId('rN'), 8, 2200); say('n = 8: 28 משווים, 13·t₀'); await sleep(3500);
+      await dragSlider(byId('rN'), 10, 1500); say('n = 10: 45 משווים (ריבועי), אבל רק 17·t₀ (ליניארי)'); await sleep(4500); },
+    async () => { await dragSlider(byId('rN'), 8, 700); await click(sv('pat', 'sorted')); say('קלט ממוין: הגדול כבר למעלה'); await sleep(8000);
+      await click(sv('pat', 'rev')); say('קלט הפוך: כמעט כל המשווים מחליפים'); await sleep(8000); say('גם הקלט ה"קשה" לא עובר את 2n − 3'); await sleep(3000); await click(sv('pat', 'rnd')); },
+    async () => { await ensureAdv(); await dragSlider(byId('rN'), 8, 700); await toggle(byId('cCrit'), true); say('המסלול הארוך: למעלה בעמודה הראשונה, ואז באלכסון'); await sleep(4500);
+      await click(sv('lay', 'time')); say('סידור לפי זמן: כל משווה זז לפי העומק שלו'); await sleep(3500); await click(byId('send')); say('הגל עובר כחזית, והרוחב הוא 2n − 3'); await sleep(7500); await click(sv('lay', 'slide')); await toggle(byId('cCrit'), false); },
+    async () => { await ensureAdv(); await dragSlider(byId('rN'), 8, 700); say('כמה פעמים המוצא משתנה עד הצעד ה-13 ממש? חזו...'); await sleep(3000);
+      await click(sv('bot', 'hist')); say('בכ-6% מהקלטים: נדיר, אבל לא אפס'); await sleep(5500); await click(sv('bot', 'act')); },
+    async () => { await ensureAdv(); await dragSlider(byId('rN'), 8, 700); await click(sv('bot', 'hist')); await dragSlider(byId('rT'), 12, 1500); say('T = 12: הכול מימין לקו הכחול הוא תוצאה שגויה'); await sleep(4000);
+      await dragSlider(byId('rT'), 10, 1800); say('T = 10: יותר ממחצית הקלטים נכשלים'); await sleep(3500); await click(sv('bot', 'act')); await click(byId('send')); say('שולחים קלט ודוגמים ב-T = 10...'); await sleep(7000); await dragSlider(byId('rT'), 13, 1000); },
+    async () => { await ensureAdv(); await dragSlider(byId('rN'), 8, 700); await toggle(byId('cFollow'), true); say('לוחצים על המספר שנכנס למטה...');
+      const cv = byId('cvN'), r = cv.getBoundingClientRect(); await moveTo(r.left + G.xL - 30, r.top + G.y(7), 1200); await press(); track = 7; computeTrack(); dirty = true;
+      say('הקו הכחול: המסלול של המספר הזה. נסו גם מספרים אחרים'); await sleep(4500); await moveTo(r.left + G.xL - 30, r.top + G.y(3), 900); await press(); track = 3; computeTrack(); dirty = true; await sleep(4000); }
+  ].map((fn, i) => S3.includes(i) ? fn : async () => { if (S.view === '3d') await click(viewBtn('2d')); return fn(); });
+  const byId = id => document.getElementById(id);
+  const LAB = document.querySelector('section.lab'), VIEW = LAB.querySelector('.view');
+  const cur = byId('demoCursor'), D = {alive:0, i:-1, x:0, y:0};
+  const sleep = ms => { const tok = D.alive; return new Promise(r => setTimeout(r, ms)).then(() => { if (D.alive !== tok) throw 'stop'; }); };
+  const ease = k => k*k*(3 - 2*k);
+  function anim(dur, fn){
+    const tok = D.alive;
+    return new Promise((res, rej) => { const t0 = performance.now();
+      (function step(now){ if (D.alive !== tok) return rej('stop'); const k = Math.min(1, (now - t0)/dur); fn(ease(k)); if (k < 1) requestAnimationFrame(step); else res(); })(t0); });
+  }
+  function place(x, y){ D.x = x; D.y = y; cur.style.transform = 'translate(' + (x - 3) + 'px,' + (y - 2) + 'px)'; }
+  function moveTo(x, y, dur){ const x0 = D.x, y0 = D.y; dur = dur || Math.min(1100, 350 + Math.hypot(x - x0, y - y0)*0.9); return anim(dur, k => place(x0 + (x - x0)*k, y0 + (y - y0)*k)); }
+  const center = el => { const r = el.getBoundingClientRect(); return [r.left + r.width/2, r.top + r.height/2]; };
+  function ripple(){ const r = document.createElement('div'); r.className = 'demoRipple'; r.style.left = D.x + 'px'; r.style.top = D.y + 'px'; document.body.appendChild(r); setTimeout(() => r.remove(), 600); }
+  async function press(){ cur.classList.add('down'); ripple(); await sleep(140); cur.classList.remove('down'); }
+  async function click(el){ if (!el) return; await moveTo(...center(el)); await press(); el.click(); await sleep(400); }
+  async function select(el, v){ if (el.value === v) return; await moveTo(...center(el)); await press(); el.value = v; el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(500); }
+  async function toggle(el, want){                   // מתג (checkbox מוסתר בתוך label)
+    if (el.checked === want) return;
+    await moveTo(...center(el.closest('label') || el)); await press(); el.click(); await sleep(400);
+  }
+  async function dragSlider(el, to, dur){            // גרירה אמיתית: אירועי input בזמן אמת ו-change בסוף
+    const r = el.getBoundingClientRect(), mn = +el.min, mx = +el.max, rtl = getComputedStyle(el).direction === 'rtl';
+    const xOf = v => { const f = (v - mn)/(mx - mn); return rtl ? r.right - 8 - f*(r.width - 16) : r.left + 8 + f*(r.width - 16); };
+    const from = +el.value, y = r.top + r.height/2;
+    await moveTo(xOf(from), y); cur.classList.add('down');
+    try { await anim(dur || 1500, k => { const v = from + (to - from)*k; el.value = v; el.dispatchEvent(new Event('input', {bubbles:true})); place(xOf(+el.value), y); }); }
+    finally { cur.classList.remove('down'); }
+    el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(300);
+  }
+  async function waitFor(fn, limit){ const t0 = performance.now(); while (!fn() && performance.now() - t0 < (limit || 30000)) await sleep(200); }
+  async function ensureAdv(){ if (!document.body.classList.contains('adv')){ say('פותחים את המצב המורחב'); await click(byId('more')); await sleep(900); } }
+  const say = t => { byId('demoSay').textContent = t; };
+  const seg = (id, attr, v) => document.querySelector('#' + id + ' button[data-' + attr + '="' + v + '"]');
+  const viewBtn = v => document.querySelector('#views button[data-view="' + v + '"]');
+
+  async function runDemo(i){
+    stopDemo(false);
+    const tok = D.alive; D.i = i;
+    const li = document.querySelectorAll('.exp')[i];
+    byId('demoNum').textContent = i + 1; byId('demoTitle').innerHTML = li.querySelector('.task').innerHTML;
+    byId('demoText').innerHTML = li.querySelector('.ans').innerHTML; say('עוברים למעבדה...');
+    byId('demoStop').style.display = '';
+    document.body.classList.add('demo');
+    LAB.scrollIntoView({behavior:'smooth', block:'start'});
+    try {
+      await sleep(850);
+      const r = VIEW.getBoundingClientRect(); place(r.left + r.width/2, r.top + r.height/2); cur.classList.add('on');
+      await SCRIPTS[i]();
+      if (D.alive === tok){ cur.classList.remove('on'); byId('demoStop').style.display = 'none'; }
+    } catch (e) { if (e !== 'stop') console.warn(e); }
+  }
+  function stopDemo(close){ D.alive++; cur.classList.remove('on', 'down'); if (close){ document.body.classList.remove('demo'); D.i = -1; } }
+  byId('demoStop').addEventListener('click', () => { stopDemo(false); say('ההדגמה נעצרה. אפשר להמשיך לשחק במעבדה בעצמכם.'); byId('demoStop').style.display = 'none'; });
+  byId('demoAgain').addEventListener('click', () => { if (D.i >= 0) runDemo(D.i); });
+  byId('demoClose').addEventListener('click', () => stopDemo(true));
+  document.querySelectorAll('.exp').forEach((li, i) => {
+    if (!SCRIPTS[i]) return;
+    const b = document.createElement('button'); b.className = 'pbtn'; b.type = 'button'; b.title = 'הדגמה אוטומטית במעבדה';
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>הדגמה';
+    li.querySelector('.top').insertBefore(b, li.querySelector('.xbtn'));
+    b.addEventListener('click', () => runDemo(i));
+  });
+  if (location.hash.startsWith('#demo')) setTimeout(() => runDemo(+location.hash.slice(5) || 0), 400);
+
+
+})();
+</script>
+<!--TEX-BODY-->
+<script>
+/* ======================================================================
+   tex_runtime.js: הצגת נוסחאות ב-LaTeX (KaTeX) בכל הסימולציות
+   - כתיבה ישירה ב-LaTeX: \( ... \) בתוך הטקסט, או \[ ... \] לנוסחה בשורה נפרדת.
+   - תאימות לאחור: כל <bdi dir="ltr">…</bdi> (וגם .law .eq) מומר אוטומטית ל-LaTeX.
+   - עובד גם על טקסט שנוצר תוך כדי ריצה (פאנלים, משוב, מסגרת ההדגמה) בעזרת MutationObserver.
+   - אם KaTeX לא נטען (אין רשת), הטקסט המקורי נשאר כמו שהוא.
+   הקובץ הזה מוזרק לכל סימולציה ע"י tex_inject.js, וגם משמש את הבדיקה ב-node.
+   ====================================================================== */
+(function(root){
+'use strict';
+const GREEK = {'α':'\\alpha','β':'\\beta','γ':'\\gamma','δ':'\\delta','ε':'\\varepsilon','ϵ':'\\epsilon','ζ':'\\zeta','η':'\\eta','θ':'\\theta','ϑ':'\\vartheta','ι':'\\iota','κ':'\\kappa','λ':'\\lambda','μ':'\\mu','µ':'\\mu','ν':'\\nu','ξ':'\\xi','π':'\\pi','ρ':'\\rho','σ':'\\sigma','τ':'\\tau','υ':'\\upsilon','φ':'\\varphi','ϕ':'\\phi','χ':'\\chi','ψ':'\\psi','ω':'\\omega',
+  'Γ':'\\Gamma','Δ':'\\Delta','Θ':'\\Theta','Λ':'\\Lambda','Ξ':'\\Xi','Π':'\\Pi','Σ':'\\Sigma','Φ':'\\Phi','Ψ':'\\Psi','Ω':'\\Omega'};
+const SYM = {'·':'\\cdot','⋅':'\\cdot','×':'\\times','÷':'\\div','−':'-','–':'-','≈':'\\approx','≃':'\\simeq','≅':'\\cong','≤':'\\le','≥':'\\ge','≠':'\\neq','≡':'\\equiv','≜':'\\triangleq',
+  '→':'\\to','←':'\\leftarrow','⇒':'\\Rightarrow','⇔':'\\Leftrightarrow','↔':'\\leftrightarrow','∞':'\\infty','∂':'\\partial','∇':'\\nabla','∮':'\\oint','∯':'\\oiint','∫':'\\int','∑':'\\sum',
+  '∝':'\\propto','±':'\\pm','∓':'\\mp','°':'^{\\circ}','′':"'",'″':"''",'⌊':'\\lfloor','⌋':'\\rfloor','⌈':'\\lceil','⌉':'\\rceil','∈':'\\in','∉':'\\notin','≫':'\\gg','≪':'\\ll',
+  '½':'\\tfrac{1}{2}','¼':'\\tfrac{1}{4}','⊙':'\\odot','⊗':'\\otimes','∘':'\\circ','ℏ':'\\hbar','‖':'\\|','⟨':'\\langle','⟩':'\\rangle','∠':'\\angle','…':'\\ldots','⋯':'\\cdots',
+  '%':'\\%','#':'\\#','&':'\\&','$':'\\$','{':'\\{','}':'\\}','~':'\\sim','∀':'\\forall','∃':'\\exists','∧':'\\wedge','∨':'\\vee','¬':'\\neg','⊥':'\\perp','∥':'\\parallel','√':'\\surd','∖':'\\setminus','∪':'\\cup','∩':'\\cap','⊂':'\\subset'};
+const SUPS = {'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁺':'+','⁻':'-','⁼':'=','⁽':'(','⁾':')','ⁿ':'n','ⁱ':'i','ᵀ':'T'};
+const SUBS = {'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9','₊':'+','₋':'-','₌':'=','₍':'(','₎':')','ₐ':'a','ₑ':'e','ₒ':'o','ₓ':'x','ₕ':'h','ₖ':'k','ₗ':'l','ₘ':'m','ₙ':'n','ₚ':'p','ₛ':'s','ₜ':'t','ᵢ':'i','ⱼ':'j','ᵣ':'r','ᵤ':'u','ᵥ':'v'};
+const FUNCS = {sin:1, cos:1, tan:1, cot:1, sec:1, csc:1, arcsin:1, arccos:1, arctan:1, sinh:1, cosh:1, tanh:1, ln:1, log:1, exp:1, lim:1, max:1, min:1, det:1, arg:1, sup:1, inf:1, deg:1, dim:1, ker:1, Pr:1};
+const OPNAMES = {sinc:1, erfc:1, erf:1, sgn:1, sign:1, Re:1, Im:1, argmax:1, argmin:1, rect:1, tri:1, diag:1, rank:1, tr:1, var:1, Var:1, cov:1, Cov:1};
+const UNITS = {nm:1, 'µm':1, um:1, mm:1, cm:1, km:1, m:1, ps:1, ns:1, fs:1, 'µs':1, ms:1, s:1, Hz:1, kHz:1, MHz:1, GHz:1, THz:1, dB:1, dBm:1, mW:1, 'µW':1, nW:1, W:1, mA:1, 'µA':1, A:1, V:1, mV:1, J:1, eV:1, rad:1, K:1, 'Ω':1, kg:1, g:1, Gb:1, Mb:1, kb:1, Tb:1, b:1, bit:1, Gbit:1, Mbit:1, Bd:1, GBd:1, baud:1, mrad:1, sr:1};
+const TEXT2 = {in:1, th:1, rx:1, tx:1, sp:1, ex:1, op:1, ac:1, dc:1, on:1, of:1, or:1, if:1, NA:1, ER:1, OK:1};
+const isL = c => /[A-Za-z]/.test(c), isD = c => /[0-9]/.test(c);
+const decode = s => s.replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+// ממיר מחרוזת (טקסט בלבד, אחרי טיפול בתגיות) ל-LaTeX
+function conv(s){
+  let out = '', i = 0, prevNum = false;
+  const cmd = c => { out += c + (/[A-Za-z]$/.test(c) ? ' ' : ''); };
+  while (i < s.length){
+    const c = s[i];
+    if (c === '\u0001'){ const j = s.indexOf('\u0002', i); out += s.slice(i + 1, j); i = j + 1; prevNum = false; continue; }   // קטע שכבר הומר (sub/sup)
+    if (isD(c) || (c === '.' && isD(s[i + 1] || ''))){ let j = i; while (j < s.length && /[0-9.,]/.test(s[j]) && !(s[j] === ',' && !isD(s[j + 1] || ''))) j++; out += s.slice(i, j).replace(/,/g, '{,}'); i = j;
+      // יחידות אחרי מספר: 1550nm, 0.2 dB/km, 10 MHz·km, 50Ω
+      let k = i; while (s[k] === ' ') k++;
+      const m = /^([A-Za-zµΩ]+(?:[\/·][A-Za-zµΩ]+)*)/.exec(s.slice(k));
+      if (m){ let u = m[1]; const parts = () => u.split(/[\/·]/);
+        while (/[\/·]/.test(u) && !parts().every(p => UNITS[p])) u = u.replace(/[\/·][^\/·]*$/, '');    // רק חלקים שהם באמת יחידות
+        if (parts().every(p => UNITS[p]) && !(s[k + u.length] && isL(s[k + u.length]))){
+          out += '\\,' + u.split(/([\/·])/).map(p => p === '/' ? '/' : p === '·' ? '\\cdot ' : p === 'Ω' ? '\\Omega ' : p[0] === 'µ' ? '\\mu\\text{' + p.slice(1) + '}' : '\\text{' + p + '}').join('');
+          i = k + u.length; } }
+      prevNum = true; continue; }
+    if (isL(c)){ let j = i; while (j < s.length && isL(s[j])) j++; const w = s.slice(i, j);
+      if (s[j] === '̄'){ out += (w.length > 1 ? w.slice(0, -1) : '') + '\\bar{' + w.slice(-1) + '}'; i = j + 1; continue; }
+      if (FUNCS[w]) cmd('\\' + w);
+      else if (OPNAMES[w]) out += '\\operatorname{' + w + '}';
+      else if (w.length === 1) out += w;
+      else if (w.length >= 3 || TEXT2[w] || /^[A-Z][A-Za-z]/.test(w) || UNITS[w]) out += '\\text{' + w + '}';
+      else out += w;                                                    // מכפלה של שני משתנים, למשל kz או pa
+      i = j; prevNum = false; continue; }
+    if (SUPS[c] !== undefined){ let t = ''; while (i < s.length && SUPS[s[i]] !== undefined){ t += SUPS[s[i]]; i++; } out += '^{' + t + '}'; continue; }
+    if (SUBS[c] !== undefined){ let t = ''; while (i < s.length && SUBS[s[i]] !== undefined){ t += SUBS[s[i]]; i++; } out += '_{' + t + '}'; continue; }
+    if (c === '√'){                                                       // שורש: √(…) או √x
+      if (s[i + 1] === '('){ let d = 0, j = i + 1; for (; j < s.length; j++){ if (s[j] === '(') d++; else if (s[j] === ')'){ d--; if (!d) break; } }
+        out += '\\sqrt{' + conv(s.slice(i + 2, j)) + '}'; i = j + 1; continue; }
+      let j = i + 1; const m = /^(\u0001[^\u0002]*\u0002|[0-9.]+|[A-Za-z](?:[₀-₉]+)?|[α-ωΑ-Ω](?:[₀-₉]+)?)/.exec(s.slice(j));
+      if (m){ out += '\\sqrt{' + conv(m[1]) + '}'; i = j + m[1].length; continue; }
+      out += '\\surd '; i++; continue; }
+    if (c === 'Σ'){ cmd('\\sum'); i++; continue; }
+    if (GREEK[c]){ cmd(GREEK[c]); i++; continue; }
+    if (SYM[c] !== undefined){ cmd(SYM[c]); i++; continue; }
+    if (c === '\\'){ out += '\\backslash '; i++; continue; }
+    if (c === ' '){ if (!/ $/.test(out)) out += ' '; i++; continue; }
+    if (c === '^' || c === '_'){ out += c; i++; continue; }
+    if (/[̀-ͯ]/.test(c)){ i++; continue; }
+    out += c; i++;
+  }
+  return out;
+}
+// <bdi> פנימי: מטפלים ב-<sub>/<sup>/<b>/<i>, ואז ממירים. מחזיר null אם יש עברית (משאירים כמו שהוא)
+function toTeX(html){
+  if (/[֐-׿]/.test(html)) return null;
+  let s = html.replace(/<br\s*\/?>/gi, ' ');
+  for (let guard = 0; guard < 20 && /<su[bp]>/i.test(s); guard++)
+    s = s.replace(/<(sub|sup)>((?:(?!<su[bp]>)[\s\S])*?)<\/\1>/i, (m, t, inner) => '\u0001' + (t.toLowerCase() === 'sub' ? '_' : '^') + '{' + conv(decode(inner.replace(/<[^>]+>/g, ''))) + '}\u0002');
+  s = decode(s.replace(/<[^>]+>/g, ''));
+  // סימנים מעל אות (גג, קו, גל, וקטור, נקודה): β̂ ⇒ \hat{\beta}
+  const ACC = {'̂':'\\hat', '̄':'\\bar', '̃':'\\tilde', '⃗':'\\vec', '̇':'\\dot'};
+  s = s.replace(/([A-Za-zα-ωΑ-Ω])([̂̄̃⃗̇])/g, (m, ch, a) => '\u0001' + ACC[a] + '{' + conv(ch) + '}\u0002');
+  // סוגריים: ה-Σ בתחילת ביטוי כמו Σ(x) הוא סכום. ה-Σ בתוך מטריצה (GMM) נשאר \Sigma כשאחריו ⁻¹ או ₖ
+  s = s.replace(/Σ(?=⁻|[ₖ₀-₉ᵢⱼ]+⁻|[ₖ₀-₉ᵢⱼ]+\s*(?:[,)|\]]|$))/g, '\u0003');   // מטריצת שונות (Σ⁻¹, Σₖ⁻¹, "μₖ, Σₖ)") ולא סכום
+  let t = conv(s).replace(/\u0003/g, '\\Sigma ');
+  return t.trim();
+}
+root.toTeX = toTeX;
+if (typeof module !== 'undefined') { module.exports = {toTeX}; return; }
+/* ---------- דפדפן: רינדור ---------- */
+const SEL = 'bdi[dir="ltr"], .law .eq, .fml, .eqb';
+function renderOne(el){
+  if (el.querySelector('.katex') || el.closest('.calc') || el.closest('.katex')) return;
+  const tex = toTeX(el.innerHTML); if (tex === null || !tex) return;
+  try { el.innerHTML = katex.renderToString(tex, {throwOnError:true, output:'html', strict:false}); el.classList.add('tex-done'); } catch (e) { /* משאירים את הטקסט המקורי */ }
+}
+function delim(rootEl){
+  if (!window.renderMathInElement) return;
+  try { renderMathInElement(rootEl, {delimiters:[{left:'\\(', right:'\\)', display:false}, {left:'\\[', right:'\\]', display:true}], ignoredClasses:['calc', 'katex'], throwOnError:false}); } catch (e) {}
+}
+// סורקים רק את מה שהשתנה (פאנלים מתעדכנים הרבה), כדי לא לעבור על כל הדף בכל פריים
+let pending = null;
+// סימולציות ישנות סימנו סמלים בודדים בהדגשה (<b>α</b>, <b>β₁</b>): ממירים רק אם זה סמל מתמטי קצר
+const SYMB = /^[\sA-Za-z0-9.,=+\-−·×\/()|α-ωΑ-Ωµ∇∂√∑Σ≈≤≥′₀-₉ₐ-ₜᵢⱼ⁰-⁹⁻⁺ⁿᵀ̂̄̃]{1,16}$/, HASM = /[α-ωΑ-Ωµ∇∂√∑Σ₀-₉ₐ-ₜᵢⱼ⁰-⁹⁻ᵀ̂̄]/;
+function boldMath(el){ const t = el.textContent; return ![...el.children].some(c => !/^(SUB|SUP)$/.test(c.tagName)) && SYMB.test(t) && HASM.test(t) && !/[A-Za-z]{2,}/.test(t); }
+function scan(rootEl){
+  if (rootEl.matches && rootEl.matches(SEL)) renderOne(rootEl);
+  if (rootEl.querySelectorAll) rootEl.querySelectorAll(SEL).forEach(renderOne);
+  if (rootEl.querySelectorAll) rootEl.querySelectorAll('b').forEach(b => { if (!b.closest('.calc, .katex, #topbar, svg') && boldMath(b)) renderOne(b); });
+  const host = rootEl.nodeType === 1 ? rootEl : rootEl.parentElement; if (host) delim(host);
+}
+function flush(){ const roots = pending; pending = null; roots.forEach(r => { if (r.isConnected) scan(r); }); }
+function start(){
+  if (!window.katex) return setTimeout(start, 120);
+  scan(document.body);
+  new MutationObserver(muts => {
+    for (const m of muts){
+      const t = m.target.nodeType === 1 ? m.target : m.target.parentElement;
+      if (!t || t.closest('.katex')) continue;
+      const host = t.closest(SEL) || t;
+      if (!pending){ pending = new Set(); setTimeout(flush, 16); }   // טיימר ולא rAF: עובד גם בלשונית ברקע
+      pending.add(host);
+    }
+  }).observe(document.body, {childList:true, subtree:true, characterData:true});
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<!--/TEX-BODY-->
+</body>
+</html>

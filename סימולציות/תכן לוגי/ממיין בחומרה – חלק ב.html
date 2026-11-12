@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ממיין צירופי: כמה זמן מחכים לתוצאה?</title>
+<title>ממיין ב-pipeline: איפה לחתוך?</title>
 <!--
   תדריך (קמפץ)
-  1. האהה: ממיין צירופי של n מספרים (Bubble Sort בחומרה, n(n−1)/2 משווים) מבטיח תוצאה רק אחרי המסלול הארוך ביותר, (2n − 3)·t₀. רוב הקלטים מתייצבים מהר יותר, אבל המעגל לא יודע מתי, ולכן קלט חדש נכנס רק כל (2n − 3)·t₀: השהיה Θ(n), תפוקה Θ(1/n).
-  2. הבלבול: "כל המשווים עובדים במקביל, אז זה מהיר", "המסלול הארוך כמעט אף פעם לא קורה, אז אפשר להתעלם ממנו", "יותר חומרה = פחות זמן".
-  3. הצורה: סיפור עם ציר זמן. גל של שינויים עובר ברשת המשווים (מודל השהיה של t₀ לכל משווה), והאותות נצבעים כתום עד שהם מגיעים לערך הסופי. למטה ציר זמן של הפעילות, עם הזמן בפועל מול הזמן המובטח. במצב המורחב גם "שבור את זה" (שעון מהיר מדי) ו"חזה ואז גלה" (כמה פעמים קורה המקרה הגרוע?). דו-ממד.
-  4. הבסיס: מספר הכניסות n, סוג הקלט (אקראי / ממוין / הפוך) וכפתור "שלח קלט חדש". מורחב: סידור "לפי זמן" (ציר x = עומק), הדגשת המסלול הארוך, מחזור שעון T שדוגם את המוצא, היסטוגרמה של זמני ההתייצבות, ומעקב אחרי מספר בודד.
-  5. נדחה: ה-pipeline (שקפים 12–16) עובר לחלק ב. השהיות שונות לכל משווה ו-contamination delay. תלת-ממד (אין בו ממד שלישי פיזיקלי, רק יסתיר את הרשת).
-  6. פיצול: כן. חלק א: הממיין הצירופי (השקפים 9–11). חלק ב: הממיין ב-pipeline (שקפים 12–16). מקור: "3-Pipeline", בר-אילן.
+  1. האהה: pipeline לא מקצר את הזמן של בעיה אחת. הוא מאפשר לכמה בעיות להיות בתוך המעגל בו-זמנית, כל אחת בשלב אחר. השעון נקבע לפי השלב האיטי ביותר, ולכן חשוב איפה חותכים: חיתוך לעמודות משאיר בכל שלב שרשרת של Θ(n) משווים, וההשהיה מתפוצצת ל-Θ(n²). חיתוך באלכסון (לפי עומק) משאיר משווה אחד בכל שלב, והתפוקה קופצת ל-Θ(1).
+  2. הבלבול: "pipeline מקצר את ההשהיה", "כל חיתוך עוזר", "רגיסטרים בחינם".
+  3. הצורה: השוואה של אסטרטגיות חיתוך על אותה רשת. למעלה הרשת עם עמודות רגיסטרים (ריבועים כתומים) ובעיות צבעוניות שזורמות בה. למטה דיאגרמת מרחב-זמן (שלב מול זמן) שבה רואים בעין את ההשהיה ואת הקצב. דו-ממד.
+  4. הבסיס: אסטרטגיית החיתוך (צירופי / עמודות / אלכסונים) ו-n. מורחב: מיון "זוגי-אי-זוגי" (n שלבים, שקף 15), חומרה חוזרת בלולאה (שקף 16), תקורת רגיסטר t_reg = t_pcq + t_setup (שקפים 21–22), וטבלת השוואה של כל האסטרטגיות.
+  5. נדחה: retiming ו-K-pipe (שקפים 17–20), בעיות hold, ערכי המספרים בתוך הרגיסטרים (הנושא כאן הוא תזמון, והמיון עצמו בחלק א), תלת-ממד.
+  6. פיצול: זה חלק ב. חלק א: הממיין הצירופי. מקור: "3-Pipeline", בר-אילן, שקפים 12–16.
 -->
 <style>
 :root{--bg:#05070d;--card:#0c1222;--line:#1f2b44;--txt:#e3eaf6;--mut:#93a3bf;--acc:#6cb8ff;--grn:#46e39a;--red:#ff4d5e;--yel:#ffd479;--vio:#9d8bff}
@@ -146,9 +146,8 @@ body.adv .basic-only{display:none!important}
   .morebtn,.lessbtn{position:static;margin:12px auto 18px;animation:none}
 }
 
-.sendbtn{display:block;width:100%;margin:2px 0 4px;background:linear-gradient(90deg,#2a1f05,#3a2a08);border:1px solid #fbbf24;color:#ffe08a;border-radius:12px;padding:10px;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
-.sendbtn:hover{background:#4a360a;color:#fff}
-#cvN{cursor:default}/* ===== הדגמה אוטומטית של ניסוי ===== */
+.plink{display:inline-block;margin-top:6px;font-size:15px;color:#9fc4ff;text-decoration:none;border-bottom:1px dashed #4a6aa0}
+.plink:hover{color:#fff}/* ===== הדגמה אוטומטית של ניסוי ===== */
 .pbtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:#0f2a1c;border:1px solid #2f7a52;color:#7dffb4;border-radius:20px;padding:5px 14px;font:inherit;font-size:14px;cursor:pointer}
 .pbtn:hover{filter:brightness(1.25)}
 .pbtn svg{width:12px;height:12px}
@@ -187,61 +186,57 @@ body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
 
 <!-- ===================== פתיח ===================== -->
 <section id="intro" class="wrap">
-  <h1>28 משווים עובדים במקביל. <span>כמה זמן מחכים</span> למספרים ממוינים?</h1>
-  <p class="lead">לוקחים את Bubble Sort ו"יוצקים" אותו לחומרה: כל השוואה בקוד הופכת למשווה, וכל המשווים מחוברים ברשת אחת בלי שעון. נשמע שהכול קורה בבת אחת. אז למה המעגל הזה איטי, ולמה אי אפשר להכניס אליו קלט חדש מתי שרוצים?</p>
+  <h1>הוספנו רגיסטרים. <span>למה התוצאה הגיעה מאוחר יותר?</span></h1>
+  <p class="lead">בחלק א ראינו שהממיין הצירופי מקבל בעיה חדשה רק פעם ב-<bdi dir="ltr">(2n − 3)·t₀</bdi>. הפתרון הקלאסי הוא pipeline: חותכים את המעגל לשלבים עם רגיסטרים ביניהם, וכל שלב עובד על בעיה אחרת. אבל לא כל חיתוך עוזר.</p>
+  <a class="plink" href="ממיין בחומרה – חלק א.html">→ חלק א: הממיין הצירופי</a>
 
   <h2 class="sec">הבעיה</h2>
   <div class="prob">
     <div>
-      <p>אבן הבניין היא <b>משווה</b>: נכנסים אליו שני מספרים, <bdi dir="ltr">A</bdi> ו-<bdi dir="ltr">B</bdi>, ויוצאים הגדול (<bdi dir="ltr">H</bdi>, למעלה) והקטן (<bdi dir="ltr">L</bdi>, למטה). לוקח לו <bdi dir="ltr">t₀</bdi> להגיב לשינוי בכניסות.</p>
-      <p>בציור, ממיין של 4 מספרים: כל עמודה היא סיבוב אחד של הלולאה החיצונית, שמבעבע את הגדול ביותר למעלה. אבל משווה לא יכול לענות לפני שהגיעו אליו הכניסות שלו, והקו האדום הוא שרשרת ההמתנה הארוכה ביותר.</p>
-      <p><b>המשימה:</b> למדוד כמה זמן לוקח למוצא להתייצב, להבין למה המעגל חייב תמיד לחכות <bdi dir="ltr">(2n − 3)·t₀</bdi>, ומה זה אומר על קצב הקלטים (התפוקה).</p>
+      <p>בכל מחזור שעון כל שלב מעביר את התוצאה שלו לרגיסטר שאחריו ומקבל את הבעיה הבאה. כך בעיות רבות "בדרך" במקביל, כמו מכוניות בשטיפה אוטומטית. בציור, כל צבע הוא בעיה: שורה לכל שלב, והזמן ימינה.</p>
+      <p>למעלה בלי pipeline: בעיה אחת בכל פעם. למטה חיתוך באלכסון: כל שלב הוא משווה אחד, ובעיה חדשה נכנסת בכל <bdi dir="ltr">t₀</bdi>.</p>
+      <p><b>המשימה:</b> למצוא איפה לשים את הרגיסטרים כדי שהתפוקה תהיה הגבוהה ביותר, ולהבין למה חיתוך "טבעי" לפי העמודות דווקא מחמיר את ההשהיה.</p>
     </div>
-    <svg id="probSvg" viewBox="0 0 340 230" aria-label="ממיין של ארבעה מספרים: שש משווים בשלוש עמודות, והמסלול הארוך ביותר באדום"></svg>
+    <svg id="probSvg" viewBox="0 0 340 230" aria-label="דיאגרמת מרחב-זמן: בלי pipeline בעיה אחת בכל פעם, עם pipeline הבעיות חופפות"></svg>
   </div>
 
   <h2 class="sec">איך לקרוא את המעבדה</h2>
   <div class="read">
-    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2" fill="#1d2a48" stroke="#8fb3ff"/><text x="8" y="10" font-size="6" fill="#cdd8ea">A H</text><text x="8" y="18" font-size="6" fill="#cdd8ea">B L</text></svg></div><div><h3>משווה</h3><p>תיבה שמחברת שני קווים סמוכים. בתוכה הערכים שיוצאים ממנה: הגדול למעלה, הקטן למטה. הבזק צהוב = המוצא שלה השתנה עכשיו.</p></div></div>
-    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 8h20" stroke="#ff9f43" stroke-width="3"/><path d="M2 16h20" stroke="#46e39a" stroke-width="3"/></svg></div><div><h3>צבע הקו</h3><p>ירוק: האות כבר בערך הסופי שלו. כתום: עדיין לא.</p></div></div>
-    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="2" y="7" width="8" height="10" rx="3" fill="#2a3550"/><rect x="14" y="7" width="8" height="10" rx="3" fill="#123a28"/></svg></div><div><h3>כניסות ויציאות</h3><p>משמאל המספרים שנכנסים, מימין מה שיוצא כרגע. המוצא ממוין כשהגדול למעלה.</p></div></div>
-    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="3" y="12" width="3" height="8" fill="#fbbf24"/><rect x="8" y="8" width="3" height="12" fill="#fbbf24"/><rect x="13" y="14" width="3" height="6" fill="#fbbf24"/><path d="M20 3v18" stroke="#ff4d5e" stroke-dasharray="3 2"/></svg></div><div><h3>ציר הזמן</h3><p>כמה משווים השתנו בכל צעד של <bdi dir="ltr">t₀</bdi>. ירוק: מתי המוצא באמת התייצב. אדום מקווקו: הזמן המובטח.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 12h20" stroke="#5b6b8c" stroke-width="2"/><rect x="8" y="7" width="8" height="10" rx="1.5" fill="#f59e0b"/></svg></div><div><h3>ריבוע כתום = רגיסטר</h3><p>עמודה של רגיסטרים היא "חיתוך". כל מה שבין שני חיתוכים הוא שלב, ומקבל רצועה צבעונית.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="16" rx="2" fill="#38bdf8" fill-opacity=".5"/><rect x="13" y="4" width="8" height="16" rx="2" fill="#f472b6" fill-opacity=".5"/></svg></div><div><h3>צבע = בעיה</h3><p>כל קבוצת מספרים לממיין מקבלת צבע ומספר (#1, #2...). הרצועה מראה איזו בעיה נמצאת כרגע בכל שלב.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="2" y="3" width="6" height="4" fill="#38bdf8"/><rect x="8" y="9" width="6" height="4" fill="#38bdf8"/><rect x="14" y="15" width="6" height="4" fill="#38bdf8"/><rect x="8" y="3" width="6" height="4" fill="#f472b6"/><rect x="14" y="9" width="6" height="4" fill="#f472b6"/></svg></div><div><h3>מרחב-זמן</h3><p>שורה לכל שלב, והזמן ימינה ביחידות <bdi dir="ltr">t₀</bdi>. מדרגה אלכסונית = בעיה שמתקדמת שלב בכל מחזור.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M3 18h18M3 18v-4M21 18v-4" stroke="#fff" stroke-width="2" fill="none"/></svg></div><div><h3>השהיה וקצב</h3><p>הסוגר הלבן הוא ההשהיה של בעיה #1, מהכניסה עד היציאה. המרחק בין שתי יציאות הוא הקצב.</p></div></div>
   </div>
 
   <h2 class="sec">התאוריה בקצרה</h2>
   <div class="theory">
-    <div class="th"><div class="n">1</div><h3>מקוד לחומרה</h3><p>כל איטרציה של הלולאה החיצונית היא עמודה של משווים, שמבעבעת את הגדול ביותר למעלה. בסך הכול <bdi dir="ltr">n(n − 1)/2 = Θ(n²)</bdi> משווים.</p></div>
-    <div class="th"><div class="n">2</div><h3>מעגל צירופי</h3><p>אין רגיסטרים בפנים. המוצא נכון רק אחרי שכל השינויים עברו בכל השרשראות, וזמן ההשהיה (propagation delay) נקבע לפי <b>המסלול הארוך ביותר</b>, לא לפי המקרה הממוצע.</p></div>
-    <div class="th"><div class="n">3</div><h3>המסלול הארוך</h3><p>למעלה לאורך העמודה הראשונה (<bdi dir="ltr">n − 1</bdi> משווים), ואז באלכסון דרך הראש של כל עמודה (עוד <bdi dir="ltr">n − 2</bdi>): <bdi dir="ltr">2n − 3</bdi> משווים.</p></div>
-    <div class="th"><div class="n">4</div><h3>השהיה ותפוקה</h3><p>בעיה חדשה נכנסת רק כשהקודמת הסתיימה והכול יציב. השהיה <bdi dir="ltr">Θ(n)</bdi>, ולכן תפוקה <bdi dir="ltr">Θ(1/n)</bdi>, למרות שכל המשווים "עובדים במקביל".</p></div>
+    <div class="th"><div class="n">1</div><h3>pipeline</h3><p>חותכים את המעגל ברגיסטרים. בכל מחזור שעון כל שלב מוסר את התוצאה שלו הלאה ומקבל בעיה חדשה, וכך בעיות רבות נמצאות במעגל בו-זמנית.</p></div>
+    <div class="th"><div class="n">2</div><h3>השעון</h3><p>השלב האיטי ביותר קובע: <bdi dir="ltr">T<sub>clk</sub> ≥ t<sub>pcq</sub> + max t<sub>pd</sub> + t<sub>setup</sub></bdi>. שלב ארוך אחד מאט את כולם.</p></div>
+    <div class="th"><div class="n">3</div><h3>השהיה ותפוקה</h3><p>השהיה = מספר השלבים × <bdi dir="ltr">T<sub>clk</sub></bdi>. תפוקה = תוצאה אחת בכל מחזור, <bdi dir="ltr">1/T<sub>clk</sub></bdi>. pipeline משפר את התפוקה, לא את ההשהיה.</p></div>
+    <div class="th"><div class="n">4</div><h3>איפה חותכים</h3><p>בעמודות: בכל שלב מספר יכול לבעבע מלמטה למעלה, <bdi dir="ltr">Θ(n)</bdi>, וההשהיה <bdi dir="ltr">Θ(n²)</bdi>. באלכסון: משווה אחד בכל שלב, תפוקה <bdi dir="ltr">Θ(1)</bdi> והשהיה <bdi dir="ltr">2n − 3</bdi>.</p></div>
   </div>
-  <div class="law"><span class="eq">T<sub>pd</sub> = (2n − 3)·t₀</span><span class="eq">Throughput = 1/T<sub>pd</sub> = Θ(1/n)</span><small>המעגל מהיר כמו המסלול הארוך ביותר שלו, גם אם רוב הקלטים לא צריכים אותו</small></div>
+  <div class="law"><span class="eq">Latency = k·T<sub>clk</sub></span><span class="eq">Throughput = 1/T<sub>clk</sub></span><small>k שלבים. השעון נקבע לפי השלב הארוך ביותר ועוד תקורת הרגיסטר</small></div>
   <a class="cta" href="#lab">למעבדה ↓</a>
 </section>
 
 <!-- ===================== מעבדה ===================== -->
 <section class="lab" id="lab">
-  <div class="view" id="view" style="grid-template-rows:1.7fr 1fr">
+  <div class="view" id="view" style="grid-template-rows:1.25fr 1fr">
     <div class="plot"><canvas id="cvN"></canvas></div>
-    <div class="plot"><canvas id="cvB"></canvas></div>
+    <div class="plot"><canvas id="cvT"></canvas></div>
   </div>
   <div class="pnl r">
-    <div class="c-row"><div class="c-lbl"><span>מספר הכניסות <bdi dir="ltr">n</bdi></span><span class="c-val" id="nV"></span></div><input type="range" id="rN" data-k="n" min="3" max="10" step="1"></div>
-    <div class="c-row"><div class="c-lbl">הקלט הבא</div><div class="seg" data-seg="pat"><button data-v="rnd" class="on">אקראי</button><button data-v="sorted">ממוין</button><button data-v="rev">הפוך</button></div></div>
-    <button id="send" class="sendbtn">▶ שלח קלט חדש</button>
+    <div class="c-row"><div class="c-lbl">איפה לשים רגיסטרים</div><div class="seg" data-seg="cut"><button data-v="comb">בלי (צירופי)</button><button data-v="cols">בין העמודות</button><button data-v="diag" class="on">באלכסון</button><button data-v="oe" class="adv-only">זוגי-אי-זוגי</button><button data-v="loop" class="adv-only">חומרה בלולאה</button></div></div>
+    <div class="c-row"><div class="c-lbl"><span>מספר הכניסות <bdi dir="ltr">n</bdi></span><span class="c-val" id="nV"></span></div><input type="range" id="rN" data-k="n" min="4" max="10" step="1"></div>
     <div class="sep">
-      <div class="meter"><div class="ttl">המוצא התייצב בפועל אחרי</div><div class="bar"><i id="sBar"></i></div>
-        <div class="row"><span id="sRow"></span><span id="sV"></span></div></div>
-      <div class="meter"><div class="ttl">המעגל מבטיח תוצאה רק אחרי</div><div class="bar"><i id="dBar"></i></div>
-        <div class="row"><span id="dRow"></span><span id="dV"></span></div></div>
+      <div class="meter"><div class="ttl">השהיה: מכניסה ועד תוצאה</div><div class="bar"><i id="lBar"></i></div>
+        <div class="row"><span id="lRow"></span><span id="lV"></span></div></div>
+      <div class="meter"><div class="ttl">תפוקה: כל כמה זמן יוצאת תוצאה</div><div class="bar"><i id="tBar"></i></div>
+        <div class="row"><span id="tRow"></span><span id="tV"></span></div></div>
       <span class="chip neu" id="status"></span>
     </div>
     <div class="sep adv-only">
-      <div class="c-row"><div class="c-lbl">סידור המשווים</div><div class="seg" data-seg="lay"><button data-v="slide" class="on">כמו בשקף</button><button data-v="time">לפי זמן</button></div></div>
-      <label class="chk"><label class="sw"><input type="checkbox" id="cCrit" data-k="crit"><span></span></label>המסלול הארוך ביותר</label>
-      <label class="chk"><label class="sw"><input type="checkbox" id="cFollow" data-k="follow"><span></span></label>מעקב אחרי מספר (לחיצה על כניסה)</label>
-      <div class="c-row" style="margin-top:12px"><div class="c-lbl"><span>מחזור שעון <bdi dir="ltr">T</bdi> (דגימת המוצא)</span><span class="c-val" id="TV"></span></div><input type="range" id="rT" data-k="T" min="1" max="13" step="1"></div>
-      <div class="c-row"><div class="c-lbl">הגרף התחתון</div><div class="seg" data-seg="bot"><button data-v="act" class="on">פעילות בזמן</button><button data-v="hist">כמה פעמים? (2000 קלטים)</button></div></div>
+      <div class="c-row"><div class="c-lbl"><span>תקורת רגיסטר <bdi dir="ltr">t<sub>pcq</sub> + t<sub>setup</sub></bdi></span><span class="c-val" id="trV"></span></div><input type="range" id="rTr" data-k="treg" min="0" max="2" step="0.25"></div>
       <div class="calc" id="calc"></div>
     </div>
   </div>
@@ -261,38 +256,36 @@ body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
 <section id="exps" class="wrap">
   <h2 class="sec">ניסויים לנסות במעבדה</h2>
   <ol class="exps">
-    <li class="exp"><div class="top"><div class="task">עם <bdi dir="ltr">n = 8</bdi>, לחצו "שלח קלט חדש". גל של הבזקים עובר ברשת משמאל לימין, והקווים הופכים מכתום לירוק. המוצא מתייצב בדרך כלל אחרי 9 עד 12 צעדים, אבל ההבטחה היא 13.</div><button class="xbtn">הסבר</button></div>
-      <div class="ans">כל משווה מגיב <bdi dir="ltr">t₀</bdi> אחרי שהכניסות שלו השתנו, ולכן השינוי מתפשט בשרשראות. במודל הזה כל משווה מחשב בכל צעד מחדש את <bdi dir="ltr">max</bdi> ו-<bdi dir="ltr">min</bdi> של מה שיש בכניסות שלו ברגע זה, כולל ערכים זמניים ("קפיצות", glitches) שעוד לא סופיים. ההבטחה של <bdi dir="ltr">2n − 3 = 13</bdi> צעדים היא העומק של הרשת: אחרי 13 צעדים גם המשווה האחרון בשרשרת הארוכה ביותר כבר קיבל כניסות סופיות.</div></li>
-    <li class="exp"><div class="top"><div class="task">לחצו כמה פעמים ברצף. זמן ההתייצבות בפועל משתנה מקלט לקלט, אבל המדד השני תקוע על 13.</div><button class="xbtn">הסבר</button></div>
-      <div class="ans">המעגל לא "יודע" מתי הוא סיים: אין לו אות "מוכן". מי שמשתמש בו חייב להניח את המקרה הגרוע ולחכות תמיד <bdi dir="ltr">(2n − 3)·t₀</bdi> לפני שהוא קורא את המוצא ומכניס קלט חדש. לכן התפוקה היא בעיה אחת כל <bdi dir="ltr">13·t₀</bdi>, ולא לפי הזמן הממוצע.</div></li>
-    <li class="exp"><div class="top"><div class="task">הגדילו את n מ-4 ל-10 וצפו בשני המספרים: המשווים קופצים מ-6 ל-45, אבל הזמן המובטח עולה רק מ-5 ל-17.</div><button class="xbtn">הסבר</button></div>
-      <div class="ans">מספר המשווים הוא <bdi dir="ltr">n(n − 1)/2 = Θ(n²)</bdi>, והעומק הוא <bdi dir="ltr">2n − 3 = Θ(n)</bdi>. החומרה גדלה ריבועית, ובכל זאת הזמן ממשיך לגדול ליניארית. הסיבה: "במקביל" לא אומר "בבת אחת". משווה לא יכול לענות לפני שהגיעו אליו הכניסות שלו, והשרשרת הארוכה גדלה עם n. תפוקה של <bdi dir="ltr">Θ(1/n)</bdi> היא בדיוק מה שכתוב בשקף 11.</div></li>
-    <li class="exp"><div class="top"><div class="task">בחרו "ממוין" ואחריו "הפוך". הכניסה ההפוכה (הקטן למעלה) מפעילה כמעט את כל המשווים, ושוב המוצא מתייצב לפני 13 או ב-13 בדיוק, לא אחרי.</div><button class="xbtn">הסבר</button></div>
-      <div class="ans">בקלט "ממוין" (הגדול כבר למעלה) אף משווה לא צריך להחליף, ובקלט "הפוך" כל משווה מחליף. אבל גם בקלט הכי "קשה" הזמן לא עובר את העומק של הרשת. החסם <bdi dir="ltr">2n − 3</bdi> נובע מהמבנה (כמה משווים יש בשרשרת הארוכה), לא מהנתונים. הנתונים רק קובעים אם מגיעים אליו.</div></li>
-    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>במצב המורחב הדליקו "המסלול הארוך ביותר": למעלה לאורך העמודה הראשונה, ואז באלכסון דרך הראש של כל עמודה. עכשיו עברו לסידור "לפי זמן".</div><button class="xbtn">הסבר</button></div>
-      <div class="ans">המסלול: <bdi dir="ltr">n − 1</bdi> משווים בעמודה הראשונה, ועוד <bdi dir="ltr">n − 2</bdi> ראשי עמודות: <bdi dir="ltr">2n − 3</bdi>. בסידור "לפי זמן" כל משווה מוזז ימינה לפי העומק שלו, כלומר לפי הצעד הראשון שבו מובטח שהכניסות שלו סופיות. הרוחב של הציור הוא בדיוק <bdi dir="ltr">2n − 3</bdi> עמודות, והגל של השינויים עובר בו כמו חזית. זה גם הסידור שבו נשתמש בחלק ב, כשנחתוך את הרשת לשלבי pipeline.</div></li>
-    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>בשקף נשאל "כמה פעמים זה קורה?" והתשובה שם היא "Very small / Never ??". חזו, ואז עברו לגרף "כמה פעמים?": עם n = 8, בכ-6% מהקלטים המוצא משתנה עד הצעד ה-13 ממש.</div><button class="xbtn">הסבר</button></div>
-      <div class="ans">ההיסטוגרמה מריצה 2000 זוגות של (קלט קודם, קלט חדש) אקראיים, וסופרת מתי המוצא השתנה בפעם האחרונה. רוב המקרים מסתיימים ב-10–12 צעדים, והזנב שמגיע ל-13 דק. אבל הוא לא אפס. ואפילו אם היה אפס בבדיקה כזו, לא היה מותר להתעלם ממנו: ניתוח תזמון מבטיח נכונות לכל קלט, לא לרוב הקלטים.</div></li>
-    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>שברו את זה: קבעו מחזור שעון <bdi dir="ltr">T = 12</bdi> ושלחו קלטים. מדי פעם המוצא שנדגם מסומן ✗. ב-<bdi dir="ltr">T = 10</bdi> רוב הקלטים נכשלים.</div><button class="xbtn">הסבר</button></div>
-      <div class="ans">כשהמוצא נדגם לפני שהמעגל התייצב, נקלט ערך זמני. בהיסטוגרמה, כל מה שמימין לקו <bdi dir="ltr">T</bdi> הוא קלט שהמוצא שלו עוד השתנה אחרי הדגימה, כלומר כמעט תמיד תוצאה שגויה (האחוז המדויק בתיבת החישוב): ב-<bdi dir="ltr">T = 12</bdi> בערך 1 מכל 20, וב-<bdi dir="ltr">T = 10</bdi> יותר ממחצית. לכן מחזור השעון של מעגל צירופי נקבע לפי המסלול הארוך: <bdi dir="ltr">T ≥ T<sub>pd</sub></bdi> (ובמעגל אמיתי גם זמני ה-setup וה-clock-to-Q של הרגיסטרים).</div></li>
-    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>הדליקו "מעקב אחרי מספר" ולחצו על כמה מספרים בכניסה. רוב המספרים עוברים דרך מעט משווים, אבל לפעמים מספר קטן שנכנס למטה עושה "זיגזג" לאורך כל התחתית ועובר 13 משווים.</div><button class="xbtn">הסבר</button></div>
-      <div class="ans">מספר שיוצא מתחתית משווה (<bdi dir="ltr">L</bdi>) ממשיך לעמודה הבאה, ומספר שיוצא מלמעלה (<bdi dir="ltr">H</bdi>) מבעבע בתוך אותה עמודה. כשמספר מנצח פעם אחת ומפסיד פעם אחת לסירוגין בשורות התחתונות, הוא עובר <bdi dir="ltr">2n − 3</bdi> משווים. בבדיקה על כל <bdi dir="ltr">8! = 40320</bdi> הסידורים, זה קורה בדיוק ב-1440 מהם (1 מכל 28). גם מספר בודד יכול לעבור את כל אורך המסלול, וזו עוד סיבה שאי אפשר להתעלם ממנו.</div></li>
+    <li class="exp"><div class="top"><div class="task">התחילו מ"בלי (צירופי)" עם <bdi dir="ltr">n = 8</bdi>: בעיה אחת נמצאת במעגל בכל רגע, ותוצאה יוצאת פעם ב-<bdi dir="ltr">13·t₀</bdi>.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">זו נקודת הסיום של חלק א: רגיסטר רק בכניסה וביציאה, והשלב היחיד ארוך כמו המסלול הארוך, <bdi dir="ltr">2n − 3 = 13</bdi> משווים. ההשהיה <bdi dir="ltr">13·t₀</bdi> והקצב זהה: בעיה כל <bdi dir="ltr">13·t₀</bdi>. בדיאגרמה התחתונה יש שורה אחת, ובעיות שבאות אחת אחרי השנייה בלי חפיפה.</div></li>
+    <li class="exp"><div class="top"><div class="task">עברו ל"בין העמודות", החיתוך שבשקף 12. השעון יורד ל-<bdi dir="ltr">7·t₀</bdi>, אבל ההשהיה מזנקת ל-<bdi dir="ltr">49·t₀</bdi>, והקצב משתפר רק מ-13 ל-7.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">בכל עמודה מספר יכול לבעבע מהשורה התחתונה עד למעלה, כלומר שרשרת של עד <bdi dir="ltr">n − 1 = 7</bdi> משווים, וזה המחזור. יש <bdi dir="ltr">n − 1 = 7</bdi> שלבים, ולכן ההשהיה <bdi dir="ltr">7 · 7 = 49·t₀</bdi>, כלומר <bdi dir="ltr">Θ(n²)</bdi>. השלבים גם לא מאוזנים: העמודה האחרונה היא משווה אחד, אבל גם היא מחכה <bdi dir="ltr">7·t₀</bdi>. זה בדיוק "Latency got worse to Θ(n²)! Throughput ~the same" משקף 13.</div></li>
+    <li class="exp"><div class="top"><div class="task">עברו ל"באלכסון": כל שלב הוא משווה אחד, והשעון <bdi dir="ltr">t₀</bdi>. ההשהיה חוזרת ל-<bdi dir="ltr">13·t₀</bdi> (כמו בצירופי), אבל עכשיו יוצאת תוצאה בכל <bdi dir="ltr">t₀</bdi>: פי 13 יותר.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">החיתוך הוא לפי עומק: כל המשווים שמקבלים כניסות סופיות באותו צעד נמצאים באותו שלב (זה הסידור "לפי זמן" מחלק א). כל שלב קצר בדיוק כמו משווה, ולכן כל השלבים מאוזנים. יש <bdi dir="ltr">2n − 3</bdi> שלבים, וההשהיה <bdi dir="ltr">(2n − 3)·t₀</bdi> לא השתנתה. מה שהשתנה: 13 בעיות נמצאות במעגל בו-זמנית. בדיאגרמה רואים "מדרגות" צבעוניות שחופפות.</div></li>
+    <li class="exp"><div class="top"><div class="task">ב"באלכסון", הגדילו את n מ-4 ל-10. ההשהיה עולה (5 → 17), אבל הקצב נשאר תוצאה בכל <bdi dir="ltr">t₀</bdi>.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">זה <bdi dir="ltr">Θ(1)</bdi> בתפוקה: מספר השלבים גדל עם n, אבל אורך כל שלב קבוע. בצירופי הקצב הוא <bdi dir="ltr">Θ(1/n)</bdi>, ובחיתוך לעמודות בערך אותו דבר. המחיר הוא חומרה: מספר הרגיסטרים (בשבב) גדל ל-<bdi dir="ltr">n·(2n − 2)</bdi>.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>במצב המורחב הוסיפו תקורת רגיסטר <bdi dir="ltr">0.5·t₀</bdi>. ב"באלכסון" ההשהיה עולה ל-<bdi dir="ltr">19.5·t₀</bdi>, יותר מהצירופי (<bdi dir="ltr">13.5·t₀</bdi>). התפוקה עדיין טובה פי 9.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">לכל רגיסטר יש זמן <bdi dir="ltr">t<sub>pcq</sub></bdi> (מהשעון עד שהערך יוצא) ו-<bdi dir="ltr">t<sub>setup</sub></bdi> (הערך צריך להיות יציב לפני השעון), ולכן <bdi dir="ltr">T<sub>clk</sub> ≥ t<sub>pcq</sub> + t<sub>pd</sub> + t<sub>setup</sub></bdi>. מחלקים לשלבים קצרים מאוד, והתקורה משולמת שוב ושוב: 13 שלבים × <bdi dir="ltr">1.5·t₀</bdi>. pipeline תמיד מאריך את ההשהיה, וקונה תפוקה.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>בחרו "זוגי-אי-זוגי" (שקף 15): אותם 28 משווים, אבל רק 8 שלבים במקום 13. ההשהיה <bdi dir="ltr">8·t₀</bdi>, והתפוקה עדיין תוצאה בכל <bdi dir="ltr">t₀</bdi>.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">זה אלגוריתם קצת אחר (odd-even transposition sort): בשלבים זוגיים משווים את הזוגות (1,2), (3,4)..., ובאי-זוגיים את (2,3), (4,5)... כל שלב הוא שכבה אחת של משווים, וכולם עובדים בו-זמנית, בלי שרשרת. אחרי n שלבים הכול ממוין. אותו מספר השוואות, <bdi dir="ltr">n(n − 1)/2</bdi>, אבל השהיה n במקום <bdi dir="ltr">2n − 3</bdi>, כי אין "המתנה" למשווה מהשורה שמתחת.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>בחרו "חומרה בלולאה" (שקף 16): רק שני שלבים, 7 משווים במקום 28, והנתונים מסתובבים בהם 4 פעמים. ההשהיה עדיין <bdi dir="ltr">8·t₀</bdi>, אבל בעיה חדשה נכנסת רק כל <bdi dir="ltr">8·t₀</bdi>.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">המבנה של זוגי-אי-זוגי חוזר על עצמו, ולכן אפשר לבנות רק זוג שלבים ולהחזיר את המוצא לכניסה. הנתונים עוברים <bdi dir="ltr">n/2</bdi> סיבובים. חומרה <bdi dir="ltr">Θ(n)</bdi> במקום <bdi dir="ltr">Θ(n²)</bdi>, השהיה <bdi dir="ltr">Θ(n)</bdi> כמו קודם, אבל תפוקה <bdi dir="ltr">Θ(1/n)</bdi> במקום <bdi dir="ltr">Θ(1)</bdi>: הלולאה תפוסה עד שהבעיה יוצאת. זו הפשרה בין גודל החומרה לתפוקה.</div></li>
   </ol>
 </section>
 
 <section id="quiz" class="wrap">
   <h2 class="sec">בדוק את עצמך</h2>
   <div class="qz">
-    <p>ממיין צירופי כזה ל-<bdi dir="ltr">n = 16</bdi> מספרים, כשכל משווה מגיב תוך <bdi dir="ltr">t₀</bdi>. כמה משווים יש בו, וכל כמה זמן אפשר להכניס אליו קלט חדש?</p>
-    <div class="opts" id="qOpts"><button data-a="a">120 משווים, כל <bdi dir="ltr">29·t₀</bdi></button><button data-a="b">120 משווים, כל <bdi dir="ltr">t₀</bdi> (הם עובדים במקביל)</button><button data-a="c">256 משווים, כל <bdi dir="ltr">16·t₀</bdi></button><button data-a="d">120 משווים, כל <bdi dir="ltr">15·t₀</bdi></button></div>
+    <p>ממיין Bubble Sort עם <bdi dir="ltr">n = 10</bdi>, שחתוך לשלבים באלכסון (משווה אחד בכל שלב), בלי תקורת רגיסטרים. מה ההשהיה ומה הקצב?</p>
+    <div class="opts" id="qOpts"><button data-a="a">השהיה <bdi dir="ltr">17·t₀</bdi>, תוצאה בכל <bdi dir="ltr">t₀</bdi></button><button data-a="b">השהיה <bdi dir="ltr">17·t₀</bdi>, תוצאה בכל <bdi dir="ltr">17·t₀</bdi></button><button data-a="c">השהיה <bdi dir="ltr">t₀</bdi>, תוצאה בכל <bdi dir="ltr">t₀</bdi></button><button data-a="d">השהיה <bdi dir="ltr">81·t₀</bdi>, תוצאה בכל <bdi dir="ltr">9·t₀</bdi></button></div>
     <div class="fb" id="qFb"></div>
     <button class="go" id="qGo" style="display:none">🔬 בדקו במעבדה</button>
   </div>
 </section>
 
 <script>
-const START = {"n":8,"pat":"rnd","lay":"slide","crit":false,"T":13,"bot":"act","follow":false};
-const ADV_DEF = {"lay":"slide","crit":false,"bot":"act","follow":false};
+const START = {"n":8,"cut":"diag","treg":0};
+const ADV_DEF = {"treg":0};
 "use strict";
 /* ======================================================================
    שכבה משותפת לסימולציות תקשורת אופטית: מצב, פקדים, מצב מורחב, ציור, תלת-ממד
@@ -379,163 +372,138 @@ function loop(now){
    חלק ייחודי לסימולציה הזו
    ====================================================================== */
 
-/* ---------- הרשת: Bubble Sort בחומרה. משווה (c, r) פועל על הקווים r, r+1 (0 = למעלה): H נשאר בשורה r, L יורד לשורה r+1 ---------- */
-let net, inp = [], prev = [], ST = [], CH = [], setOut = 0, layK = 0, tNow = 0, flashT = 0, track = -1, trackPath = [], trackOut = {}, HIST = {};
-const STEP = 0.5;                                    // שניות לכל t₀ באנימציה
+/* ---------- אותה רשת Bubble Sort כמו בחלק א: משווה (c, r) על הקווים r, r+1, ועומק d ---------- */
 function build(n){
-  const comps = [], last = []; for (let r = 0; r < n; r++) last[r] = {k:-1, i:r};
-  for (let c = 0; c < n - 1; c++) for (let r = n - 2; r >= c; r--){ const k = comps.length; comps.push({c, r, A:last[r], B:last[r + 1], d:0}); last[r] = {k, s:'H'}; last[r + 1] = {k, s:'L'}; }
+  const comps = [], last = []; for (let r = 0; r < n; r++) last[r] = {k:-1};
+  for (let c = 0; c < n - 1; c++) for (let r = n - 2; r >= c; r--){ const k = comps.length; comps.push({c, r, A:last[r], B:last[r + 1], d:0}); last[r] = {k}; last[r + 1] = {k}; }
   comps.forEach(o => { const dd = s => s.k < 0 ? 0 : comps[s.k].d; o.d = 1 + Math.max(dd(o.A), dd(o.B)); });
-  const crit = []; for (let r = n - 2; r >= 0; r--) crit.push(comps.findIndex(o => o.c === 0 && o.r === r)); for (let c = 1; c < n - 1; c++) crit.push(comps.findIndex(o => o.c === c && o.r === c));
-  return {n, comps, outs:last.slice(), D:Math.max(...comps.map(o => o.d)), crit};
+  return {comps, D:Math.max(...comps.map(o => o.d))};
 }
-const val = (s, st, x) => s.k < 0 ? x[s.i] : (s.s === 'H' ? st.H[s.k] : st.L[s.k]);
-function stable(x){ const st = {H:[], L:[]}; net.comps.forEach((o, k) => { const a = val(o.A, st, x), b = val(o.B, st, x); st.H[k] = Math.max(a, b); st.L[k] = Math.min(a, b); }); return st; }
-function stepOnce(st, x){ const nx = {H:[], L:[]}; net.comps.forEach((o, k) => { const a = val(o.A, st, x), b = val(o.B, st, x); nx.H[k] = Math.max(a, b); nx.L[k] = Math.min(a, b); }); return nx; }
-const outsOf = (st, x) => net.outs.map(s => val(s, st, x));
-// מודל השהיה של t₀ לכל משווה: בכל צעד כל משווה מחשב מחדש מהכניסות שלו בצעד הקודם
-function simulate(){
-  ST = [stable(prev)]; CH = [[]]; setOut = 0; let po = outsOf(ST[0], prev);
-  for (let t = 1; t <= net.D + 1; t++){ const s = stepOnce(ST[t - 1], inp); ST.push(s); CH.push(net.comps.map((o, k) => k).filter(k => s.H[k] !== ST[t - 1].H[k] || s.L[k] !== ST[t - 1].L[k]));
-    const o = outsOf(s, inp); if (o.join() !== po.join()) setOut = t; po = o; }
-  tNow = 0; computeTrack(); updPanel(); dirty = true;
-}
-// המסע של מספר אחד: דרך אילו משווים הוא עובר (במצב הסופי)
-function computeTrack(){
-  trackPath = []; trackOut = {}; if (track < 0) return; const id = [], st = ST[ST.length - 1];
-  const who = (s) => s.k < 0 ? s.i : (s.s === 'H' ? id[s.k].h : id[s.k].l);
-  net.comps.forEach((o, k) => { const a = who(o.A), b = who(o.B), va = val(o.A, st, inp), vb = val(o.B, st, inp); id[k] = va >= vb ? {h:a, l:b} : {h:b, l:a}; if (a === track || b === track){ trackPath.push(k); trackOut[k] = id[k].h === track ? o.r : o.r + 1; } });
-}
-const rnd = () => { const s = new Set(); while (s.size < S.n) s.add(1 + Math.floor(Math.random()*99)); return [...s]; };
-function makeInput(p){ const x = rnd(); if (p === 'sorted') x.sort((a, b) => b - a); if (p === 'rev') x.sort((a, b) => a - b); return x; }
-function send(){ prev = inp.length === S.n ? inp : rnd(); inp = makeInput(S.pat); simulate(); }
-function rebuild(){ const wasSafe = !net || S.T >= net.D; net = build(S.n); const rT = $('rT'); rT.max = net.D; if (wasSafe || S.T > net.D || S.T < 1) S.T = net.D; syncUI(); prev = rnd(); inp = rnd(); track = -1; simulate(); }
-// היסטוגרמה: מתי המוצא השתנה בפעם האחרונה, על 2000 זוגות אקראיים (נשמרת לכל n)
-function histFor(n){
-  if (HIST[n]) return HIST[n]; const keep = [prev, inp, ST, CH, setOut]; const h = new Array(net.D + 2).fill(0), ok = new Array(net.D + 2).fill(0);
-  for (let i = 0; i < 2000; i++){ prev = rnd(); inp = rnd(); let st = stable(prev), po = outsOf(st, prev), last = 0; const srt = [...inp].sort((a, b) => b - a).join();
-    for (let t = 1; t <= net.D + 1; t++){ st = stepOnce(st, inp); const o = outsOf(st, inp); if (o.join() !== po.join()) last = t; if (o.join() === srt) ok[t]++; po = o; } h[last]++; }
-  [prev, inp, ST, CH, setOut] = keep; h.ok = ok; return HIST[n] = h;
-}
-function onChange(k){
-  if (k === 'n'){ rebuild(); return; }
-  if (k === 'pat'){ send(); return; }
-  if (k === 'follow' && !S.follow){ track = -1; trackPath = []; }
-  dirty = true; updPanel();
-}
-bindAll(onChange);
-$('send').addEventListener('click', send);
-window.onModeChange = on => { if (!on){ track = -1; trackPath = []; S.T = net.D; syncUI(); } dirty = true; updPanel(); };
-const clockOn = () => adv && S.T < net.D;
-function updPanel(){
-  const D = net.D, nC = net.comps.length;
-  $('nV').textContent = S.n; $('TV').innerHTML = S.T + '·t₀' + (S.T >= D ? ' (בטוח)' : '');
-  const done = tNow >= setOut;
-  bar('sBar', setOut/D, '#46e39a'); $('sV').textContent = (done ? setOut : '…') + ' · t₀'; $('sRow').textContent = done ? (setOut < D ? 'הפעם הספיק פחות מהמובטח' : 'הפעם בדיוק המקרה הגרוע') : 'מחכים...';
-  bar('dBar', 1, '#ff4d5e'); $('dV').textContent = D + ' · t₀'; $('dRow').textContent = 'תפוקה: קלט חדש רק פעם ב-' + D + ' צעדים';
-  $('status').className = 'chip neu'; $('status').textContent = nC + ' משווים · המסלול הארוך: ' + D + ' משווים';
-  if (!adv) return;
-  const h = histFor(S.n), tot = h.reduce((a, b) => a + b, 0), bad = tot - h.ok[S.T];
-  const k = s => '<span class="k">' + s + '</span>';
-  $('calc').innerHTML = k('comparators') + ' = n(n−1)/2 = ' + nC + '<br>' + k('T_pd') + ' = (2n−3)·t₀ = ' + D + '·t₀<br>' + k('throughput') + ' = 1/' + D + ' per t₀<br>' +
-    k('P(worst)') + ' = ' + (100*h[D]/tot).toFixed(1) + '% of inputs<br>' + k('T = ' + S.T) + ' → wrong ≈ ' + (100*bad/tot).toFixed(1) + '%';
-}
-/* ---------- מיקומים: "כמו בשקף" (עמודות, מדרגה בתוך עמודה) או "לפי זמן" (x לפי העומק) ---------- */
-let G = {};
-function geom(w, h){
-  const n = net.n, m = net.comps.length, D = net.D, xL = 62, xR = w - 62, top = 26, bot = h - 22, s = (bot - top)/(n - 1);
-  const units = m + (n - 2)*1.0 + 0.8, st = (xR - xL - 20)/units, bw1 = Math.min(34, st*0.8);
-  const colX = []; let x = xL + 16; for (let c = 0; c < n - 1; c++){ colX[c] = x; x += (n - 1 - c)*st + st*1.0; }
-  const dt = (xR - xL - 20)/D, bw2 = Math.min(34, dt*0.78);
-  const e = layK*layK*(3 - 2*layK);
-  const P = net.comps.map(o => { const x1 = colX[o.c] + (n - 2 - o.r)*st, x2 = xL + 14 + (o.d - 1)*dt; return {x:x1 + (x2 - x1)*e, w:bw1 + (bw2 - bw1)*e}; });
-  return G = {xL, xR, top, s, y:r => top + r*s, P};
-}
-function drawN(){
-  const {g, w, h} = fitCanvas($('cvN')); g.clearRect(0, 0, w, h); if (!net) return;
-  const {xL, xR, y, s, P} = geom(w, h), n = net.n, ti = Math.min(Math.floor(tNow), ST.length - 1), st = ST[ti], fin = ST[ST.length - 1], fl = 1 - (tNow - ti);
-  const bh = Math.min(10, s*0.26);
-  // קווים: מקטע לכל שורה בין משווה למשווה
-  const last = []; for (let r = 0; r < n; r++) last[r] = {x:xL + 4, src:{k:-1, i:r}};
-  const seg = (r, x2) => { const L = last[r], v = val(L.src, st, inp), vf = val(L.src, fin, inp); g.strokeStyle = v === vf ? 'rgba(70,227,154,.85)' : '#ff9f43'; g.lineWidth = v === vf ? 1.6 : 2.4; g.beginPath(); g.moveTo(L.x, y(r)); g.lineTo(x2, y(r)); g.stroke(); };
-  net.comps.forEach((o, k) => { seg(o.r, P[k].x); seg(o.r + 1, P[k].x); last[o.r] = {x:P[k].x + P[k].w, src:{k, s:'H'}}; last[o.r + 1] = {x:P[k].x + P[k].w, src:{k, s:'L'}}; });
-  for (let r = 0; r < n; r++) seg(r, xR - 4);
-  // המסלול הארוך
-  if (adv && S.crit){ g.strokeStyle = 'rgba(255,77,94,.9)'; g.lineWidth = 4; g.lineJoin = 'round'; g.beginPath();
-    net.crit.forEach((k, i) => { const o = net.comps[k], cx = P[k].x + P[k].w/2, cy = (y(o.r) + y(o.r + 1))/2; i ? g.lineTo(cx, cy) : g.moveTo(cx, cy); }); g.stroke(); }
-  if (trackPath.length){ g.strokeStyle = 'rgba(56,225,255,.95)'; g.lineWidth = 3.5; g.beginPath();
-    let row = track; g.moveTo(xL - 6, y(row)); trackPath.forEach(k => { g.lineTo(P[k].x, y(row)); g.lineTo(P[k].x + P[k].w/2, y(row)); row = trackOut[k]; g.lineTo(P[k].x + P[k].w/2, y(row)); g.lineTo(P[k].x + P[k].w, y(row)); }); g.lineTo(xR - 4, y(row)); g.stroke(); }
-  // המשווים
-  const chg = new Set(CH[ti] || []), fs = Math.min(12, P[0].w*0.42);
-  net.comps.forEach((o, k) => { const x = P[k].x, bw = P[k].w, y0 = y(o.r) - bh, y1 = y(o.r + 1) + bh, ok = st.H[k] === fin.H[k] && st.L[k] === fin.L[k];
-    const onTrack = trackPath.includes(k), onCrit = adv && S.crit && net.crit.includes(k);
-    g.fillStyle = '#16213b'; g.fillRect(x, y0, bw, y1 - y0);
-    if (chg.has(k) && ti > 0 && tNow <= setOut + 1.2){ g.fillStyle = 'rgba(255,212,80,' + (0.25 + 0.6*fl) + ')'; g.fillRect(x, y0, bw, y1 - y0); }
-    g.strokeStyle = onTrack ? '#38e1ff' : onCrit ? '#ff4d5e' : ok ? 'rgba(70,227,154,.7)' : '#ff9f43'; g.lineWidth = onTrack || onCrit ? 2.2 : 1.3; g.strokeRect(x, y0, bw, y1 - y0);
-    if (bw >= 15){ g.fillStyle = '#eef3fb'; g.font = '600 ' + fs + 'px Consolas,monospace'; g.textAlign = 'center'; g.textBaseline = 'middle';
-      g.fillText(st.H[k], x + bw/2, y(o.r) + (y1 - y0)*0.18); g.fillText(st.L[k], x + bw/2, y(o.r + 1) - (y1 - y0)*0.18); }
-    if (bw >= 28 && s > 44){ g.fillStyle = 'rgba(147,163,191,.55)'; g.font = '9px Consolas,monospace'; g.textAlign = 'left'; g.textBaseline = 'alphabetic'; g.fillText('A', x + 2, y0 + 10); g.fillText('B', x + 2, y1 - 3); g.textAlign = 'right'; g.fillText('H', x + bw - 2, y0 + 10); g.fillText('L', x + bw - 2, y1 - 3); }
-  });
-  g.textBaseline = 'alphabetic';
-  // כניסות ויציאות
-  const chip = (x, yy, t, bg, bd) => { g.fillStyle = bg; g.strokeStyle = bd; g.lineWidth = 1.4; g.beginPath(); g.roundRect(x - 22, yy - 12, 44, 24, 7); g.fill(); g.stroke(); g.fillStyle = '#fff'; g.font = '700 14px Consolas,monospace'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(t, x, yy + 1); g.textBaseline = 'alphabetic'; };
-  inp.forEach((v, r) => chip(xL - 30, y(r), v, r === track ? '#0e3a48' : '#1f2a44', r === track ? '#38e1ff' : '#3a4a70'));
-  const sorted = [...inp].sort((a, b) => b - a), samp = clockOn() && tNow >= S.T, so = samp ? outsOf(ST[S.T], inp) : outsOf(st, inp);
-  so.forEach((v, r) => { const ok = v === sorted[r]; chip(xR + 30, y(r), v, ok ? '#123a28' : '#3a2410', ok ? '#46e39a' : '#ff9f43'); });
-  if (samp){ const good = so.join() === sorted.join(); g.fillStyle = good ? '#46e39a' : '#ff4d5e'; g.font = '700 13px Segoe UI,Arial'; g.textAlign = 'center'; g.fillText((good ? '✓' : '✗') + ' T=' + S.T, xR + 30, 13); }
-}
-/* תווית עברית על קנבס: כיוון מימין לשמאל רק לטקסט הזה */
-function heb(g, t, x, y, al){ g.save(); g.direction = 'rtl'; g.textAlign = al || 'right'; g.fillText(t, x, y); g.restore(); }
-/* עברית + ביטוי: העברית מימין, הביטוי (משמאל לימין) משמאלה. al = הצד שבו העוגן x */
-function mix(g, he, ma, x, y, al){ g.save(); g.direction = 'ltr'; const wh = g.measureText(he).width, wm = g.measureText(ma).width, x0 = al === 'left' ? x : x - wh - 5 - wm;
-  g.textAlign = 'left'; g.fillText(ma, x0, y); g.direction = 'rtl'; g.textAlign = 'right'; g.fillText(he, x0 + wm + 5 + wh, y); g.restore(); }
-/* ---------- ציר הזמן או ההיסטוגרמה ---------- */
-function drawB(){
-  const {g, w, h} = fitCanvas($('cvB')); g.clearRect(0, 0, w, h); if (!net) return;
-  const D = net.D, m = 46, base = h - 30, top = 22, X = t => m + t/(D + 1.5)*(w - 2*m);
-  g.fillStyle = '#7f8fab'; g.font = '12px Consolas,monospace'; g.textAlign = 'center'; for (let t = 0; t <= D + 1; t++) g.fillText(t, X(t), h - 12);
-  g.textAlign = 'right'; g.fillText('t/t₀', w - 6, h - 12);
-  const red = () => { g.strokeStyle = '#ff4d5e'; g.setLineDash([6, 4]); g.lineWidth = 1.8; g.beginPath(); g.moveTo(X(D), top - 8); g.lineTo(X(D), base); g.stroke(); g.setLineDash([]);
-    g.fillStyle = '#ff8a96'; g.font = '12px Segoe UI,Arial'; mix(g, 'מובטח:', '(2n−3)·t₀ = ' + D + '·t₀', X(D) - 6, top + 2); };
-  if (adv && S.bot === 'hist'){
-    const hh = histFor(S.n), tot = hh.reduce((a, b) => a + b, 0), mx = Math.max(...hh), bw = (X(1) - X(0))*0.7;
-    hh.forEach((c, t) => { if (!c) return; const hgt = c/mx*(base - top - 18); g.fillStyle = clockOn() && t > S.T ? '#ff4d5e' : t === D ? '#ff9f43' : '#fbbf24'; g.fillRect(X(t) - bw/2, base - hgt, bw, hgt);
-      g.fillStyle = '#cdd8ea'; g.font = '11px Consolas,monospace'; g.textAlign = 'center'; g.fillText((100*c/tot).toFixed(1) + '%', X(t), base - hgt - 4); });
-    red(); g.fillStyle = '#93a3bf'; g.font = '12px Segoe UI,Arial'; heb(g, 'מתי המוצא השתנה בפעם האחרונה (2000 קלטים אקראיים)', m, top + 2, 'left');
-    if (clockOn()){ g.strokeStyle = '#38e1ff'; g.lineWidth = 2; g.beginPath(); g.moveTo(X(S.T + 0.5), top + 10); g.lineTo(X(S.T + 0.5), base); g.stroke(); g.fillStyle = '#38e1ff'; g.font = '12px Segoe UI,Arial'; mix(g, 'אדום = המוצא עוד השתנה אחרי הדגימה', 'T = ' + S.T + '·t₀:', m, top + 22, 'left'); }
-    g.strokeStyle = 'rgba(147,163,191,.4)'; g.beginPath(); g.moveTo(m, base); g.lineTo(w - m, base); g.stroke(); return;
+/* ---------- אסטרטגיה: אילו משווים בכל שלב, איפה הרגיסטרים, מה מחזור השעון ---------- */
+const NAMES = {comb:'צירופי', cols:'בין העמודות', diag:'באלכסון', oe:'זוגי-אי-זוגי', loop:'חומרה בלולאה'};
+function plan(cut, n){
+  const L = {comps:[], cuts:[], rows:1, V:1, acc:1, delay:1, loop:false};
+  if (cut === 'comb' || cut === 'cols' || cut === 'diag'){
+    const nt = build(n), D = nt.D;
+    if (cut === 'diag'){ nt.comps.forEach(o => L.comps.push({r:o.r, u:(o.d - 1)*1.6, p:o.d - 1})); for (let k = 0; k <= D; k++) L.cuts.push(k*1.6 - 0.4); L.rows = L.V = D; L.delay = 1; }
+    else { const cs = []; let x = 0; for (let c = 0; c < n - 1; c++){ cs[c] = x; x += (n - 1 - c) + 1.2; }
+      nt.comps.forEach(o => L.comps.push({r:o.r, u:cs[o.c] + (n - 2 - o.r), p:cut === 'cols' ? o.c : 0}));
+      const end = cs[n - 2] + 0.8 + 0.6;
+      if (cut === 'cols'){ for (let c = 0; c < n - 1; c++) L.cuts.push(cs[c] - 0.6); L.cuts.push(end); L.rows = L.V = n - 1; L.delay = n - 1; }
+      else { L.cuts = [-0.6, end]; L.rows = L.V = 1; L.delay = D; } }
+  } else {
+    const st = cut === 'oe' ? n : 2; for (let s = 0; s < st; s++) for (let r = s % 2; r <= n - 2; r += 2) L.comps.push({r, u:s*1.6, p:s});
+    for (let k = 0; k <= st; k++) L.cuts.push(k*1.6 - 0.4); L.rows = st; L.V = n; L.delay = 1;
+    if (cut === 'loop'){ L.acc = n; L.loop = true; }
   }
-  const cnt = CH.map(c => c.length), mx = Math.max(4, ...cnt), bw = (X(1) - X(0))*0.62;
-  cnt.forEach((c, t) => { if (t === 0 || t > tNow) return; const hgt = c/mx*(base - top - 14); g.fillStyle = '#fbbf24'; g.fillRect(X(t) - bw/2, base - hgt, bw, hgt);
-    if (c){ g.fillStyle = '#cdd8ea'; g.font = '11px Consolas,monospace'; g.textAlign = 'center'; g.fillText(c, X(t), base - hgt - 4); } });
-  g.strokeStyle = 'rgba(147,163,191,.4)'; g.beginPath(); g.moveTo(m, base); g.lineTo(w - m, base); g.stroke();
-  red();
-  if (tNow >= setOut){ g.strokeStyle = '#46e39a'; g.lineWidth = 2.4; g.beginPath(); g.moveTo(X(setOut), top + 8); g.lineTo(X(setOut), base); g.stroke();
-    g.fillStyle = '#7dffb4'; g.font = '12px Segoe UI,Arial'; mix(g, 'המוצא התייצב:', setOut + '·t₀', X(setOut) - 6, top + 22); }
-  if (clockOn()){ g.strokeStyle = '#38e1ff'; g.lineWidth = 2; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(X(S.T), top + 30); g.lineTo(X(S.T), base); g.stroke(); g.setLineDash([]); g.fillStyle = '#38e1ff'; g.font = '12px Segoe UI,Arial'; mix(g, 'דגימה:', 'T = ' + S.T + '·t₀', X(S.T) + 5, top + 40, 'left'); }
-  g.fillStyle = 'rgba(255,255,255,.75)'; g.fillRect(X(Math.min(tNow, D + 1.5)) - 1, top - 6, 2, base - top + 6);
-  g.fillStyle = '#93a3bf'; g.font = '12px Segoe UI,Arial'; heb(g, 'משווים שהשתנו בכל צעד', m, top + 2, 'left');
+  L.T = L.delay + (adv ? S.treg : 0); L.lat = L.V*L.T; L.every = L.acc*L.T;
+  L.nComp = L.comps.length; L.nReg = n*(cut === 'loop' ? 2 : L.cuts.length);
+  return L;
 }
-/* לחיצה על מספר בכניסה: מעקב (במצב המורחב) */
-$('cvN').addEventListener('click', e => { if (!adv || !S.follow || !G.y) return; const r = $('cvN').getBoundingClientRect(), x = e.clientX - r.left, yy = e.clientY - r.top;
-  for (let i = 0; i < net.n; i++) if (Math.abs(x - (G.xL - 30)) < 26 && Math.abs(yy - G.y(i)) < 14){ track = track === i ? -1 : i; computeTrack(); dirty = true; return; } });
-$('cvN').addEventListener('mousemove', e => { if (!adv || !S.follow || !G.y) { $('cvN').style.cursor = 'default'; return; } const r = $('cvN').getBoundingClientRect(), x = e.clientX - r.left; $('cvN').style.cursor = Math.abs(x - (G.xL - 30)) < 26 ? 'pointer' : 'default'; });
+/* ---------- זרימת הבעיות: בעיה k נכנסת במחזור e_k = k·acc, ובמחזור j היא בשלב הווירטואלי v = j − e_k ---------- */
+let P, tNow = 0, lastJ = -1, flash = 0, probs = [];
+const STEP = 0.25;                                       // שניות לכל t₀
+const COLS = ['#38bdf8', '#f472b6', '#a3e635', '#fbbf24', '#c084fc', '#2dd4bf', '#fb7185', '#facc15'];
+const colOf = k => COLS[k % COLS.length];
+const rnd = n => { const s = new Set(); while (s.size < n) s.add(1 + Math.floor(Math.random()*99)); return [...s]; };
+const probIn = k => { while (probs.length <= k) probs.push(rnd(S.n)); return probs[k]; };
+const physRow = v => P.loop ? v % 2 : v;
+function inStage(j, row){ // איזו בעיה נמצאת בשלב הפיזי row במחזור j
+  if (j < 0) return -1;
+  if (P.acc === 1){ const k = j - row; return k >= 0 && row < P.rows ? k : -1; }
+  const k = Math.floor(j/P.acc), v = j - k*P.acc; return v < P.V && physRow(v) === row ? k : -1;
+}
+function reset(){ P = plan(S.cut, S.n); probs = []; tNow = 0; lastJ = -1; updPanel(); dirty = true; }
+function onChange(k){ reset(); }
+bindAll(onChange);
+window.onModeChange = () => reset();
+function updPanel(){
+  const L = P, nC = L.nComp;
+  $('nV').textContent = S.n; $('trV').innerHTML = S.treg.toFixed(2) + '·t₀';
+  const worstLat = (S.n - 1)*(S.n - 1 + (adv ? S.treg : 0));
+  bar('lBar', L.lat/worstLat, '#c084fc'); $('lV').textContent = +L.lat.toFixed(2) + ' · t₀';
+  $('lRow').textContent = (L.V === 1 ? 'שלב אחד' : L.V + ' שלבים') + ' × שעון ' + (+L.T.toFixed(2)) + '·t₀';
+  bar('tBar', (1 + (adv ? S.treg : 0))/L.every, '#46e39a'); $('tV').textContent = 'כל ' + (+L.every.toFixed(2)) + ' · t₀';
+  $('tRow').textContent = L.acc > 1 ? 'הלולאה תפוסה עד שהבעיה יוצאת' : L.V > 1 ? 'בעיה חדשה נכנסת בכל מחזור' : 'בעיה אחת בכל פעם';
+  $('status').textContent = nC + ' משווים · ' + L.nReg + ' רגיסטרים · ' + NAMES[S.cut];
+  if (!adv) return;
+  const k = s => '<span class="k">' + s + '</span>', pad = (s, w) => String(s).padEnd(w, ' ').replace(/ /g, '&nbsp;');
+  let h = k(pad('cut', 6) + pad('T', 6) + pad('lat', 7) + pad('every', 7) + pad('comp', 5) + 'regs') + '<br>';
+  ['comb', 'cols', 'diag', 'oe', 'loop'].forEach(c => { const q = plan(c, S.n), row = pad(c, 6) + pad(+q.T.toFixed(2), 6) + pad(+q.lat.toFixed(2), 7) + pad(+q.every.toFixed(2), 7) + pad(q.nComp, 5) + q.nReg;
+    h += (c === S.cut ? '<b style="color:#ffd479">' + row + '</b>' : row) + '<br>'; });
+  $('calc').innerHTML = h;
+}
+/* ---------- ציור: הרשת, הרגיסטרים, והבעיות שבתוכה ---------- */
+function rr(g, x, y, w, h, r){ g.beginPath(); g.roundRect(x, y, w, h, r); }
+function heb(g, t, x, y, al){ g.save(); g.direction = 'rtl'; g.textAlign = al || 'right'; g.fillText(t, x, y); g.restore(); }
+function mix(g, he, ma, x, y, al){ g.save(); g.direction = 'ltr'; const wh = g.measureText(he).width, wm = g.measureText(ma).width, x0 = al === 'left' ? x : al === 'center' ? x - (wh + 5 + wm)/2 : x - wh - 5 - wm;
+  g.textAlign = 'left'; g.fillText(ma, x0, y); g.direction = 'rtl'; g.textAlign = 'right'; g.fillText(he, x0 + wm + 5 + wh, y); g.restore(); }
+function drawN(){
+  const {g, w, h} = fitCanvas($('cvN')); g.clearRect(0, 0, w, h);
+  const n = S.n, xL = 74, xR = w - 74, top = 34, bot = h - (P.loop ? 40 : 18), s = (bot - top)/(n - 1), y = r => top + r*s;
+  const u0 = Math.min(...P.cuts), u1 = Math.max(...P.cuts), X = u => xL + (u - u0)/(u1 - u0)*(xR - xL), ux = (xR - xL)/(u1 - u0), bw = Math.min(30, ux*0.8);
+  const j = Math.floor(tNow/P.T);
+  // רצועות השלבים, בצבע הבעיה שבתוכן
+  for (let p = 0; p < P.rows; p++){ const k = inStage(j, p), x0 = X(P.cuts[p]) + 7, x1 = X(P.cuts[p + 1]) - 7; if (x1 <= x0) continue;
+    rr(g, x0, top - 22, x1 - x0, bot - top + 36, 8); g.fillStyle = k >= 0 ? colOf(k) + '30' : 'rgba(147,163,191,.05)'; g.fill();
+    if (k >= 0){ g.strokeStyle = colOf(k) + '90'; g.lineWidth = 1.2; g.stroke(); g.fillStyle = colOf(k); g.font = '700 ' + Math.min(13, Math.max(9, (x1 - x0)*0.32)) + 'px Consolas,monospace'; g.textAlign = 'center'; g.fillText('#' + (k + 1), (x0 + x1)/2, top - 9); } }
+  // קווים
+  g.strokeStyle = '#5b6b8c'; g.lineWidth = 1.5; for (let r = 0; r < n; r++){ g.beginPath(); g.moveTo(xL - 8, y(r)); g.lineTo(xR + 8, y(r)); g.stroke(); }
+  if (P.loop){ g.strokeStyle = '#f59e0b'; g.lineWidth = 2; g.setLineDash([6, 4]); g.beginPath(); g.moveTo(xR + 8, y(n - 1)); g.lineTo(xR + 20, y(n - 1)); g.lineTo(xR + 20, bot + 30); g.lineTo(xL - 20, bot + 30); g.lineTo(xL - 20, y(n - 1)); g.lineTo(xL - 8, y(n - 1)); g.stroke(); g.setLineDash([]);
+    g.fillStyle = '#ffcf7a'; g.font = '12px Segoe UI,Arial'; mix(g, 'הנתונים חוזרים לכניסה,', 'n/2 = ' + n/2 + ' סיבובים', (xL + xR)/2, bot + 24, 'center'); }
+  // משווים
+  P.comps.forEach(o => { const x = X(o.u), y0 = y(o.r) - 7, y1 = y(o.r + 1) + 7; rr(g, x, y0, bw, y1 - y0, 3); g.fillStyle = '#16213b'; g.fill(); g.strokeStyle = '#8fb3ff'; g.lineWidth = 1.2; g.stroke(); });
+  // רגיסטרים
+  const rs = Math.min(12, Math.max(6, ux*0.36)), fl = Math.max(0, 1 - (tNow - j*P.T)/Math.min(P.T, 1)*1.2);
+  P.cuts.forEach(u => { const x = X(u); for (let r = 0; r < n; r++){ g.fillStyle = fl > 0 ? 'rgb(255,' + Math.round(158 + 97*fl) + ',' + Math.round(11 + 244*fl) + ')' : '#f59e0b'; g.fillRect(x - rs/2, y(r) - rs/2, rs, rs); } });
+  // כניסה: הבעיה הבאה. יציאה: הבעיה האחרונה שיצאה
+  const nextK = P.acc === 1 ? j + 1 : Math.floor(j/P.acc) + 1, outK = P.acc === 1 ? j - P.V : Math.floor((j - P.V)/P.acc);
+  const chip = (x, yy, t, c) => { rr(g, x - 20, yy - 11, 40, 22, 6); g.fillStyle = c + '33'; g.fill(); g.strokeStyle = c; g.lineWidth = 1.3; g.stroke(); g.fillStyle = '#fff'; g.font = '700 13px Consolas,monospace'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(t, x, yy + 1); g.textBaseline = 'alphabetic'; };
+  probIn(Math.max(0, nextK)).forEach((v, r) => chip(xL - 44, y(r), v, colOf(Math.max(0, nextK))));
+  g.fillStyle = '#93a3bf'; g.font = '11px Segoe UI,Arial'; g.textAlign = 'center'; g.fillText('#' + (Math.max(0, nextK) + 1), xL - 44, top - 18);
+  if (outK >= 0){ const o = [...probIn(outK)].sort((a, b) => b - a); o.forEach((v, r) => chip(xR + 44, y(r), v, colOf(outK))); g.fillStyle = colOf(outK); g.fillText('#' + (outK + 1) + ' ✓', xR + 44, top - 18); }
+  else { g.fillStyle = '#93a3bf'; g.font = '12px Segoe UI,Arial'; heb(g, 'עוד אין', xR + 66, y(0)); }
+}
+/* ---------- דיאגרמת מרחב-זמן ---------- */
+function drawT(){
+  const {g, w, h} = fitCanvas($('cvT')); g.clearRect(0, 0, w, h);
+  const m = 52, top = 30, base = h - 28, R = P.rows, rh = Math.min(40, (base - top - 34)/R), W = Math.max(30, 1.6*P.lat + 3*P.every + 4);
+  const t0w = Math.max(0, tNow - W*0.7), X = t => m + (t - t0w)/W*(w - 2*m), Y = r => top + r*rh;
+  g.save(); g.beginPath(); g.rect(m, 0, w - 2*m, h); g.clip();
+  const kMax = Math.ceil((t0w + W)/(P.acc*P.T)) + 1;
+  for (let k = Math.max(0, Math.floor((t0w - P.lat)/(P.acc*P.T)) - 1); k <= kMax; k++){ const e = k*P.acc;
+    for (let v = 0; v < P.V; v++){ const ta = (e + v)*P.T, tb = ta + P.T; if (tb < t0w || ta > tNow) continue; const row = physRow(v);
+      g.fillStyle = colOf(k) + (ta <= tNow && tNow < tb ? 'ff' : 'b0'); g.fillRect(X(ta) + 0.5, Y(row) + 1, Math.max(1, X(Math.min(tb, tNow)) - X(ta) - 1), rh - 2);
+      if (X(tb) - X(ta) > 22 && rh > 13 && tb <= tNow + P.T){ g.fillStyle = '#05070d'; g.font = '700 10px Consolas,monospace'; g.textAlign = 'center'; g.fillText('#' + (k + 1), (X(ta) + X(Math.min(tb, tNow)))/2, Y(row) + rh/2 + 4); } } }
+  g.restore();
+  // צירים
+  g.strokeStyle = 'rgba(147,163,191,.25)'; g.lineWidth = 1; for (let r = 0; r <= R; r++){ g.beginPath(); g.moveTo(m, Y(r)); g.lineTo(w - m, Y(r)); g.stroke(); }
+  g.fillStyle = '#7f8fab'; g.font = '11px Consolas,monospace'; g.textAlign = 'right'; const lab = Math.ceil(R/10);
+  for (let r = 0; r < R; r += lab) g.fillText(P.loop ? (r ? 'odd' : 'even') : 's' + (r + 1), m - 4, Y(r) + rh/2 + 4);
+  const stp = W > 80 ? 10 : W > 40 ? 5 : 2; g.textAlign = 'center'; for (let t = Math.ceil(t0w/stp)*stp; t <= t0w + W; t += stp) g.fillText(t, X(t), h - 10);
+  g.textAlign = 'right'; g.fillText('t/t₀', w - 6, h - 10);
+  // השהיה של בעיה #1, וקצב בין שתי יציאות
+  const bl = Y(R) + 10;
+  // הבעיה האחרונה שכבר יצאה ושנכנסה בתוך החלון
+  const per = P.acc*P.T; let kb = Math.floor((tNow - P.lat)/per); if (kb >= 0 && kb*per < t0w) kb = -1;
+  if (kb >= 0){ const ta = kb*per, tb = ta + P.lat; g.strokeStyle = '#fff'; g.lineWidth = 1.6; g.beginPath(); g.moveTo(X(ta), bl - 5); g.lineTo(X(ta), bl); g.lineTo(X(tb), bl); g.lineTo(X(tb), bl - 5); g.stroke();
+    g.fillStyle = '#fff'; g.font = '12px Segoe UI,Arial'; mix(g, 'השהיה של #' + (kb + 1) + ':', +P.lat.toFixed(2) + '·t₀', clamp((X(ta) + X(tb))/2, m + 90, w - m - 90), bl + 15, 'center'); }
+  g.fillStyle = 'rgba(255,255,255,.8)'; g.fillRect(X(tNow) - 1, top - 8, 2, Y(R) - top + 10);
+  g.fillStyle = '#93a3bf'; g.font = '12px Segoe UI,Arial'; heb(g, 'שלב (שורה) מול זמן: כל צבע הוא בעיה', w - m, 18);
+}
 function tick(dt){
-  const tgt = adv && S.lay === 'time' ? 1 : 0; if (layK !== tgt){ layK = clamp(layK + Math.sign(tgt - layK)*dt/0.8, 0, 1); }
-  const was = tNow; if (tNow < net.D + 1.5) tNow = Math.min(net.D + 1.5, tNow + dt/STEP);
-  if ((was < setOut) !== (tNow < setOut) || Math.floor(was) !== Math.floor(tNow)) updPanel();
-  drawN(); drawB();
+  tNow += dt/STEP; const j = Math.floor(tNow/P.T); if (j !== lastJ){ lastJ = j; }
+  drawN(); drawT();
 }
-rebuild();
-/* פתיח: ממיין של 4 מספרים, והמסלול הארוך באדום */
+reset();
+/* פתיח: מרחב-זמן, בלי pipeline מול חיתוך באלכסון (n = 8) */
 (function(){
-  const n = 4, nt = build(n), y = r => 30 + r*50, xs = {}; let h = '', x = 46;
-  for (let c = 0; c < n - 1; c++){ nt.comps.forEach((o, k) => { if (o.c === c) xs[k] = x + (n - 2 - o.r)*40; }); x += (n - 1 - c)*40 + 26; }
-  for (let r = 0; r < n; r++) h += '<line x1="14" y1="' + y(r) + '" x2="326" y2="' + y(r) + '" stroke="#5b6b8c" stroke-width="1.5"/>';
-  nt.comps.forEach((o, k) => { h += '<rect x="' + xs[k] + '" y="' + (y(o.r) - 9) + '" width="30" height="' + (y(o.r + 1) - y(o.r) + 18) + '" rx="3" fill="#1d2a48" stroke="#8fb3ff"/>' +
-    '<text x="' + (xs[k] + 3) + '" y="' + (y(o.r) + 4) + '" font-size="9" fill="#cdd8ea" direction="ltr" text-anchor="start">A  H</text><text x="' + (xs[k] + 3) + '" y="' + (y(o.r + 1) + 2) + '" font-size="9" fill="#cdd8ea" direction="ltr" text-anchor="start">B  L</text>'; });
-  h += '<polyline fill="none" stroke="#ff4d5e" stroke-width="3" stroke-linejoin="round" points="' + nt.crit.map(k => (xs[k] + 15) + ',' + ((y(nt.comps[k].r) + y(nt.comps[k].r + 1))/2)).join(' ') + '"/>';
-  h += '<text x="170" y="222" fill="#ff8a96" font-size="12" text-anchor="middle" direction="ltr">longest path: 2n − 3 = 5 comparators</text>';
+  let h = ''; const X = t => 40 + t*8.6, col = k => COLS[k % COLS.length];
+  h += '<text x="330" y="16" fill="#cdd8ea" font-size="12" text-anchor="end">בלי pipeline: בעיה כל 13·t₀</text>';
+  for (let k = 0; k < 3; k++) h += '<rect x="' + X(k*13) + '" y="24" width="' + (13*8.6 - 1) + '" height="20" fill="' + col(k) + '" fill-opacity=".85"/><text x="' + (X(k*13) + 55) + '" y="38" font-size="11" fill="#05070d" font-weight="700" direction="ltr" text-anchor="middle">#' + (k + 1) + '</text>';
+  h += '<text x="330" y="70" fill="#cdd8ea" font-size="12" text-anchor="end">באלכסון: 13 שלבים, בעיה כל t₀</text>';
+  for (let k = 0; k < 24; k++) for (let v = 0; v < 13; v++){ const t = k + v; if (t > 33) continue; h += '<rect x="' + X(t) + '" y="' + (78 + v*10) + '" width="7.6" height="9" fill="' + col(k) + '" fill-opacity=".85"/>'; }
+  h += '<text x="36" y="222" fill="#7f8fab" font-size="10" direction="ltr" text-anchor="start">t →</text>';
   $('probSvg').innerHTML = h;
 })();
 /* בדוק את עצמך */
@@ -544,10 +512,10 @@ $('qOpts').addEventListener('click', e => {
   document.querySelectorAll('#qOpts button').forEach(x => x.classList.remove('right', 'wrong'));
   const ok = b.dataset.a === 'a'; b.classList.add(ok ? 'right' : 'wrong');
   if (!ok) document.querySelector('#qOpts button[data-a="a"]').classList.add('right');
-  $('qFb').innerHTML = (ok ? '✓ נכון! ' : '✗ לא בדיוק. ') + "<bdi dir=\"ltr\">n(n − 1)/2 = 16·15/2 = 120</bdi> משווים, והמסלול הארוך הוא <bdi dir=\"ltr\">2n − 3 = 29</bdi> משווים, ולכן קלט חדש רק כל <bdi dir=\"ltr\">29·t₀</bdi>. (15 הם רק העמודה הראשונה, בלי האלכסון.) \"במקביל\" לא עוזר כל עוד אין רגיסטרים בפנים, וזה בדיוק הנושא של חלק ב. במעבדה: n = 10 נותן 45 משווים ו-17.";
+  $('qFb').innerHTML = (ok ? '✓ נכון! ' : '✗ לא בדיוק. ') + "יש <bdi dir=\"ltr\">2n − 3 = 17</bdi> שלבים של <bdi dir=\"ltr\">t₀</bdi> כל אחד, ולכן ההשהיה <bdi dir=\"ltr\">17·t₀</bdi> (כמו בצירופי). אבל בכל מחזור נכנסת בעיה חדשה ויוצאת אחת: תוצאה בכל <bdi dir=\"ltr\">t₀</bdi>. (<bdi dir=\"ltr\">81·t₀</bdi> ו-<bdi dir=\"ltr\">9·t₀</bdi> הם של החיתוך לעמודות: 9 שלבים של 9.) במעבדה: n = 10 ו\"באלכסון\".";
   $('qFb').classList.add('on'); $('qGo').style.display = '';
 });
-$('qGo').addEventListener('click', () => { if (adv) setMode(false); S.n = 10; syncUI(); onChange('n'); $('lab').scrollIntoView({behavior:'smooth'}); });
+$('qGo').addEventListener('click', () => { if (adv) setMode(false); S.n = 10; S.cut = 'diag'; syncUI(); onChange('n'); $('lab').scrollIntoView({behavior:'smooth'}); });
 syncUI();
 if (location.hash === '#adv') setMode(true);
 requestAnimationFrame(loop);
@@ -566,23 +534,18 @@ requestAnimationFrame(loop);
 
   const S3 = [];
   const SCRIPTS = [
-    async () => { await dragSlider(byId('rN'), 8, 900); await click(sv('pat', 'rnd')); say('קלט חדש נכנס: הגל של השינויים מתחיל להתפשט'); await sleep(4200);
-      say('הקווים הופכים מכתום לירוק, צעד אחרי צעד'); await sleep(3500); say('המוצא התייצב. ההבטחה של המעגל: רק אחרי 13·t₀'); await sleep(3500); },
-    async () => { await dragSlider(byId('rN'), 8, 700); for (let i = 0; i < 3; i++){ await click(byId('send')); say('קלט ' + (i + 1) + ': מחכים לרגע שבו המוצא מתייצב...'); await sleep(7600); }
-      say('הזמן בפועל משתנה, אבל המעגל לא יודע מתי סיים: תמיד מחכים 13·t₀'); await sleep(4000); },
-    async () => { await dragSlider(byId('rN'), 4, 1200); say('n = 4: שישה משווים, מובטח 5·t₀'); await sleep(3500); await dragSlider(byId('rN'), 8, 2200); say('n = 8: 28 משווים, 13·t₀'); await sleep(3500);
-      await dragSlider(byId('rN'), 10, 1500); say('n = 10: 45 משווים (ריבועי), אבל רק 17·t₀ (ליניארי)'); await sleep(4500); },
-    async () => { await dragSlider(byId('rN'), 8, 700); await click(sv('pat', 'sorted')); say('קלט ממוין: הגדול כבר למעלה'); await sleep(8000);
-      await click(sv('pat', 'rev')); say('קלט הפוך: כמעט כל המשווים מחליפים'); await sleep(8000); say('גם הקלט ה"קשה" לא עובר את 2n − 3'); await sleep(3000); await click(sv('pat', 'rnd')); },
-    async () => { await ensureAdv(); await dragSlider(byId('rN'), 8, 700); await toggle(byId('cCrit'), true); say('המסלול הארוך: למעלה בעמודה הראשונה, ואז באלכסון'); await sleep(4500);
-      await click(sv('lay', 'time')); say('סידור לפי זמן: כל משווה זז לפי העומק שלו'); await sleep(3500); await click(byId('send')); say('הגל עובר כחזית, והרוחב הוא 2n − 3'); await sleep(7500); await click(sv('lay', 'slide')); await toggle(byId('cCrit'), false); },
-    async () => { await ensureAdv(); await dragSlider(byId('rN'), 8, 700); say('כמה פעמים המוצא משתנה עד הצעד ה-13 ממש? חזו...'); await sleep(3000);
-      await click(sv('bot', 'hist')); say('בכ-6% מהקלטים: נדיר, אבל לא אפס'); await sleep(5500); await click(sv('bot', 'act')); },
-    async () => { await ensureAdv(); await dragSlider(byId('rN'), 8, 700); await click(sv('bot', 'hist')); await dragSlider(byId('rT'), 12, 1500); say('T = 12: הכול מימין לקו הכחול הוא תוצאה שגויה'); await sleep(4000);
-      await dragSlider(byId('rT'), 10, 1800); say('T = 10: יותר ממחצית הקלטים נכשלים'); await sleep(3500); await click(sv('bot', 'act')); await click(byId('send')); say('שולחים קלט ודוגמים ב-T = 10...'); await sleep(7000); await dragSlider(byId('rT'), 13, 1000); },
-    async () => { await ensureAdv(); await dragSlider(byId('rN'), 8, 700); await toggle(byId('cFollow'), true); say('לוחצים על המספר שנכנס למטה...');
-      const cv = byId('cvN'), r = cv.getBoundingClientRect(); await moveTo(r.left + G.xL - 30, r.top + G.y(7), 1200); await press(); track = 7; computeTrack(); dirty = true;
-      say('הקו הכחול: המסלול של המספר הזה. נסו גם מספרים אחרים'); await sleep(4500); await moveTo(r.left + G.xL - 30, r.top + G.y(3), 900); await press(); track = 3; computeTrack(); dirty = true; await sleep(4000); }
+    async () => { await dragSlider(byId('rN'), 8, 700); await click(sv('cut', 'comb')); say('בלי pipeline: בעיה אחת בכל פעם, תוצאה כל 13·t₀'); await sleep(9000); },
+    async () => { await dragSlider(byId('rN'), 8, 700); await click(sv('cut', 'cols')); say('חותכים בין העמודות: השעון 7·t₀ (השרשרת בעמודה הראשונה)'); await sleep(6000);
+      say('7 שלבים × 7 = 49·t₀ עד התוצאה הראשונה...'); await sleep(8000); say('ההשהיה התפוצצה ל-Θ(n²), והקצב כמעט לא השתפר'); await sleep(4000); },
+    async () => { await dragSlider(byId('rN'), 8, 700); await click(sv('cut', 'diag')); say('חותכים באלכסון: משווה אחד בכל שלב, שעון t₀'); await sleep(5000);
+      say('ההשהיה 13·t₀ כמו בצירופי, אבל תוצאה יוצאת בכל t₀'); await sleep(6000); },
+    async () => { await click(sv('cut', 'diag')); await dragSlider(byId('rN'), 4, 1200); say('n = 4: השהיה 5·t₀, תוצאה בכל t₀'); await sleep(3500);
+      await dragSlider(byId('rN'), 10, 2500); say('n = 10: השהיה 17·t₀, ועדיין תוצאה בכל t₀. תפוקה Θ(1)'); await sleep(5000); await dragSlider(byId('rN'), 8, 800); },
+    async () => { await ensureAdv(); await dragSlider(byId('rN'), 8, 600); await click(sv('cut', 'diag')); await dragSlider(byId('rTr'), 0, 500); say('בלי תקורה: השהיה 13·t₀'); await sleep(2500);
+      await dragSlider(byId('rTr'), 0.5, 1500); say('תקורת רגיסטר 0.5·t₀: כל שלב 1.5·t₀, השהיה 19.5·t₀'); await sleep(4000); await click(sv('cut', 'comb')); say('בצירופי: 13.5·t₀. ה-pipeline האריך את ההשהיה, אבל קנה תפוקה'); await sleep(4500); await dragSlider(byId('rTr'), 0, 600); await click(sv('cut', 'diag')); },
+    async () => { await ensureAdv(); await dragSlider(byId('rN'), 8, 600); await click(sv('cut', 'diag')); say('באלכסון: 13 שלבים'); await sleep(2500); await click(sv('cut', 'oe')); say('זוגי-אי-זוגי: אותם 28 משווים, רק 8 שלבים'); await sleep(6000); },
+    async () => { await ensureAdv(); await dragSlider(byId('rN'), 8, 600); await click(sv('cut', 'loop')); say('רק שני שלבים, 7 משווים. הנתונים מסתובבים 4 פעמים'); await sleep(6000);
+      say('השהיה 8·t₀, אבל בעיה חדשה רק כשהלולאה מתפנה: כל 8·t₀'); await sleep(6000); }
   ].map((fn, i) => S3.includes(i) ? fn : async () => { if (S.view === '3d') await click(viewBtn('2d')); return fn(); });
   const byId = id => document.getElementById(id);
   const LAB = document.querySelector('section.lab'), VIEW = LAB.querySelector('.view');

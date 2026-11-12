@@ -24,13 +24,24 @@
 window.SIMULATIONS = [
   {
     id: "comb-sorter",
-    title: "ממיין צירופי: כמה זמן מחכים לתוצאה?",
+    title: "ממיין צירופי (חלק א): כמה זמן מחכים לתוצאה?",
     description: "Bubble Sort בחומרה: גל של שינויים עובר ברשת המשווים. למה המעגל מבטיח תוצאה רק אחרי 2n − 3 משווים, כמה פעמים זה באמת קורה, ומה קורה כשהשעון מהיר מדי.",
-    category: "תכן מעגלים ספרתיים",
+    category: "תכן לוגי",
     tags: ["מעגל צירופי", "השהיה", "תפוקה", "מסלול קריטי", "Bubble Sort"],
     thumbnailUrl: "gallery/thumbs/comb-sorter.svg",
-    simulationUrl: "תכן מעגלים ספרתיים/ממיין צירופי – חלק א.html",
+    simulationUrl: "תכן לוגי/ממיין בחומרה – חלק א.html",
     accent: "#fbbf24",
+    added: "2026-11-12"
+  },
+  {
+    id: "pipelined-sorter",
+    title: "ממיין ב-pipeline (חלק ב): איפה לחתוך?",
+    description: "אותו ממיין, עם רגיסטרים: חיתוך בין העמודות מנפח את ההשהיה ל-Θ(n²), חיתוך באלכסון נותן תוצאה בכל t₀. דיאגרמת מרחב-זמן, תקורת רגיסטרים, זוגי-אי-זוגי וחומרה בלולאה.",
+    category: "תכן לוגי",
+    tags: ["pipeline", "תפוקה", "השהיה", "רגיסטרים", "odd-even sort"],
+    thumbnailUrl: "gallery/thumbs/pipelined-sorter.svg",
+    simulationUrl: "תכן לוגי/ממיין בחומרה – חלק ב.html",
+    accent: "#c084fc",
     added: "2026-11-12"
   },
   {
@@ -290,12 +301,12 @@ window.COURSES = [
     sims: ["prism-rainbow", "malus", "fabry-perot"]
   },
   {
-    id: "digital-design",
-    title: "תכן מעגלים ספרתיים",
+    id: "logic-design",
+    title: "תכן לוגי",
     description: "השהיה, תפוקה ו-pipeline: למה מעגל מהיר רק כמו המסלול הארוך שלו, ואיך חותכים אותו לשלבים.",
-    thumbnailUrl: "gallery/courses/digital-design.svg",
+    thumbnailUrl: "gallery/courses/logic-design.svg",
     accent: "#fbbf24",
-    sims: ["comb-sorter"]
+    sims: ["comb-sorter", "pipelined-sorter"]
   },
   {
     id: "machine-learning",
