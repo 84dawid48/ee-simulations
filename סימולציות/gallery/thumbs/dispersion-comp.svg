@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.d{animation:mv 5s ease-in-out infinite}
+@keyframes mv{0%,100%{offset-distance:0%}90%{offset-distance:100%}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".5" r=".8"><stop offset="0" stop-color="#151530"/><stop offset="1" stop-color="#05070d"/></radialGradient></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<rect x="430" y="40" width="170" height="270" fill="rgba(157,139,255,.12)"/>
+<line x1="40" y1="160" x2="600" y2="160" stroke="#ff4d5e" stroke-width="2.5" stroke-dasharray="10 8"/>
+<path id="p" d="M40 250 C200 245 330 160 430 70 C480 140 540 220 600 250" fill="none" stroke="#ffd479" stroke-width="6"/>
+<path d="M430 70 C480 140 540 220 600 250" fill="none" stroke="#d8b4ff" stroke-width="6"/>
+<circle r="11" fill="#fff" class="d" style="offset-path:path('M40 250 C200 245 330 160 430 70 C480 140 540 220 600 250')"/>
+<rect x="40" y="318" width="390" height="10" fill="#6cb8ff"/><rect x="430" y="318" width="170" height="10" fill="#9d8bff"/>
+</svg>

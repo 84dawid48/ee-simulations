@@ -23,6 +23,28 @@
 
 window.SIMULATIONS = [
   {
+    id: "fabry-perot-laser",
+    title: "לייזר פברי-פרו: סף ומודים אורכיים",
+    description: "האור מסתובב במהוד: מתחת לסף הוא דועך, מעליו הוא מצטבר וההגבר ננעל על ההפסדים. ספקטרום עם מסרק המודים, עקומת L-I וניסוי \"המראה המלוכלכת\".",
+    category: "תקשורת אופטית",
+    tags: ["לייזר", "זרם סף", "מודים אורכיים", "η_d", "L-I"],
+    thumbnailUrl: "gallery/thumbs/fp-laser.svg",
+    simulationUrl: "תקשורת אופטית/לייזר פברי-פרו.html",
+    accent: "#ff5a7a",
+    added: "2026-11-12"
+  },
+  {
+    id: "dispersion-compensation",
+    title: "פיצוי דיספרסיה: pre-chirp וסיב מפצה",
+    description: "אתגר: להגיע כמה שיותר רחוק ב-20Gb/s. סיב מפצה מחזיר את הפולס, וציוץ הפוך מצר אותו מראש. כולל מאזן הספק ופתרון התרגיל (108 ק\"מ).",
+    category: "תקשורת אופטית",
+    tags: ["DCF", "pre-chirp", "דיספרסיה כרומטית", "תלת-ממד"],
+    thumbnailUrl: "gallery/thumbs/dispersion-comp.svg",
+    simulationUrl: "תקשורת אופטית/פיצוי דיספרסיה.html",
+    accent: "#d8b4ff",
+    added: "2026-11-12"
+  },
+  {
     id: "gaussian-pulse-dispersion",
     title: "פולס גאוסי בסיב דיספרסיבי",
     description: "למה פולס צר מתרחב מהר יותר? הפולס נע לאורך הסיב, מתרחב ונעשה מצויץ, והצבעים מראים איך התדרים מתמיינים. כולל T₀ אופטימלי, טווח מרבי לקצב נתון ונוף תלת-ממדי.",
