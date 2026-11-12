@@ -9,8 +9,8 @@
   1. האהה: ∇f הוא חץ על המפה שמצביע לכיוון העלייה התלולה ביותר, תמיד בניצב לקו הגובה, ואורכו הוא התלילות. השיפוע בכל כיוון אחר הוא ∇f·d.
   2. הבלבול: "הגרדיאנט מצביע אל הפסגה" ו"הגרדיאנט הוא חץ על ההר בתלת-ממד". בפועל הוא חי במישור xy, ומצביע אל העלייה המקומית, לא אל הפסגה.
   3. הצורה: מפת גובה דו-ממדית עם קווי גובה (כמו מפה טופוגרפית), גשש נגרר. פורמט "מכשיר מדידה" + "חזה ואז גלה" בשאלת הסיום.
-  4. הבסיס: מפה, כיוון הליכה d, הצגת כל החצים. מורחב: מטפס שעולה לאורך ∇f, פרופיל הגובה לאורך d, חישוב מספרי.
-  5. נדחה: תצוגה תלת-ממדית של המשטח (הנקודה היא דווקא שהחץ שטוח), גרדיאנט בשלושה ממדים, כופלי לגרנז'.
+  4. הבסיס: מפה, כיוון הליכה d, הצגת כל החצים. מורחב: מבט "מפה | תלת-ממד" (ההר עומד מעל המפה שלו), מטפס שעולה לאורך ∇f, פרופיל הגובה לאורך d, חישוב מספרי.
+  5. נדחה: תלת-ממד במצב הבסיסי (שם דווקא חשוב לראות שהחץ שטוח, על המפה), גרדיאנט של פונקציה בשלושה משתנים, כופלי לגרנז'.
   6. פיצול: כן, לפי בקשה: גרדיאנט · דיברגנץ · רוטור, שלוש סימולציות נפרדות עם אותו גשש.
 -->
 <style>
@@ -19,11 +19,6 @@
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--txt);font-family:"Segoe UI","Rubik",Arial,sans-serif;padding-top:30px}
 #topbar{position:fixed;top:0;left:0;right:0;height:30px;background:#060912;border-bottom:1px solid var(--line);z-index:100}
-#brand{position:absolute;top:3px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;height:24px;text-decoration:none;color:#e8edf5;direction:ltr;opacity:.92}
-#brand:hover{opacity:1}
-#brand img{width:22px;height:22px;display:block}
-#brand svg{width:39px;height:13px;display:block}
-@media (max-width:700px){#brand{left:auto;right:44px;transform:none}#brand svg{display:none}}
 #bsd{position:absolute;top:7px;right:12px;font-size:12px;color:#c9d6ea}
 #copyr{position:absolute;top:4px;left:8px;font-size:12px;color:#dce6f5;background:#10172a;border:1px solid var(--line);border-radius:6px;padding:2px 10px}
 bdi{unicode-bidi:isolate}
@@ -103,6 +98,15 @@ body.adv .basic-only{display:none!important}
 .lessbtn{position:absolute;bottom:14px;left:14px;z-index:12;font:inherit;font-size:14px;color:#cdd8ea;background:rgba(10,15,28,.88);border:1px solid #3a4a6e;border-radius:30px;padding:9px 18px;cursor:pointer}
 .lessbtn:hover{border-color:var(--acc);color:#fff}
 
+#brand{position:absolute;top:3px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;height:24px;text-decoration:none;color:#e8edf5;direction:ltr;opacity:.92}
+#brand:hover{opacity:1}
+#brand img{width:22px;height:22px;display:block}
+#brand svg{width:39px;height:13px;display:block}
+@media (max-width:700px){#brand{left:auto;right:44px;transform:none}#brand svg{display:none}}
+#cv3d{display:none;cursor:grab;touch-action:none}
+.view.v3 #cv3d{display:block}
+.view.v3 #cvBg,.view.v3 #cvTr,.view.v3 #cvTop{visibility:hidden}
+#v3load{position:absolute;inset:0;display:grid;place-items:center;color:var(--mut);font-size:15px;pointer-events:none}
 .sbar{position:relative;height:12px;background:#141c30;border-radius:7px}
 .sbar::after{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:2px;background:#fff;opacity:.75}
 .sbar i{position:absolute;top:0;bottom:0;border-radius:7px;transition:left .12s,width .12s}
@@ -215,7 +219,7 @@ body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
 
 <!-- ===================== מעבדה ===================== -->
 <section class="lab" id="lab">
-  <div class="view" id="view"><canvas id="cvBg"></canvas><canvas id="cvTr"></canvas><canvas id="cvTop"></canvas></div>
+  <div class="view" id="view"><canvas id="cvBg"></canvas><canvas id="cvTr"></canvas><canvas id="cvTop"></canvas><canvas id="cv3d"></canvas><div id="v3load" style="display:none">טוען תלת-ממד…</div></div>
   <div class="pnl r">
     <div class="c-row"><div class="c-lbl">מפת הגובה</div>
       <div class="seg" id="fieldSeg"><button data-f="hill" class="on">גבעה</button><button data-f="ridge">רכס</button><button data-f="hills">שתי גבעות</button><button data-f="saddle">אוכף</button></div></div>
@@ -228,6 +232,7 @@ body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
         <div class="row"><span id="dAng"></span><span id="dV"></span></div></div>
     </div>
     <div class="sep adv-only">
+      <div class="c-row"><div class="c-lbl">מבט</div><div class="seg" id="views"><button data-view="2d" class="on">מפה</button><button data-view="3d">תלת-ממד</button></div></div>
       <button class="btn2" id="climbBtn">🧗 שחררו מטפס מהגשש</button>
       <div class="ttl">פרופיל הגובה לאורך <bdi dir="ltr">d</bdi></div><canvas id="cvProf"></canvas>
       <div class="calc" id="calc"></div>
@@ -263,8 +268,8 @@ body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
       <div class="ans">באוכף <bdi dir="ltr">f = 0.35(x² − y²)</bdi>. במרכז שתי הנגזרות החלקיות מתאפסות, אז הגרדיאנט אפס. אבל לאורך ציר <bdi dir="ltr">x</bdi> זו נקודת מינימום, ולאורך <bdi dir="ltr">y</bdi> נקודת מקסימום. <bdi dir="ltr">∇f = 0</bdi> לבדו לא מספר איזה סוג נקודה זו. לשם כך צריך את הנגזרות השניות.</div></li>
     <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>ב"שתי גבעות", שימו את הגשש למטה מימין ושחררו מטפס. הוא עולה עם החץ ונעצר על הגבעה הנמוכה. ממקום אחר, אותו מטפס מגיע לגבוהה.</div><button class="xbtn">הסבר</button></div>
       <div class="ans">המטפס עושה <b>עלייה בגרדיאנט</b> (gradient ascent): בכל צעד הולך קצת בכיוון <bdi dir="ltr">∇f</bdi>. המסלול שלו תמיד חוצה את קווי הגובה בזווית ישרה. הוא נעצר כש-<bdi dir="ltr">∇f = 0</bdi>, כלומר בפסגה <b>מקומית</b>, לא בהכרח בגבוהה ביותר. כך בדיוק מתנהגת "ירידה בגרדיאנט" באימון רשתות נוירונים: היא מוצאת מינימום מקומי, תלוי בנקודת ההתחלה.</div></li>
-    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>סובבו את <bdi dir="ltr">d</bdi> והסתכלו על פרופיל הגובה. השיפוע של הקו הצהוב בפרופיל שווה בדיוק למספר במד <bdi dir="ltr">∇f·d</bdi>.</div><button class="xbtn">הסבר</button></div>
-      <div class="ans">הפרופיל הוא "חתך" של המפה לאורך הקו שעובר בגשש בכיוון <bdi dir="ltr">d</bdi>: הפונקציה של משתנה אחד <bdi dir="ltr">g(t) = f(p + t·d)</bdi>. הנגזרת הרגילה שלה ב-<bdi dir="ltr">t = 0</bdi> היא הנגזרת הכיוונית: <bdi dir="ltr">g′(0) = ∇f·d</bdi>, וזה כלל השרשרת. ככה הגרדיאנט מחזיר אותנו לחשבון של משתנה אחד: בכל כיוון שבוחרים יש שיפוע רגיל, והגרדיאנט מקודד את כולם בבת אחת.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>עברו למבט "תלת-ממד": ההר עומד מעל המפה שלו. החץ הצהוב <b>שוכב על הרצפה</b>, והחץ הכתום שעל ההר הוא הטיפוס עצמו, והצל שלו נופל בדיוק על החץ הצהוב. סובבו את <bdi dir="ltr">d</bdi>: החץ התכלת שעל ההר עולה בשיפוע <bdi dir="ltr">∇f·d</bdi>.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">זה מיישב את שתי התמונות שמתבלבלים ביניהן. ההר הוא הגרף של <bdi dir="ltr">f</bdi>, וקווי הגובה במפה הם "פרוסות" אופקיות שלו, באותו צבע ובאותו מקום. <bdi dir="ltr">∇f</bdi> הוא וקטור <b>במישור</b> <bdi dir="ltr">xy</bdi>: הוא אומר לאיזה כיוון לצעוד על המפה, לא לאן ללכת בחלל. הצעד שעושים בפועל על ההר (הכתום) עולה בשיפוע <bdi dir="ltr">|∇f|</bdi>, והצל שלו הוא <bdi dir="ltr">∇f</bdi>. אותו דבר בכל כיוון אחר: החץ התכלת על ההר עולה בשיפוע <bdi dir="ltr">∇f·d</bdi>, וזה גם השיפוע של פרופיל הגובה בפאנל (<bdi dir="ltr">g′(0) = ∇f·d</bdi>, כלל השרשרת). גררו את הגשש על הרצפה וסובבו את המצלמה בעכבר.</div></li>
   </ol>
 </section>
 
@@ -282,8 +287,8 @@ body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
 "use strict";
 const $ = id => document.getElementById(id);
 const MODE = 'grad';
-const START = {"field":"hill","probe":[0.9,0.6],"ang":-90,"all":false};
-const ADV_DEF = {};
+const START = {"field":"hill","probe":[0.9,0.6],"ang":-90,"all":false,"view":"2d"};
+const ADV_DEF = {"view":"2d"};
 /* ======================================================================
    מנוע משותף לשדות וקטוריים/סקלריים בדו-ממד (MODE = grad | div | curl)
    קואורדינטות עולם: y כלפי מעלה, חצי-גובה H = 2.4
@@ -470,17 +475,19 @@ cvTop.addEventListener('pointermove', e => { if (dragging) setProbeFromEvent(e);
 cvTop.addEventListener('pointerup', () => { dragging = false; });
 // לשימוש ההדגמה האוטומטית
 window.PROBE = {pos:() => S.probe.slice(), set:(x, y) => { S.probe = [x, y]; updPanel(); },
-  screen:(x, y) => { const r = cvTop.getBoundingClientRect(); return [r.left + X(x), r.top + Y(y)]; }};
+  screen:(x, y) => { if (V3.on && V3.ready){ const v = P3(x, y, SIM3.probeH ? SIM3.probeH(x, y) : 0).project(V3.cam), r = V3.cv.getBoundingClientRect(); return [r.left + (v.x + 1)/2*r.width, r.top + (1 - v.y)/2*r.height]; }
+    const r = cvTop.getBoundingClientRect(); return [r.left + X(x), r.top + Y(y)]; }};
 /* ---------- לולאה ---------- */
 let dirty = true, last = performance.now(), visible = true;
 new IntersectionObserver(e => { visible = e[0].isIntersecting; }).observe(view);
-new ResizeObserver(() => { sizeAll(); dirty = true; }).observe(view);
+new ResizeObserver(() => { sizeAll(); size3D(); dirty = true; }).observe(view);
 function frame(now){
   requestAnimationFrame(frame);
   const dt = Math.max(0, Math.min(0.05, (now - last)/1000)); last = now;
   if (!visible) return;
-  if (dirty){ dirty = false; drawBg(); updPanel(); }
+  if (dirty){ dirty = false; drawBg(); if (V3.ready && SIM3.onBg) SIM3.onBg(); updPanel(); }
   stepParticles(dt); drawTop(dt);
+  if (V3.on && V3.ready){ SIM3.update(dt); V3.ctl.update(); V3.R.render(V3.scene, V3.cam); }
 }
 function setField(k){
   S.field = k; document.querySelectorAll('#fieldSeg button').forEach(b => b.classList.toggle('on', b.dataset.f === k));
@@ -495,13 +502,13 @@ function syncUI(){ document.querySelectorAll('[data-k]').forEach(el => { const k
 function setMode(on){
   adv = on; document.body.classList.toggle('adv', on);
   if (!on){ Object.assign(S, ADV_DEF); syncUI();
-    climb = null; if (S.field.startsWith('custom')) setField(START.field); }
+    climb = null; if (S.field.startsWith('custom')) setField(START.field); if ($('views')) setView('2d'); }
   dirty = true; $('lab').scrollIntoView({behavior:'smooth'});
 }
 $('more').addEventListener('click', () => setMode(true));
 $('less').addEventListener('click', () => setMode(false));
 document.querySelectorAll('.exp .xbtn').forEach(b => b.addEventListener('click', () => { const li = b.closest('.exp'); li.classList.toggle('open'); b.textContent = li.classList.contains('open') ? 'סגור' : 'הסבר'; }));
-const sgn = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2);
+const sgn = v => Math.abs(v) < 0.005 ? '0.00' : (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2);
 
 /* ---------- SVG לפתיח: רשת חצים של שדה מתוך המעבדה ---------- */
 function svgArrows(Fn, o){   // o: {x0,y0,w,h, ww,wh (חצי רוחב/גובה בעולם), nx,ny, col, mk}
@@ -516,6 +523,64 @@ function svgArrows(Fn, o){   // o: {x0,y0,w,h, ww,wh (חצי רוחב/גובה �
 }
 const svgMarker = (id, col) => '<marker id="' + id + '" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="' + col + '"/></marker>';
 function sbar(id, v){ const el = $(id), k = Math.max(-1, Math.min(1, v)); el.style.left = (k >= 0 ? 50 : 50 + 50*k) + '%'; el.style.width = Math.abs(50*k) + '%'; }
+
+/* ---------- מבט תלת-ממדי (מצב מורחב). Three.js נטען רק כשפותחים את המבט ---------- */
+const V3 = {on:false, ready:false, loading:null, handles:[]};
+const SIM3 = {};   // כל סימולציה ממלאת: build(), onBg(), update(dt), probeH(x, y)
+function loadScript(src){ return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+function load3D(){
+  if (!V3.loading) V3.loading = (window.THREE ? Promise.resolve() : loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'))
+    .then(() => THREE.OrbitControls ? 0 : loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js'));
+  return V3.loading;
+}
+const P3 = (x, y, h) => new THREE.Vector3(x, h, -y);    // עולם (x, y, גובה) → three
+function init3D(){
+  const cv = $('cv3d'), R = new THREE.WebGLRenderer({canvas:cv, antialias:true});
+  R.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); R.setClearColor(0x060a14, 1);
+  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(38, 1, 0.05, 200);
+  cam.position.set(0, 5.4, 8.4);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.62)); const dl = new THREE.DirectionalLight(0xffffff, 0.7); dl.position.set(3, 8, 5); scene.add(dl);
+  // גרירת הגשש: תופסים אותו ומזיזים במישור אופקי בגובה שלו. בכל מקום אחר: סיבוב המצלמה
+  const ray = new THREE.Raycaster(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3();
+  const ndc = e => { const r = cv.getBoundingClientRect(); return new THREE.Vector2((e.clientX - r.left)/r.width*2 - 1, -(e.clientY - r.top)/r.height*2 + 1); };
+  let drag = false;
+  cv.addEventListener('pointerdown', e => { ray.setFromCamera(ndc(e), cam); if (!ray.intersectObjects(V3.handles, true).length) return;
+    drag = true; plane.constant = -(SIM3.probeH ? SIM3.probeH(...S.probe) : 0); V3.ctl.enabled = false; cv.setPointerCapture(e.pointerId); cv.style.cursor = 'grabbing'; e.stopImmediatePropagation(); });
+  cv.addEventListener('pointermove', e => { if (!drag) return; ray.setFromCamera(ndc(e), cam);
+    if (ray.ray.intersectPlane(plane, hit)) PROBE.set(Math.max(-W, Math.min(W, hit.x)), Math.max(-HH, Math.min(HH, -hit.z))); });
+  const up = () => { drag = false; V3.ctl.enabled = true; cv.style.cursor = ''; };
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  const ctl = new THREE.OrbitControls(cam, cv); ctl.target.set(0, 0.5, 0); ctl.enableDamping = true; ctl.dampingFactor = 0.08;
+  ctl.minDistance = 3; ctl.maxDistance = 22; ctl.maxPolarAngle = Math.PI*0.495; ctl.enablePan = false;
+  Object.assign(V3, {cv, R, scene, cam, ctl, ready:true});
+  SIM3.build(); size3D(); if (SIM3.onBg) SIM3.onBg();
+}
+function size3D(){ if (!V3.ready) return; V3.R.setSize(cw, ch, false); V3.cam.aspect = cw/ch; V3.cam.updateProjectionMatrix(); }
+function setView(v){
+  S.view = v; S.heat = v === 'heat';
+  document.querySelectorAll('#views button').forEach(b => b.classList.toggle('on', b.dataset.view === v));
+  document.querySelectorAll('.v3-only').forEach(el => { el.style.display = v === '3d' ? '' : 'none'; });
+  V3.on = v === '3d'; view.classList.toggle('v3', V3.on); dirty = true;
+  if (V3.on && !V3.ready){ $('v3load').style.display = '';
+    load3D().then(() => { if (!V3.ready) init3D(); $('v3load').style.display = 'none'; dirty = true; updPanel(); })
+      .catch(err => { console.error(err); $('v3load').textContent = 'לא הצלחתי לטעון את התלת-ממד. בדקו את החיבור לאינטרנט.'; }); }
+  updPanel();
+}
+if ($('views')) $('views').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setView(b.dataset.view); });
+// חץ "שמן" (גליל + חרוט) שנראה טוב מכל זווית
+function fatArrow(col, rad){
+  const g = new THREE.Group(), m = new THREE.MeshLambertMaterial({color:col, emissive:col, emissiveIntensity:0.25});
+  const sh = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, 1, 10), m); sh.geometry.translate(0, 0.5, 0);
+  const hd = new THREE.Mesh(new THREE.ConeGeometry(rad*2.7, 1, 14), m); hd.geometry.translate(0, 0.5, 0);
+  g.add(sh, hd); g.userData = {sh, hd, rad, m}; return g;
+}
+function setFat(a, from, dir, len){
+  if (!(len > 1e-3) || dir.lengthSq() < 1e-12){ a.visible = false; return; } a.visible = true;
+  const hl = Math.min(len*0.45, a.userData.rad*7);
+  a.position.copy(from); a.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+  a.userData.sh.scale.set(1, Math.max(1e-3, len - hl), 1); a.userData.hd.scale.set(1, hl, 1); a.userData.hd.position.y = len - hl;
+}
+function fib(N){ const out = [], ga = Math.PI*(3 - Math.sqrt(5)); for (let i = 0; i < N; i++){ const z = 1 - 2*(i + 0.5)/N, r = Math.sqrt(1 - z*z), t = ga*i; out.push([r*Math.cos(t), r*Math.sin(t), z]); } return out; }
 
 /* ======================================================================
    חלק ייחודי לסימולציה הזו
@@ -550,6 +615,72 @@ function drawProf(x, y, c, s, dd){
   g.fillStyle = '#fff'; g.beginPath(); g.arc(px(0), py(f0), 4, 0, 7); g.fill();
   g.fillStyle = '#7f8fab'; g.font = '11px Segoe UI,Arial'; g.textAlign = 'left'; g.fillText('−d', 4, 12); g.textAlign = 'right'; g.fillText('+d', w - 4, 12);
 }
+/* ---------- מבט תלת-ממד: ההר מעל המפה שלו ---------- */
+const g3 = {surf:null, lines:null, lo:0, k:1};
+const H3 = v => -0.04 + (v - g3.lo)*g3.k;         // גובה ההר בסצנה: ההר יוצא מתוך הרצפה (המפה שלו)
+Object.assign(SIM3, {
+  probeH: () => 0,
+  build(){
+    const sc = V3.scene;
+    g3.tex = new THREE.CanvasTexture(cvBg);
+    g3.floor = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({map:g3.tex})); g3.floor.rotation.x = -Math.PI/2; sc.add(g3.floor);
+    g3.pf = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.05, 28), new THREE.MeshBasicMaterial({color:0xffffff})); sc.add(g3.pf);
+    g3.ps = new THREE.Mesh(new THREE.SphereGeometry(0.09, 20, 14), new THREE.MeshLambertMaterial({color:0xffffff, emissive:0x555555})); sc.add(g3.ps);
+    g3.stem = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0)]), new THREE.LineDashedMaterial({color:0xffffff, dashSize:0.06, gapSize:0.05, transparent:true, opacity:0.75}));
+    g3.stem.computeLineDistances(); sc.add(g3.stem);
+    g3.gF = fatArrow(0xffd479, 0.045); g3.dF = fatArrow(0x5ee0ff, 0.034); g3.gS = fatArrow(0xff9f43, 0.035); g3.dS = fatArrow(0x5ee0ff, 0.026);
+    sc.add(g3.gF, g3.dF, g3.gS, g3.dS);
+    // החצים שעל הרצפה נראים גם דרך ההר השקוף (כמו צל שרואים מבעד לזכוכית)
+    [g3.gF, g3.dF, g3.pf].forEach(o => o.traverse(m => { if (m.material){ m.material.depthTest = false; m.material.transparent = true; m.material.opacity = 0.95; m.renderOrder = 10; } }));
+    g3.climb = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({color:0xff9f43}));
+    g3.climbF = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({color:0xff9f43, transparent:true, opacity:0.55}));
+    sc.add(g3.climb, g3.climbF);
+    V3.handles = [g3.pf, g3.ps];
+    V3.ctl.target.set(0, 0.7, 0); V3.cam.position.set(0, 7.2, 7.4);
+  },
+  onBg(){                                         // המפה השתנתה (שדה או גודל): בונים מחדש את ההר
+    g3.tex.needsUpdate = true; g3.floor.scale.set(2*W, 2*HH, 1);
+    if (g3.surf){ V3.scene.remove(g3.surf, g3.lines); g3.surf.geometry.dispose(); g3.lines.geometry.dispose(); }
+    const NX = 120, NY = Math.max(20, Math.round(120*HH/W)), vals = [];
+    let lo = 1e9, hi = -1e9;
+    for (let j = 0; j <= NY; j++) for (let i = 0; i <= NX; i++){ const v = f(-W + 2*W*i/NX, HH - 2*HH*j/NY); vals.push(v); lo = Math.min(lo, v); hi = Math.max(hi, v); }
+    g3.lo = lo; g3.k = 1.7/((hi - lo) || 1);
+    const pos = [], col = [], idx = [];
+    for (let j = 0; j <= NY; j++) for (let i = 0; i <= NX; i++){ const x = -W + 2*W*i/NX, y = HH - 2*HH*j/NY, v = vals[j*(NX + 1) + i], c = terrain((v - lo)/((hi - lo) || 1));
+      pos.push(x, H3(v), -y); col.push(c[0]/255, c[1]/255, c[2]/255); }
+    for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++){ const a = j*(NX + 1) + i, b = a + 1, c = a + NX + 1, d = c + 1;
+      idx.push(a, c, b, b, c, d); }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.setIndex(idx); geo.computeVertexNormals();
+    g3.surf = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({vertexColors:true, side:THREE.DoubleSide, transparent:true, opacity:0.8, depthWrite:false}));
+    // קווי גובה על ההר: אותן 14 רמות כמו במפה
+    const seg = [], NL = 14;
+    for (let L = 1; L < NL; L++){ const lv = lo + (hi - lo)*L/NL; if (H3(lv) < 0.02) continue;
+      for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++){
+        const P = [[i, j], [i + 1, j], [i + 1, j + 1], [i, j + 1]].map(([u, w]) => [-W + 2*W*u/NX, HH - 2*HH*w/NY, vals[w*(NX + 1) + u]]), pts = [];
+        for (let e = 0; e < 4; e++){ const A = P[e], B = P[(e + 1)%4]; if ((A[2] - lv)*(B[2] - lv) < 0){ const t = (lv - A[2])/(B[2] - A[2]); pts.push([A[0] + (B[0] - A[0])*t, A[1] + (B[1] - A[1])*t]); } }
+        for (let q = 0; q + 1 < pts.length; q += 2) seg.push(pts[q][0], H3(lv) + 0.006, -pts[q][1], pts[q + 1][0], H3(lv) + 0.006, -pts[q + 1][1]);
+      } }
+    const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(seg, 3));
+    g3.lines = new THREE.LineSegments(lg, new THREE.LineBasicMaterial({color:0xffffff, transparent:true, opacity:0.4}));
+    V3.scene.add(g3.surf, g3.lines);
+  },
+  update(){
+    const [x, y] = S.probe, h = H3(f(x, y)), gv = grad(x, y), m = Math.hypot(gv[0], gv[1]), a = S.ang*Math.PI/180, c = Math.cos(a), s = Math.sin(a), dd = gv[0]*c + gv[1]*s;
+    g3.pf.position.copy(P3(x, y, 0.025)); g3.ps.position.copy(P3(x, y, h));
+    g3.stem.position.copy(P3(x, y, 0)); g3.stem.scale.set(1, h, 1);
+    const Lg = Math.min(1.6, m*0.75), Ld = 0.75;
+    // על הרצפה: ∇f ו-d. על ההר: אותם צעדים, עם העלייה האמיתית (השיפוע כפול הצעד), כך שהצל שלהם נופל על החצים שברצפה
+    setFat(g3.gF, P3(x, y, 0.03), new THREE.Vector3(gv[0], 0, -gv[1]), Lg);
+    setFat(g3.dF, P3(x, y, 0.03), new THREE.Vector3(c, 0, -s), Ld);
+    const vg = new THREE.Vector3(gv[0]/(m || 1)*Lg, g3.k*m*Lg, -gv[1]/(m || 1)*Lg), vd = new THREE.Vector3(c*Ld, g3.k*dd*Ld, -s*Ld);
+    setFat(g3.gS, P3(x, y, h + 0.02), vg, m > 0.01 ? vg.length() : 0);
+    setFat(g3.dS, P3(x, y, h + 0.02), vd, vd.length());
+    if (climb && climb.path.length > 1){
+      g3.climb.geometry.setFromPoints(climb.path.map(q => P3(q[0], q[1], H3(f(q[0], q[1])) + 0.03)));
+      g3.climbF.geometry.setFromPoints(climb.path.map(q => P3(q[0], q[1], 0.04))); g3.climb.visible = g3.climbF.visible = true;
+    } else g3.climb.visible = g3.climbF.visible = false;
+  }
+});
 /* פתיח: הרכס מהמעבדה, הגשש ב-(1.3, 0.45) */
 (function(){
   const sc = 55, cx = 170, cy = 125, sx = x => cx + x*sc, sy = y => cy - y*sc; let h = '<defs>' + svgMarker('mkY', '#ffd479') + '</defs>';
@@ -595,6 +726,11 @@ requestAnimationFrame(frame);
   const dragProbe = (x, y, dur) => { const [x0, y0] = PROBE.pos(); return pathProbe(k => [x0 + (x - x0)*k, y0 + (y - y0)*k], dur); };
   const orbit = (cx, cy, r, turns, dur) => { const [x0, y0] = PROBE.pos(), a0 = Math.atan2(y0 - cy, x0 - cx);
     return dragProbe(cx + r*Math.cos(a0), cy + r*Math.sin(a0), 700).then(() => pathProbe(k => [cx + r*Math.cos(a0 + 2*Math.PI*turns*k), cy + r*Math.sin(a0 + 2*Math.PI*turns*k)], dur)); };
+  // מסובב את המצלמה סביב המרכז (להדגמות במבט התלת-ממדי)
+  async function orbitCam(deg, dur){ const c = V3.cam, t = V3.ctl.target, r0 = c.position.clone().sub(t), a0 = Math.atan2(r0.x, r0.z), rr = Math.hypot(r0.x, r0.z);
+    await anim(dur || 3000, k => { const a = a0 + deg*Math.PI/180*k; c.position.set(t.x + rr*Math.sin(a), c.position.y, t.z + rr*Math.cos(a)); c.lookAt(t); }); }
+  async function to3D(){ await ensureAdv(); if (S.view !== '3d') await click(viewBtn('3d')); await waitFor(() => V3.ready, 20000); await sleep(600); }
+  const S3 = [7];
   const SCRIPTS = [
     async () => { await click(fb('hill')); await dragProbe(1.0, 0, 900); say('גוררים את הגשש במעגל סביב הגבעה...'); await orbit(0, 0, 1.0, 1, 10000);
       say('החץ הצהוב תמיד פונה פנימה, אל העלייה, וניצב לקו הגובה המקווקו'); await sleep(2500); },
@@ -616,10 +752,12 @@ requestAnimationFrame(frame);
       await waitFor(() => climb && climb.done, 15000); say('הוא נעצר על הגבעה הנמוכה: פסגה מקומית'); await sleep(2500);
       await dragProbe(-0.3, 1.5, 1800); say('ומנקודה אחרת...'); await click(byId('climbBtn')); await waitFor(() => climb && climb.done, 15000);
       say('הפעם הגיע לגבוהה. נקודת ההתחלה קובעת לאן מגיעים'); await sleep(3000); },
-    async () => { await ensureAdv(); await click(fb('hill')); await dragProbe(0.9, 0.6, 1000); await dragSlider(byId('rAng'), 34, 900);
-      say('הפרופיל: הגובה לאורך d. הקו הצהוב משיק בגשש'); await sleep(2500);
-      say('מסובבים את d... השיפוע של הקו הצהוב = ∇f·d במד'); await dragSlider(byId('rAng'), -146, 7000); await sleep(2500); }
-  ];
+    async () => { await ensureAdv(); await click(fb('hill')); PROBE.set(0.9, 0.6); await dragSlider(byId('rAng'), 34, 900);
+      say('עוברים למבט תלת-ממד'); await to3D(); say('ההר עומד מעל המפה שלו. קווי הגובה הם פרוסות שלו'); await orbitCam(-35, 3500); await sleep(1200);
+      say('החץ הצהוב שוכב על הרצפה. הכתום הוא הטיפוס על ההר, והצל שלו הוא ∇f'); await sleep(3500);
+      say('גוררים את הגשש על הרצפה...'); await dragProbe(1.4, -0.4, 3000); await sleep(1500);
+      say('מסובבים את d: החץ התכלת על ההר עולה בשיפוע ∇f·d'); await dragSlider(byId('rAng'), -170, 6000); await sleep(2000); await orbitCam(35, 3000); }
+  ].map((fn, i) => S3.includes(i) ? fn : async () => { if (S.view === '3d') await click(viewBtn('2d')); return fn(); });
   const byId = id => document.getElementById(id);
   const LAB = document.querySelector('section.lab'), VIEW = LAB.querySelector('.view');
   const cur = byId('demoCursor'), D = {alive:0, i:-1, x:0, y:0};

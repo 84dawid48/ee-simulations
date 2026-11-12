@@ -9,8 +9,8 @@
   1. האהה: הרוטור בנקודה = כמה מהר מסתובב גלגל משוטים זעיר שמונח שם בזרם (קצב הסיבוב שלו הוא חצי מהרוטור).
   2. הבלבול: "זרם שמסתובב במעגל = רוטור, זרם ישר = בלי". בפועל במערבולת הגלגל לא מסתובב (חוץ מבמרכז), ובזרימה ישרה עם גזירה הוא כן.
   3. הצורה: זרם חלקיקים דו-ממדי + גלגל משוטים נגרר שמסתובב בזמן אמת לפי הסירקולציה סביבו. פורמט "מכשיר מדידה" + "חזה ואז גלה".
-  4. הבסיס: סוג השדה, גודל הגלגל, חלקיקים. מורחב: מפת צבע של הרוטור, חצי הסירקולציה על השפה, זרימה בצינור, שדה מותאם F = (a·y, b·x), חישוב.
-  5. נדחה: תלת-ממד ורוטור כווקטור, הניסוח המלא של משפט סטוקס (בהסבר בלבד), גלגל שנסחף עם הזרם.
+  4. הבסיס: סוג השדה, גודל הגלגל, חלקיקים. מורחב: מבט "מישור | מפת רוטור | תלת-ממד" (בתלת-ממד: הרוטור כווקטור, וגלגל שאפשר להטות את הציר שלו), חצי הסירקולציה על השפה, זרימה בצינור, שדה מותאם F = (a·y, b·x), חישוב.
+  5. נדחה: תלת-ממד במצב הבסיסי, רוטור של שדה תלת-ממדי כללי (כאן הזרם מישורי והרוטור תמיד ניצב לו), הניסוח המלא של משפט סטוקס (בהסבר בלבד), גלגל שנסחף עם הזרם.
   6. פיצול: כן, לפי בקשה: גרדיאנט · דיברגנץ · רוטור, שלוש סימולציות נפרדות.
 -->
 <style>
@@ -19,11 +19,6 @@
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--txt);font-family:"Segoe UI","Rubik",Arial,sans-serif;padding-top:30px}
 #topbar{position:fixed;top:0;left:0;right:0;height:30px;background:#060912;border-bottom:1px solid var(--line);z-index:100}
-#brand{position:absolute;top:3px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;height:24px;text-decoration:none;color:#e8edf5;direction:ltr;opacity:.92}
-#brand:hover{opacity:1}
-#brand img{width:22px;height:22px;display:block}
-#brand svg{width:39px;height:13px;display:block}
-@media (max-width:700px){#brand{left:auto;right:44px;transform:none}#brand svg{display:none}}
 #bsd{position:absolute;top:7px;right:12px;font-size:12px;color:#c9d6ea}
 #copyr{position:absolute;top:4px;left:8px;font-size:12px;color:#dce6f5;background:#10172a;border:1px solid var(--line);border-radius:6px;padding:2px 10px}
 bdi{unicode-bidi:isolate}
@@ -103,6 +98,15 @@ body.adv .basic-only{display:none!important}
 .lessbtn{position:absolute;bottom:14px;left:14px;z-index:12;font:inherit;font-size:14px;color:#cdd8ea;background:rgba(10,15,28,.88);border:1px solid #3a4a6e;border-radius:30px;padding:9px 18px;cursor:pointer}
 .lessbtn:hover{border-color:var(--acc);color:#fff}
 
+#brand{position:absolute;top:3px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;height:24px;text-decoration:none;color:#e8edf5;direction:ltr;opacity:.92}
+#brand:hover{opacity:1}
+#brand img{width:22px;height:22px;display:block}
+#brand svg{width:39px;height:13px;display:block}
+@media (max-width:700px){#brand{left:auto;right:44px;transform:none}#brand svg{display:none}}
+#cv3d{display:none;cursor:grab;touch-action:none}
+.view.v3 #cv3d{display:block}
+.view.v3 #cvBg,.view.v3 #cvTr,.view.v3 #cvTop{visibility:hidden}
+#v3load{position:absolute;inset:0;display:grid;place-items:center;color:var(--mut);font-size:15px;pointer-events:none}
 .sbar{position:relative;height:12px;background:#141c30;border-radius:7px}
 .sbar::after{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:2px;background:#fff;opacity:.75}
 .sbar i{position:absolute;top:0;bottom:0;border-radius:7px;transition:left .12s,width .12s}
@@ -215,7 +219,7 @@ body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
 
 <!-- ===================== מעבדה ===================== -->
 <section class="lab" id="lab">
-  <div class="view" id="view"><canvas id="cvBg"></canvas><canvas id="cvTr"></canvas><canvas id="cvTop"></canvas></div>
+  <div class="view" id="view"><canvas id="cvBg"></canvas><canvas id="cvTr"></canvas><canvas id="cvTop"></canvas><canvas id="cv3d"></canvas><div id="v3load" style="display:none">טוען תלת-ממד…</div></div>
   <div class="pnl r">
     <div class="c-row"><div class="c-lbl">השדה</div>
       <div class="seg" id="fieldSeg"><button data-f="rigid" class="on">סיבוב</button><button data-f="vortex">מערבולת</button><button data-f="shear">גזירה</button><button data-f="source">מקור</button><button data-f="pipe" class="adv-only">צינור</button><button data-f="customC" class="adv-only">מותאם</button></div></div>
@@ -229,7 +233,8 @@ body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
       <span class="chip neu" id="status"></span>
     </div>
     <div class="sep adv-only">
-      <label class="chk"><label class="sw"><input type="checkbox" id="heatChk" data-k="heat"><span></span></label>מפת צבע של הרוטור</label>
+      <div class="c-row"><div class="c-lbl">מבט</div><div class="seg" id="views"><button data-view="2d" class="on">מישור</button><button data-view="heat">מפת רוטור</button><button data-view="3d">תלת-ממד</button></div></div>
+      <div class="c-row v3-only" style="display:none"><div class="c-lbl"><span>הטיית ציר הגלגל <bdi dir="ltr">α</bdi></span><span class="c-val" id="tiltV"></span></div><input type="range" id="rTilt" data-k="tilt" min="0" max="180" step="1"></div>
       <label class="chk"><label class="sw"><input type="checkbox" id="loopChk" data-k="loop"><span></span></label>חצי הסירקולציה על השפה</label>
       <div class="ttl" style="margin-top:10px">שדה מותאם <bdi dir="ltr">F = (a·y, b·x)</bdi></div>
       <div class="c-row"><div class="c-lbl"><span><bdi dir="ltr">a</bdi></span><span class="c-val" id="aV"></span></div><input type="range" id="rA" data-k="a" min="-1" max="1" step="0.05"></div>
@@ -262,11 +267,11 @@ body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
     <li class="exp"><div class="top"><div class="task">עברו ל"מקור": הזרם מתפזר החוצה, ובשום מקום הגלגל לא מסתובב.</div><button class="xbtn">הסבר</button></div>
       <div class="ans">במקור <bdi dir="ltr">F = 0.45(x, y)</bdi> הזרם דוחף כל משוט ישר החוצה, לאורך המשוט, ולא לצד. אין סירקולציה, ולכן אין רוטור. לשדה הזה יש דיברגנץ (חומר נוצר) אבל אין רוטור. בסיבוב זה ההפך: יש רוטור ואין דיברגנץ. אלה שני דברים שונים שמודדים על אותו זרם.</div></li>
     <li class="exp"><div class="top"><div class="task">ב"מערבולת", שימו את הגלגל במרחק 1.2 מהמרכז והגדילו אותו עד שהוא מכיל את המרכז. רק אז הוא מתחיל להסתובב.</div><button class="xbtn">הסבר</button></div>
-      <div class="ans">הגלגל הגדול מודד את הסירקולציה סביב השפה שלו, וזה שווה לסכום של הרוטור על כל השטח שבתוכו. זה <b>משפט סטוקס</b> (במישור: משפט גרין). כל עוד הליבה מחוץ לגלגל, הסכום הוא אפס. כשהיא נכנסת, הסירקולציה קופצת. לכן הרוטור מוגדר על עיגול <b>קטן</b>: הוא תכונה מקומית של נקודה, ולא של המסלול הגדול.</div></li>
-    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>בחרו "צינור" והדליקו את מפת הצבע. גררו את הגלגל מלמעלה למטה: בחצי העליון הוא מסתובב נגד השעון, בחצי התחתון עם השעון, ובאמצע בכלל לא.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">הגלגל הגדול מודד את הסירקולציה סביב השפה שלו, וזה שווה לסכום של הרוטור על כל השטח שבתוכו. זה <b>משפט סטוקס</b> (במישור: משפט גרין). כל עוד הליבה מחוץ לגלגל, הסכום הוא אפס. כשהיא נכנסת, הסירקולציה קופצת. לכן הרוטור מוגדר על עיגול <b>קטן</b>: הוא תכונה מקומית של נקודה, ולא של המסלול הגדול. במצב המורחב, "חצי הסירקולציה על השפה" מראים בדיוק מה מסכמים: את הרכיב של הזרם לאורך השפה בכל נקודה.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>בחרו "צינור" ועברו למבט "מפת רוטור". גררו את הגלגל מלמעלה למטה: בחצי העליון הוא מסתובב נגד השעון, בחצי התחתון עם השעון, ובאמצע בכלל לא.</div><button class="xbtn">הסבר</button></div>
       <div class="ans">בצינור הזרם הכי מהיר באמצע ונעצר ליד הדפנות: <bdi dir="ltr">F<sub>x</sub> = 1.1(1 − (y/H)²)</bdi>. בחצי העליון המשוט התחתון (קרוב לאמצע) מהיר יותר, והגלגל מסתובב נגד השעון. בחצי התחתון זה הפוך. באמצע שני הצדדים זורמים באותה מהירות, ולכן הרוטור אפס, אף שהזרם שם הכי חזק. הרוטור מקסימלי דווקא ליד הדפנות.</div></li>
-    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>ב"גזירה", הדליקו "חצי הסירקולציה על השפה". למעלה הזרם ימינה ולמטה שמאלה, ושניהם דוחפים עם כיוון השעון: כל החצים כתומים, והסכום שלהם הוא הסירקולציה.</div><button class="xbtn">הסבר</button></div>
-      <div class="ans">החצים על השפה הם הרכיב של <bdi dir="ltr">F</bdi> לאורך השפה (סגול = נגד השעון, כתום = עם השעון). הסירקולציה היא הסכום של כולם סביב העיגול, ובמד היא שלילית. מחלקים בשטח <bdi dir="ltr">πr²</bdi> ומקבלים <bdi dir="ltr">−0.5</bdi>, בדיוק הרוטור מהנוסחה. נסו לשנות את גודל הגלגל: הסירקולציה משתנה, הרוטור לא.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>ב"סיבוב", עברו ל"תלת-ממד": הרוטור הוא חץ סגול שיוצא <b>למעלה</b> מהמישור. הטו את ציר הגלגל: הוא מאט, ב-<bdi dir="ltr">α = 90°</bdi> הוא עומד, ובהיפוך הוא מסתובב לצד השני.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">הרוטור הוא בעצם <b>וקטור</b>. הכיוון שלו לפי כלל יד ימין: מקפלים את האצבעות עם הסיבוב, והאגודל מצביע לכיוון הרוטור. בזרם מישורי הוא תמיד ניצב למישור, ולכן בדו-ממד הסתפקנו במספר אחד, הרכיב <bdi dir="ltr">z</bdi>. גלגל שהציר שלו בכיוון <bdi dir="ltr">n</bdi> מסתובב בקצב <bdi dir="ltr">ω = ½(∇×F)·n = ½|∇×F|cos α</bdi>: הכי מהר כשהציר מקביל לרוטור, ואפס כשהוא ניצב לו. זה בדיוק כמו הנגזרת הכיוונית <bdi dir="ltr">∇f·d</bdi> בסימולציית הגרדיאנט: היטל של וקטור על כיוון שאנחנו בוחרים. ככה מודדים רוטור בשדה תלת-ממדי כללי: מסובבים את הגלגל עד שהוא מסתובב הכי מהר.</div></li>
     <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>בחרו "מותאם" עם <bdi dir="ltr">a = b = 0.5</bdi>: הזרם נראה מעוקל, אבל הגלגל עומד. הזיזו את <bdi dir="ltr">a</bdi> ל-0.5−, והגלגל מסתובב. הרוטור הוא בדיוק <bdi dir="ltr">b − a</bdi>.</div><button class="xbtn">הסבר</button></div>
       <div class="ans">בשדה <bdi dir="ltr">F = (a·y, b·x)</bdi> מתקיים <bdi dir="ltr">∂F<sub>y</sub>/∂x = b</bdi> ו-<bdi dir="ltr">∂F<sub>x</sub>/∂y = a</bdi>, ולכן <bdi dir="ltr">∇×F = b − a</bdi>. כש-<bdi dir="ltr">a = b</bdi> הזרם רק "נמתח" באלכסון, ושתי ההשפעות על הגלגל מבטלות זו את זו. זה גם שדה גרדיאנט: <bdi dir="ltr">F = ∇(0.5xy)</bdi>, ולשדה גרדיאנט אין אף פעם רוטור. כש-<bdi dir="ltr">a = −b</bdi> מקבלים סיבוב קשיח.</div></li>
   </ol>
@@ -286,8 +291,8 @@ body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
 "use strict";
 const $ = id => document.getElementById(id);
 const MODE = 'curl';
-const START = {"field":"rigid","probe":[0.9,0.5],"r":0.55,"parts":true,"heat":false,"loop":false,"a":0.5,"b":0.5};
-const ADV_DEF = {"heat":false,"loop":false,"a":0.5,"b":0.5};
+const START = {"field":"rigid","probe":[0.9,0.5],"r":0.55,"parts":true,"heat":false,"loop":false,"a":0.5,"b":0.5,"view":"2d","tilt":0};
+const ADV_DEF = {"heat":false,"loop":false,"a":0.5,"b":0.5,"view":"2d","tilt":0};
 /* ======================================================================
    מנוע משותף לשדות וקטוריים/סקלריים בדו-ממד (MODE = grad | div | curl)
    קואורדינטות עולם: y כלפי מעלה, חצי-גובה H = 2.4
@@ -474,17 +479,19 @@ cvTop.addEventListener('pointermove', e => { if (dragging) setProbeFromEvent(e);
 cvTop.addEventListener('pointerup', () => { dragging = false; });
 // לשימוש ההדגמה האוטומטית
 window.PROBE = {pos:() => S.probe.slice(), set:(x, y) => { S.probe = [x, y]; updPanel(); },
-  screen:(x, y) => { const r = cvTop.getBoundingClientRect(); return [r.left + X(x), r.top + Y(y)]; }};
+  screen:(x, y) => { if (V3.on && V3.ready){ const v = P3(x, y, SIM3.probeH ? SIM3.probeH(x, y) : 0).project(V3.cam), r = V3.cv.getBoundingClientRect(); return [r.left + (v.x + 1)/2*r.width, r.top + (1 - v.y)/2*r.height]; }
+    const r = cvTop.getBoundingClientRect(); return [r.left + X(x), r.top + Y(y)]; }};
 /* ---------- לולאה ---------- */
 let dirty = true, last = performance.now(), visible = true;
 new IntersectionObserver(e => { visible = e[0].isIntersecting; }).observe(view);
-new ResizeObserver(() => { sizeAll(); dirty = true; }).observe(view);
+new ResizeObserver(() => { sizeAll(); size3D(); dirty = true; }).observe(view);
 function frame(now){
   requestAnimationFrame(frame);
   const dt = Math.max(0, Math.min(0.05, (now - last)/1000)); last = now;
   if (!visible) return;
-  if (dirty){ dirty = false; drawBg(); updPanel(); }
+  if (dirty){ dirty = false; drawBg(); if (V3.ready && SIM3.onBg) SIM3.onBg(); updPanel(); }
   stepParticles(dt); drawTop(dt);
+  if (V3.on && V3.ready){ SIM3.update(dt); V3.ctl.update(); V3.R.render(V3.scene, V3.cam); }
 }
 function setField(k){
   S.field = k; document.querySelectorAll('#fieldSeg button').forEach(b => b.classList.toggle('on', b.dataset.f === k));
@@ -499,13 +506,13 @@ function syncUI(){ document.querySelectorAll('[data-k]').forEach(el => { const k
 function setMode(on){
   adv = on; document.body.classList.toggle('adv', on);
   if (!on){ Object.assign(S, ADV_DEF); syncUI();
-    climb = null; if (S.field.startsWith('custom')) setField(START.field); }
+    climb = null; if (S.field.startsWith('custom')) setField(START.field); if ($('views')) setView('2d'); }
   dirty = true; $('lab').scrollIntoView({behavior:'smooth'});
 }
 $('more').addEventListener('click', () => setMode(true));
 $('less').addEventListener('click', () => setMode(false));
 document.querySelectorAll('.exp .xbtn').forEach(b => b.addEventListener('click', () => { const li = b.closest('.exp'); li.classList.toggle('open'); b.textContent = li.classList.contains('open') ? 'סגור' : 'הסבר'; }));
-const sgn = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2);
+const sgn = v => Math.abs(v) < 0.005 ? '0.00' : (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2);
 
 /* ---------- SVG לפתיח: רשת חצים של שדה מתוך המעבדה ---------- */
 function svgArrows(Fn, o){   // o: {x0,y0,w,h, ww,wh (חצי רוחב/גובה בעולם), nx,ny, col, mk}
@@ -521,13 +528,71 @@ function svgArrows(Fn, o){   // o: {x0,y0,w,h, ww,wh (חצי רוחב/גובה �
 const svgMarker = (id, col) => '<marker id="' + id + '" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="' + col + '"/></marker>';
 function sbar(id, v){ const el = $(id), k = Math.max(-1, Math.min(1, v)); el.style.left = (k >= 0 ? 50 : 50 + 50*k) + '%'; el.style.width = Math.abs(50*k) + '%'; }
 
+/* ---------- מבט תלת-ממדי (מצב מורחב). Three.js נטען רק כשפותחים את המבט ---------- */
+const V3 = {on:false, ready:false, loading:null, handles:[]};
+const SIM3 = {};   // כל סימולציה ממלאת: build(), onBg(), update(dt), probeH(x, y)
+function loadScript(src){ return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+function load3D(){
+  if (!V3.loading) V3.loading = (window.THREE ? Promise.resolve() : loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'))
+    .then(() => THREE.OrbitControls ? 0 : loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js'));
+  return V3.loading;
+}
+const P3 = (x, y, h) => new THREE.Vector3(x, h, -y);    // עולם (x, y, גובה) → three
+function init3D(){
+  const cv = $('cv3d'), R = new THREE.WebGLRenderer({canvas:cv, antialias:true});
+  R.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); R.setClearColor(0x060a14, 1);
+  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(38, 1, 0.05, 200);
+  cam.position.set(0, 5.4, 8.4);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.62)); const dl = new THREE.DirectionalLight(0xffffff, 0.7); dl.position.set(3, 8, 5); scene.add(dl);
+  // גרירת הגשש: תופסים אותו ומזיזים במישור אופקי בגובה שלו. בכל מקום אחר: סיבוב המצלמה
+  const ray = new THREE.Raycaster(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3();
+  const ndc = e => { const r = cv.getBoundingClientRect(); return new THREE.Vector2((e.clientX - r.left)/r.width*2 - 1, -(e.clientY - r.top)/r.height*2 + 1); };
+  let drag = false;
+  cv.addEventListener('pointerdown', e => { ray.setFromCamera(ndc(e), cam); if (!ray.intersectObjects(V3.handles, true).length) return;
+    drag = true; plane.constant = -(SIM3.probeH ? SIM3.probeH(...S.probe) : 0); V3.ctl.enabled = false; cv.setPointerCapture(e.pointerId); cv.style.cursor = 'grabbing'; e.stopImmediatePropagation(); });
+  cv.addEventListener('pointermove', e => { if (!drag) return; ray.setFromCamera(ndc(e), cam);
+    if (ray.ray.intersectPlane(plane, hit)) PROBE.set(Math.max(-W, Math.min(W, hit.x)), Math.max(-HH, Math.min(HH, -hit.z))); });
+  const up = () => { drag = false; V3.ctl.enabled = true; cv.style.cursor = ''; };
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  const ctl = new THREE.OrbitControls(cam, cv); ctl.target.set(0, 0.5, 0); ctl.enableDamping = true; ctl.dampingFactor = 0.08;
+  ctl.minDistance = 3; ctl.maxDistance = 22; ctl.maxPolarAngle = Math.PI*0.495; ctl.enablePan = false;
+  Object.assign(V3, {cv, R, scene, cam, ctl, ready:true});
+  SIM3.build(); size3D(); if (SIM3.onBg) SIM3.onBg();
+}
+function size3D(){ if (!V3.ready) return; V3.R.setSize(cw, ch, false); V3.cam.aspect = cw/ch; V3.cam.updateProjectionMatrix(); }
+function setView(v){
+  S.view = v; S.heat = v === 'heat';
+  document.querySelectorAll('#views button').forEach(b => b.classList.toggle('on', b.dataset.view === v));
+  document.querySelectorAll('.v3-only').forEach(el => { el.style.display = v === '3d' ? '' : 'none'; });
+  V3.on = v === '3d'; view.classList.toggle('v3', V3.on); dirty = true;
+  if (V3.on && !V3.ready){ $('v3load').style.display = '';
+    load3D().then(() => { if (!V3.ready) init3D(); $('v3load').style.display = 'none'; dirty = true; updPanel(); })
+      .catch(err => { console.error(err); $('v3load').textContent = 'לא הצלחתי לטעון את התלת-ממד. בדקו את החיבור לאינטרנט.'; }); }
+  updPanel();
+}
+if ($('views')) $('views').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setView(b.dataset.view); });
+// חץ "שמן" (גליל + חרוט) שנראה טוב מכל זווית
+function fatArrow(col, rad){
+  const g = new THREE.Group(), m = new THREE.MeshLambertMaterial({color:col, emissive:col, emissiveIntensity:0.25});
+  const sh = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, 1, 10), m); sh.geometry.translate(0, 0.5, 0);
+  const hd = new THREE.Mesh(new THREE.ConeGeometry(rad*2.7, 1, 14), m); hd.geometry.translate(0, 0.5, 0);
+  g.add(sh, hd); g.userData = {sh, hd, rad, m}; return g;
+}
+function setFat(a, from, dir, len){
+  if (!(len > 1e-3) || dir.lengthSq() < 1e-12){ a.visible = false; return; } a.visible = true;
+  const hl = Math.min(len*0.45, a.userData.rad*7);
+  a.position.copy(from); a.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+  a.userData.sh.scale.set(1, Math.max(1e-3, len - hl), 1); a.userData.hd.scale.set(1, hl, 1); a.userData.hd.position.y = len - hl;
+}
+function fib(N){ const out = [], ga = Math.PI*(3 - Math.sqrt(5)); for (let i = 0; i < N; i++){ const z = 1 - 2*(i + 0.5)/N, r = Math.sqrt(1 - z*z), t = ga*i; out.push([r*Math.cos(t), r*Math.sin(t), z]); } return out; }
+
 /* ======================================================================
    חלק ייחודי לסימולציה הזו
    ====================================================================== */
 
 bindRange('rR', 'r');
 bindChk('partChk', 'parts');
-bindChk('heatChk', 'heat', true);
+bindRange('rTilt', 'tilt');
 bindChk('loopChk', 'loop');
 ['rA', 'rB'].forEach(id => $(id).addEventListener('input', e => { S[id === 'rA' ? 'a' : 'b'] = +e.target.value; if (S.field !== 'customC') setField('customC'); dirty = true; updPanel(); }));
 syncUI();
@@ -539,15 +604,51 @@ function updPanel(){
   $('circV').textContent = sgn(I.circ); sbar('circBar', sq(I.circ)); $('circBar').style.background = I.circ >= 0 ? '#9d8bff' : '#ff9f43';
   $('curlV').textContent = sgn(cu); sbar('curlBar', sq(cu)); $('curlBar').style.background = cu >= 0 ? '#9d8bff' : '#ff9f43';
   const st = $('status');
-  if (cu > 0.06){ st.className = 'chip vio'; st.textContent = '↺ הגלגל מסתובב נגד כיוון השעון'; }
+  const al = S.tilt*Math.PI/180, w = V3.on ? cu/2*Math.cos(al) : cu/2;
+  if ($('tiltV')) $('tiltV').textContent = S.tilt + '°';
+  if (V3.on){ st.className = 'chip ' + (w > 0.03 ? 'vio' : w < -0.03 ? 'org' : 'neu'); st.innerHTML = Math.abs(w) <= 0.03 ? 'הגלגל לא מסתובב' + (Math.abs(cu) > 0.06 ? ': הציר ניצב לרוטור' : '') : 'קצב הגלגל <bdi dir="ltr">ω = ½(∇×F)·n = ' + sgn(w) + '</bdi>'; }
+  else if (cu > 0.06){ st.className = 'chip vio'; st.textContent = '↺ הגלגל מסתובב נגד כיוון השעון'; }
   else if (cu < -0.06){ st.className = 'chip org'; st.textContent = '↻ הגלגל מסתובב עם כיוון השעון'; }
   else { st.className = 'chip neu'; st.textContent = 'הגלגל לא מסתובב'; }
   if (!adv) return;
   $('aV').textContent = S.a.toFixed(2); $('bV').textContent = S.b.toFixed(2);
   const e = 1e-3, dyx = (F(x + e, y)[1] - F(x - e, y)[1])/(2*e), dxy = (F(x, y + e)[0] - F(x, y - e)[0])/(2*e), k = t => '<span class="k">' + t + '</span>';
   $('calc').innerHTML = k('∂Fy/∂x') + ' = ' + dyx.toFixed(3) + '<br>' + k('∂Fx/∂y') + ' = ' + dxy.toFixed(3) + '<br>' + k('∇×F') + '    = ' + (dyx - dxy).toFixed(3) + '  (במרכז)<br>' +
-    k('∮F·dl') + '  = ' + I.circ.toFixed(3) + '<br>' + k('÷ πr²') + '  = ' + cu.toFixed(3) + '  (r = ' + S.r.toFixed(2) + ')<br>' + k('ω גלגל') + ' = ' + (cu/2).toFixed(3) + ' rad/s';
+    k('∮F·dl') + '  = ' + I.circ.toFixed(3) + '<br>' + k('÷ πr²') + '  = ' + cu.toFixed(3) + '  (r = ' + S.r.toFixed(2) + ')<br>' + k('ω גלגל') + ' = ' + (cu/2).toFixed(3) + ' rad/s' + (V3.on ? '<br>' + k('n') + '      = (' + Math.sin(al).toFixed(2) + ', 0, ' + Math.cos(al).toFixed(2) + ')<br>' + k('½(∇×F)·n') + ' = ' + w.toFixed(3) + ' rad/s' : '');
 }
+/* ---------- מבט תלת-ממד: הרוטור כחץ, וגלגל עם ציר שאפשר להטות ---------- */
+const c3 = {ang:0}, WH = 1.3;                          // WH: גובה מרכז הגלגל מעל המישור (הזרם זהה בכל שכבה)
+Object.assign(SIM3, {
+  probeH: () => WH,
+  build(){
+    const sc = V3.scene;
+    c3.fc = document.createElement('canvas'); c3.tex = new THREE.CanvasTexture(c3.fc);
+    c3.floor = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({map:c3.tex})); c3.floor.rotation.x = -Math.PI/2; sc.add(c3.floor);
+    c3.mat = new THREE.MeshLambertMaterial({color:0xcdd8ea, emissive:0x1a1a2a, side:THREE.DoubleSide});
+    c3.wheel = new THREE.Group(); c3.spin = new THREE.Group(); c3.wheel.add(c3.spin); sc.add(c3.wheel);
+    c3.wheel.add(new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.3, 10), c3.mat));                  // הציר
+    for (let k = 0; k < 4; k++){ const p = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.42, 0.025), c3.mat), g = new THREE.Group(); p.position.x = 0.5; g.add(p); g.rotation.y = k*Math.PI/2; c3.spin.add(g); }
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.97, 0.025, 8, 48), c3.mat); rim.rotation.x = Math.PI/2; c3.spin.add(rim);
+    c3.curl = fatArrow(0x9d8bff, 0.045); sc.add(c3.curl);
+    c3.foot = new THREE.Mesh(new THREE.RingGeometry(0.92, 1, 48), new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.55, side:THREE.DoubleSide})); c3.foot.rotation.x = -Math.PI/2; sc.add(c3.foot);
+    c3.stem = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, WH, 0)]), new THREE.LineDashedMaterial({color:0xffffff, dashSize:0.06, gapSize:0.05, transparent:true, opacity:0.6}));
+    c3.stem.computeLineDistances(); sc.add(c3.stem);
+    V3.handles = [c3.wheel, c3.foot];
+    V3.ctl.target.set(0, 0.8, 0); V3.cam.position.set(0, 6.2, 7.6);
+  },
+  onBg(){ c3.floor.scale.set(2*W, 2*HH, 1); if (c3.fc.width !== cvBg.width || c3.fc.height !== cvBg.height){ c3.fc.width = cvBg.width; c3.fc.height = cvBg.height; } },
+  update(dt){
+    const g = c3.fc.getContext('2d'); g.drawImage(cvBg, 0, 0); g.drawImage(cvTr, 0, 0); c3.tex.needsUpdate = true;     // הרצפה = הזרם החי מהמישור
+    const [x, y] = S.probe, I = loopInts(x, y, S.r), cu = I.circ/I.area, al = S.tilt*Math.PI/180;
+    const n = new THREE.Vector3(Math.sin(al), Math.cos(al), 0);                        // ציר הגלגל, נוטה לכיוון x
+    c3.wheel.position.copy(P3(x, y, WH)); c3.wheel.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), n); c3.wheel.scale.setScalar(S.r);
+    const w = 0.5*cu*Math.cos(al); c3.ang += w*dt*TIME; c3.spin.rotation.y = c3.ang;   // ω = ½(∇×F)·n
+    c3.mat.color.set(Math.abs(w) < 0.03 ? 0xcdd8ea : (w > 0 ? 0x9d8bff : 0xff9f43));
+    const col = cu >= 0 ? 0x9d8bff : 0xff9f43; c3.curl.userData.m.color.set(col); c3.curl.userData.m.emissive.set(col);
+    setFat(c3.curl, P3(x, y, WH), new THREE.Vector3(0, cu >= 0 ? 1 : -1, 0), Math.abs(cu) < 0.06 ? 0 : Math.max(0.35, Math.min(2.2, Math.abs(cu)*0.9)));
+    c3.foot.position.copy(P3(x, y, 0.02)); c3.foot.scale.setScalar(S.r); c3.stem.position.copy(P3(x, y, 0));
+  }
+});
 /* פתיח: מערבולת מול גזירה, מתוך השדות של המעבדה */
 (function(){
   const wheel = (cx, cy, col) => { let h = '<circle cx="' + cx + '" cy="' + cy + '" r="15" fill="rgba(5,7,13,.6)" stroke="' + col + '" stroke-width="2"/>';
@@ -593,6 +694,11 @@ requestAnimationFrame(frame);
   const dragProbe = (x, y, dur) => { const [x0, y0] = PROBE.pos(); return pathProbe(k => [x0 + (x - x0)*k, y0 + (y - y0)*k], dur); };
   const orbit = (cx, cy, r, turns, dur) => { const [x0, y0] = PROBE.pos(), a0 = Math.atan2(y0 - cy, x0 - cx);
     return dragProbe(cx + r*Math.cos(a0), cy + r*Math.sin(a0), 700).then(() => pathProbe(k => [cx + r*Math.cos(a0 + 2*Math.PI*turns*k), cy + r*Math.sin(a0 + 2*Math.PI*turns*k)], dur)); };
+  // מסובב את המצלמה סביב המרכז (להדגמות במבט התלת-ממדי)
+  async function orbitCam(deg, dur){ const c = V3.cam, t = V3.ctl.target, r0 = c.position.clone().sub(t), a0 = Math.atan2(r0.x, r0.z), rr = Math.hypot(r0.x, r0.z);
+    await anim(dur || 3000, k => { const a = a0 + deg*Math.PI/180*k; c.position.set(t.x + rr*Math.sin(a), c.position.y, t.z + rr*Math.cos(a)); c.lookAt(t); }); }
+  async function to3D(){ await ensureAdv(); if (S.view !== '3d') await click(viewBtn('3d')); await waitFor(() => V3.ready, 20000); await sleep(600); }
+  const S3 = [6];
   const SCRIPTS = [
     async () => { await click(fb('rigid')); await dragProbe(0.9, 0.5, 900); say('הגלגל מסתובב נגד כיוון השעון'); await sleep(2500);
       say('גוררים אותו רחוק מהמרכז...'); await dragProbe(-2.6, -1.4, 4500); say('אותו קצב בדיוק: הרוטור קבוע בכל מקום'); await sleep(3000); },
@@ -606,15 +712,18 @@ requestAnimationFrame(frame);
     async () => { await click(fb('vortex')); await dragSlider(byId('rR'), 0.4, 900); await dragProbe(1.2, 0, 1200); say('גלגל קטן, הרחק מהמרכז: עומד'); await sleep(2200);
       say('מגדילים את הגלגל לאט...'); await dragSlider(byId('rR'), 1.4, 6000); say('ברגע שהמרכז בפנים, יש סירקולציה והגלגל מסתובב'); await sleep(3000);
       await dragSlider(byId('rR'), 0.55, 1500); },
-    async () => { await ensureAdv(); await click(fb('pipe')); await toggle(byId('heatChk'), true); say('צינור: הזרם הכי מהיר באמצע'); await dragProbe(0, 1.6, 1500); await sleep(1800);
+    async () => { await ensureAdv(); await click(fb('pipe')); await click(viewBtn('heat')); say('צינור: הזרם הכי מהיר באמצע'); await dragProbe(0, 1.6, 1500); await sleep(1800);
       say('בחצי העליון: נגד השעון'); await sleep(2000); say('גוררים למטה...'); await dragProbe(0, -1.6, 7000); say('באמצע עמד, ובחצי התחתון: עם השעון'); await sleep(2500); },
-    async () => { await ensureAdv(); await click(fb('shear')); await dragProbe(0, 0, 1000); await toggle(byId('loopChk'), true); say('הרכיב של הזרם לאורך השפה'); await sleep(3000);
-      say('למעלה ימינה, למטה שמאלה: הכול עם כיוון השעון (כתום), הסכום שלילי'); await sleep(3000); say('משנים את גודל הגלגל: הסירקולציה משתנה, הרוטור נשאר 0.5−');
-      await dragSlider(byId('rR'), 1.2, 3500); await dragSlider(byId('rR'), 0.3, 3500); await dragSlider(byId('rR'), 0.55, 1000); await toggle(byId('loopChk'), false); },
+    async () => { await ensureAdv(); await click(fb('rigid')); PROBE.set(0.9, 0.5); await dragSlider(byId('rR'), 0.7, 800); say('עוברים לתלת-ממד'); await to3D();
+      say('הרוטור הוא חץ: סגול, יוצא למעלה מהמישור'); await orbitCam(-30, 3000); await sleep(1500);
+      say('מטים את ציר הגלגל... הוא מאט'); await dragSlider(byId('rTilt'), 60, 3500); await sleep(1800);
+      say('α = 90°: הציר ניצב לרוטור, והגלגל עומד'); await dragSlider(byId('rTilt'), 90, 1800); await sleep(2500);
+      say('ממשיכים להפוך: הגלגל מסתובב לצד השני'); await dragSlider(byId('rTilt'), 180, 3500); await sleep(2500);
+      await dragSlider(byId('rTilt'), 0, 1500); await orbitCam(30, 2500); },
     async () => { await ensureAdv(); await dragSlider(byId('rA'), 0.5, 900); await dragSlider(byId('rB'), 0.5, 900); await dragProbe(0.8, 0.6, 1000);
       say('a = b: הזרם מעוקל, אבל הגלגל עומד'); await sleep(3000); say('מזיזים את a לאט...'); await dragSlider(byId('rA'), -0.5, 6000);
       say('a = −b: סיבוב קשיח, רוטור = b − a = 1'); await sleep(3000); }
-  ];
+  ].map((fn, i) => S3.includes(i) ? fn : async () => { if (S.view === '3d') await click(viewBtn('2d')); return fn(); });
   const byId = id => document.getElementById(id);
   const LAB = document.querySelector('section.lab'), VIEW = LAB.querySelector('.view');
   const cur = byId('demoCursor'), D = {alive:0, i:-1, x:0, y:0};

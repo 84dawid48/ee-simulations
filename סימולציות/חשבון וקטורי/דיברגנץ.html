@@ -9,8 +9,8 @@
   1. האהה: הדיברגנץ בנקודה = כמה זורם החוצה מעיגול קטן סביבה, פחות כמה שנכנס, לכל יחידת שטח. חיובי = מקור, שלילי = בור.
   2. הבלבול: "חצים שמתפזרים = דיברגנץ" ו"חצים מקבילים = אפס". בפועל שדה שמתפזר יכול להיות בלי דיברגנץ, ושדה מקביל שמאיץ הוא עם.
   3. הצורה: זרם חלקיקים דו-ממדי + עיגול נגרר שמראה על השפה שלו מה יוצא (ירוק) ומה נכנס (אדום). פורמט "מכשיר מדידה" + "חזה ואז גלה".
-  4. הבסיס: סוג השדה, גודל העיגול, חלקיקים. מורחב: מפת צבע של הדיברגנץ, מקור ובור, שדה מותאם F = (a·x, b·y), חישוב.
-  5. נדחה: תלת-ממד, הניסוח המלא של משפט גאוס (מוזכר בהסבר בלבד), מטען נקודתי עם 1/r.
+  4. הבסיס: סוג השדה, גודל העיגול, חלקיקים. מורחב: מבט "מישור | מפת צבע | תלת-ממד" (בתלת-ממד: מטען אמיתי בחלל, והעיגול הופך לכדור: חוק גאוס), מקור ובור, שדה מותאם F = (a·x, b·y), חישוב.
+  5. נדחה: תלת-ממד במצב הבסיסי, הניסוח הפורמלי של משפט הדיברגנץ (אינטגרל נפחי).
   6. פיצול: כן, לפי בקשה: גרדיאנט · דיברגנץ · רוטור, שלוש סימולציות נפרדות.
 -->
 <style>
@@ -19,11 +19,6 @@
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--txt);font-family:"Segoe UI","Rubik",Arial,sans-serif;padding-top:30px}
 #topbar{position:fixed;top:0;left:0;right:0;height:30px;background:#060912;border-bottom:1px solid var(--line);z-index:100}
-#brand{position:absolute;top:3px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;height:24px;text-decoration:none;color:#e8edf5;direction:ltr;opacity:.92}
-#brand:hover{opacity:1}
-#brand img{width:22px;height:22px;display:block}
-#brand svg{width:39px;height:13px;display:block}
-@media (max-width:700px){#brand{left:auto;right:44px;transform:none}#brand svg{display:none}}
 #bsd{position:absolute;top:7px;right:12px;font-size:12px;color:#c9d6ea}
 #copyr{position:absolute;top:4px;left:8px;font-size:12px;color:#dce6f5;background:#10172a;border:1px solid var(--line);border-radius:6px;padding:2px 10px}
 bdi{unicode-bidi:isolate}
@@ -103,6 +98,15 @@ body.adv .basic-only{display:none!important}
 .lessbtn{position:absolute;bottom:14px;left:14px;z-index:12;font:inherit;font-size:14px;color:#cdd8ea;background:rgba(10,15,28,.88);border:1px solid #3a4a6e;border-radius:30px;padding:9px 18px;cursor:pointer}
 .lessbtn:hover{border-color:var(--acc);color:#fff}
 
+#brand{position:absolute;top:3px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;height:24px;text-decoration:none;color:#e8edf5;direction:ltr;opacity:.92}
+#brand:hover{opacity:1}
+#brand img{width:22px;height:22px;display:block}
+#brand svg{width:39px;height:13px;display:block}
+@media (max-width:700px){#brand{left:auto;right:44px;transform:none}#brand svg{display:none}}
+#cv3d{display:none;cursor:grab;touch-action:none}
+.view.v3 #cv3d{display:block}
+.view.v3 #cvBg,.view.v3 #cvTr,.view.v3 #cvTop{visibility:hidden}
+#v3load{position:absolute;inset:0;display:grid;place-items:center;color:var(--mut);font-size:15px;pointer-events:none}
 .sbar{position:relative;height:12px;background:#141c30;border-radius:7px}
 .sbar::after{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:2px;background:#fff;opacity:.75}
 .sbar i{position:absolute;top:0;bottom:0;border-radius:7px;transition:left .12s,width .12s}
@@ -215,21 +219,21 @@ body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
 
 <!-- ===================== מעבדה ===================== -->
 <section class="lab" id="lab">
-  <div class="view" id="view"><canvas id="cvBg"></canvas><canvas id="cvTr"></canvas><canvas id="cvTop"></canvas></div>
+  <div class="view" id="view"><canvas id="cvBg"></canvas><canvas id="cvTr"></canvas><canvas id="cvTop"></canvas><canvas id="cv3d"></canvas><div id="v3load" style="display:none">טוען תלת-ממד…</div></div>
   <div class="pnl r">
     <div class="c-row"><div class="c-lbl">השדה</div>
       <div class="seg" id="fieldSeg"><button data-f="src" class="on">מקור</button><button data-f="sink">בור</button><button data-f="uniform">אחיד</button><button data-f="accel">מאיץ</button><button data-f="spin">סיבוב</button><button data-f="dipole" class="adv-only">מקור ובור</button><button data-f="customD" class="adv-only">מותאם</button></div></div>
     <div class="c-row"><div class="c-lbl"><span>גודל העיגול <bdi dir="ltr">r</bdi></span><span class="c-val" id="rV"></span></div><input type="range" id="rR" data-k="r" min="0.15" max="1.3" step="0.01"></div>
     <label class="chk"><label class="sw"><input type="checkbox" id="partChk" data-k="parts"><span></span></label>חלקיקים זורמים</label>
     <div class="sep">
-      <div class="meter"><div class="ttl">שטף נטו החוצה <bdi dir="ltr">∮F·n ds</bdi></div><div class="sbar"><i id="fluxBar"></i></div>
+      <div class="meter"><div class="ttl" id="fluxTtl">שטף נטו החוצה <bdi dir="ltr">∮F·n ds</bdi></div><div class="sbar"><i id="fluxBar"></i></div>
         <div class="row"><span>יוצא פחות נכנס</span><span id="fluxV"></span></div></div>
-      <div class="meter"><div class="ttl">דיברגנץ ≈ שטף ÷ שטח</div><div class="sbar"><i id="divBar"></i></div>
-        <div class="row"><span>לכל יחידת שטח</span><span id="divV"></span></div></div>
+      <div class="meter"><div class="ttl" id="divTtl">דיברגנץ ≈ שטף ÷ שטח</div><div class="sbar"><i id="divBar"></i></div>
+        <div class="row"><span id="divRow">לכל יחידת שטח</span><span id="divV"></span></div></div>
       <span class="chip neu" id="status"></span>
     </div>
     <div class="sep adv-only">
-      <label class="chk"><label class="sw"><input type="checkbox" id="heatChk" data-k="heat"><span></span></label>מפת צבע של הדיברגנץ</label>
+      <div class="c-row"><div class="c-lbl">מבט</div><div class="seg" id="views"><button data-view="2d" class="on">מישור</button><button data-view="heat">מפת צבע</button><button data-view="3d">תלת-ממד</button></div></div>
       <div class="ttl" style="margin-top:10px">שדה מותאם <bdi dir="ltr">F = (a·x, b·y)</bdi></div>
       <div class="c-row"><div class="c-lbl"><span><bdi dir="ltr">a</bdi></span><span class="c-val" id="aV"></span></div><input type="range" id="rA" data-k="a" min="-1" max="1" step="0.05"></div>
       <div class="c-row"><div class="c-lbl"><span><bdi dir="ltr">b</bdi></span><span class="c-val" id="bV"></span></div><input type="range" id="rB" data-k="b" min="-1" max="1" step="0.05"></div>
@@ -262,10 +266,12 @@ body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
       <div class="ans">בשדה אחיד נכנס משמאל בדיוק מה שיוצא מימין. בסיבוב הזרם מחליק <b>לאורך</b> השפה ולא חוצה אותה בכלל, ולכן אין חצים ירוקים או אדומים. עוצמת הזרם לא קובעת את הדיברגנץ, רק ההפרש בין מה שיוצא למה שנכנס. (את הסיבוב מודד דווקא הרוטור, בסימולציה הבאה.)</div></li>
     <li class="exp"><div class="top"><div class="task">עברו ל"מאיץ": החצים מקבילים, אבל ארוכים יותר ימינה. יוצא יותר משנכנס, והדיברגנץ חיובי <b>בכל מקום</b>. כווצו את העיגול: השטף קטן, אבל הדיברגנץ נשאר <bdi dir="ltr">0.3</bdi>.</div><button class="xbtn">הסבר</button></div>
       <div class="ans">כאן <bdi dir="ltr">F = (0.3x + 1.1, 0)</bdi>. החצים לא נפרדים זה מזה, אבל הם גדלים בכיוון הזרימה, ולכן <bdi dir="ltr">∂F<sub>x</sub>/∂x = 0.3</bdi>. בכל עיגול יוצא יותר משנכנס, כמו כביש שבו המכוניות מאיצות והמרווחים ביניהן גדלים. השטף פרופורציוני לשטח, ולכן החלוקה בשטח נותנת מספר קבוע. זו הסיבה שהגדרנו את הדיברגנץ "לכל יחידת שטח".</div></li>
-    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>בחרו "מקור ובור" והדליקו את מפת הצבע. ירוק ליד המקור, אדום ליד הבור, וביניהם, איפה שהזרם הכי חזק, כמעט שקוף.</div><button class="xbtn">הסבר</button></div>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>בחרו "מקור ובור" ועברו למבט "מפת צבע". ירוק ליד המקור, אדום ליד הבור, וביניהם, איפה שהזרם הכי חזק, כמעט שקוף.</div><button class="xbtn">הסבר</button></div>
       <div class="ans">מפת הצבע מראה את <bdi dir="ltr">∇·F</bdi> בכל נקודה. הזרם חזק דווקא באמצע, בין המקור לבור, אבל שם הוא רק עובר ולכן הדיברגנץ אפס. ככה נראה גם השדה החשמלי של דיפול: הדיברגנץ שלו שונה מאפס רק איפה שיש מטען, בדיוק לפי חוק גאוס.</div></li>
     <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>בחרו "מותאם" עם <bdi dir="ltr">a = 0.5</bdi>, והזיזו את <bdi dir="ltr">b</bdi> מ-0.5 ל-1−. הדיברגנץ הוא בדיוק <bdi dir="ltr">a + b</bdi>, והוא מתאפס כש-<bdi dir="ltr">b = −0.5</bdi>.</div><button class="xbtn">הסבר</button></div>
       <div class="ans">בשדה <bdi dir="ltr">F = (a·x, b·y)</bdi> מתקיים <bdi dir="ltr">∂F<sub>x</sub>/∂x = a</bdi> ו-<bdi dir="ltr">∂F<sub>y</sub>/∂y = b</bdi>, ולכן <bdi dir="ltr">∇·F = a + b</bdi> בכל נקודה. כש-<bdi dir="ltr">b = −a</bdi> הזרם נמתח לרוחב ונדחס לגובה באותה מידה: החצים מתכנסים מלמעלה ומלמטה ומתפזרים לצדדים, ובכל זאת אין ייצור. זה בדיוק מה שהנוסחה עושה: מחברת את ה"התפזרות" בכל ציר.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>ב"מקור", עברו ל"תלת-ממד": זה מטען אמיתי בחלל, והעיגול הפך לכדור. הגדילו את הכדור: השטף כמעט לא משתנה. הזיזו אותו הצידה, עד שהמטען בחוץ: השטף אפס.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">בתלת-ממד השדה של מטען נחלש כמו <bdi dir="ltr">1/r²</bdi>, ושטח הכדור גדל כמו <bdi dir="ltr">r²</bdi>. שני הגורמים מבטלים זה את זה, ולכן השטף דרך <b>כל</b> כדור שמקיף את המטען שווה. זה <b>חוק גאוס</b>: <bdi dir="ltr">∯E·dA = Q/ε₀</bdi>, השטף תלוי רק במה שנמצא בפנים. כשהמטען בחוץ, כל מה שנכנס מצד אחד יוצא מהצד השני, והשטף אפס, אף שהחצים "מתפזרים". במילים של דיברגנץ: <bdi dir="ltr">∇·E = 0</bdi> בכל מקום חוץ מהמטען עצמו. הקו הלבן על הכדור הוא קו המשווה שלו, העיגול מהמבט השטוח. (השטף לא קבוע לגמרי בכדור קטן מאוד, כי המטען כאן "מרוח" על גוש קטן ולא נקודה מתמטית.)</div></li>
   </ol>
 </section>
 
@@ -283,8 +289,8 @@ body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
 "use strict";
 const $ = id => document.getElementById(id);
 const MODE = 'div';
-const START = {"field":"src","probe":[0,0],"r":0.55,"parts":true,"heat":false,"a":0.5,"b":0.5};
-const ADV_DEF = {"heat":false,"a":0.5,"b":0.5};
+const START = {"field":"src","probe":[0,0],"r":0.55,"parts":true,"heat":false,"a":0.5,"b":0.5,"view":"2d"};
+const ADV_DEF = {"heat":false,"a":0.5,"b":0.5,"view":"2d"};
 /* ======================================================================
    מנוע משותף לשדות וקטוריים/סקלריים בדו-ממד (MODE = grad | div | curl)
    קואורדינטות עולם: y כלפי מעלה, חצי-גובה H = 2.4
@@ -471,17 +477,19 @@ cvTop.addEventListener('pointermove', e => { if (dragging) setProbeFromEvent(e);
 cvTop.addEventListener('pointerup', () => { dragging = false; });
 // לשימוש ההדגמה האוטומטית
 window.PROBE = {pos:() => S.probe.slice(), set:(x, y) => { S.probe = [x, y]; updPanel(); },
-  screen:(x, y) => { const r = cvTop.getBoundingClientRect(); return [r.left + X(x), r.top + Y(y)]; }};
+  screen:(x, y) => { if (V3.on && V3.ready){ const v = P3(x, y, SIM3.probeH ? SIM3.probeH(x, y) : 0).project(V3.cam), r = V3.cv.getBoundingClientRect(); return [r.left + (v.x + 1)/2*r.width, r.top + (1 - v.y)/2*r.height]; }
+    const r = cvTop.getBoundingClientRect(); return [r.left + X(x), r.top + Y(y)]; }};
 /* ---------- לולאה ---------- */
 let dirty = true, last = performance.now(), visible = true;
 new IntersectionObserver(e => { visible = e[0].isIntersecting; }).observe(view);
-new ResizeObserver(() => { sizeAll(); dirty = true; }).observe(view);
+new ResizeObserver(() => { sizeAll(); size3D(); dirty = true; }).observe(view);
 function frame(now){
   requestAnimationFrame(frame);
   const dt = Math.max(0, Math.min(0.05, (now - last)/1000)); last = now;
   if (!visible) return;
-  if (dirty){ dirty = false; drawBg(); updPanel(); }
+  if (dirty){ dirty = false; drawBg(); if (V3.ready && SIM3.onBg) SIM3.onBg(); updPanel(); }
   stepParticles(dt); drawTop(dt);
+  if (V3.on && V3.ready){ SIM3.update(dt); V3.ctl.update(); V3.R.render(V3.scene, V3.cam); }
 }
 function setField(k){
   S.field = k; document.querySelectorAll('#fieldSeg button').forEach(b => b.classList.toggle('on', b.dataset.f === k));
@@ -496,13 +504,13 @@ function syncUI(){ document.querySelectorAll('[data-k]').forEach(el => { const k
 function setMode(on){
   adv = on; document.body.classList.toggle('adv', on);
   if (!on){ Object.assign(S, ADV_DEF); syncUI();
-    climb = null; if (S.field.startsWith('custom')) setField(START.field); }
+    climb = null; if (S.field.startsWith('custom')) setField(START.field); if ($('views')) setView('2d'); }
   dirty = true; $('lab').scrollIntoView({behavior:'smooth'});
 }
 $('more').addEventListener('click', () => setMode(true));
 $('less').addEventListener('click', () => setMode(false));
 document.querySelectorAll('.exp .xbtn').forEach(b => b.addEventListener('click', () => { const li = b.closest('.exp'); li.classList.toggle('open'); b.textContent = li.classList.contains('open') ? 'סגור' : 'הסבר'; }));
-const sgn = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2);
+const sgn = v => Math.abs(v) < 0.005 ? '0.00' : (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2);
 
 /* ---------- SVG לפתיח: רשת חצים של שדה מתוך המעבדה ---------- */
 function svgArrows(Fn, o){   // o: {x0,y0,w,h, ww,wh (חצי רוחב/גובה בעולם), nx,ny, col, mk}
@@ -518,18 +526,79 @@ function svgArrows(Fn, o){   // o: {x0,y0,w,h, ww,wh (חצי רוחב/גובה �
 const svgMarker = (id, col) => '<marker id="' + id + '" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="' + col + '"/></marker>';
 function sbar(id, v){ const el = $(id), k = Math.max(-1, Math.min(1, v)); el.style.left = (k >= 0 ? 50 : 50 + 50*k) + '%'; el.style.width = Math.abs(50*k) + '%'; }
 
+/* ---------- מבט תלת-ממדי (מצב מורחב). Three.js נטען רק כשפותחים את המבט ---------- */
+const V3 = {on:false, ready:false, loading:null, handles:[]};
+const SIM3 = {};   // כל סימולציה ממלאת: build(), onBg(), update(dt), probeH(x, y)
+function loadScript(src){ return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+function load3D(){
+  if (!V3.loading) V3.loading = (window.THREE ? Promise.resolve() : loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'))
+    .then(() => THREE.OrbitControls ? 0 : loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js'));
+  return V3.loading;
+}
+const P3 = (x, y, h) => new THREE.Vector3(x, h, -y);    // עולם (x, y, גובה) → three
+function init3D(){
+  const cv = $('cv3d'), R = new THREE.WebGLRenderer({canvas:cv, antialias:true});
+  R.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); R.setClearColor(0x060a14, 1);
+  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(38, 1, 0.05, 200);
+  cam.position.set(0, 5.4, 8.4);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.62)); const dl = new THREE.DirectionalLight(0xffffff, 0.7); dl.position.set(3, 8, 5); scene.add(dl);
+  // גרירת הגשש: תופסים אותו ומזיזים במישור אופקי בגובה שלו. בכל מקום אחר: סיבוב המצלמה
+  const ray = new THREE.Raycaster(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3();
+  const ndc = e => { const r = cv.getBoundingClientRect(); return new THREE.Vector2((e.clientX - r.left)/r.width*2 - 1, -(e.clientY - r.top)/r.height*2 + 1); };
+  let drag = false;
+  cv.addEventListener('pointerdown', e => { ray.setFromCamera(ndc(e), cam); if (!ray.intersectObjects(V3.handles, true).length) return;
+    drag = true; plane.constant = -(SIM3.probeH ? SIM3.probeH(...S.probe) : 0); V3.ctl.enabled = false; cv.setPointerCapture(e.pointerId); cv.style.cursor = 'grabbing'; e.stopImmediatePropagation(); });
+  cv.addEventListener('pointermove', e => { if (!drag) return; ray.setFromCamera(ndc(e), cam);
+    if (ray.ray.intersectPlane(plane, hit)) PROBE.set(Math.max(-W, Math.min(W, hit.x)), Math.max(-HH, Math.min(HH, -hit.z))); });
+  const up = () => { drag = false; V3.ctl.enabled = true; cv.style.cursor = ''; };
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  const ctl = new THREE.OrbitControls(cam, cv); ctl.target.set(0, 0.5, 0); ctl.enableDamping = true; ctl.dampingFactor = 0.08;
+  ctl.minDistance = 3; ctl.maxDistance = 22; ctl.maxPolarAngle = Math.PI*0.495; ctl.enablePan = false;
+  Object.assign(V3, {cv, R, scene, cam, ctl, ready:true});
+  SIM3.build(); size3D(); if (SIM3.onBg) SIM3.onBg();
+}
+function size3D(){ if (!V3.ready) return; V3.R.setSize(cw, ch, false); V3.cam.aspect = cw/ch; V3.cam.updateProjectionMatrix(); }
+function setView(v){
+  S.view = v; S.heat = v === 'heat';
+  document.querySelectorAll('#views button').forEach(b => b.classList.toggle('on', b.dataset.view === v));
+  document.querySelectorAll('.v3-only').forEach(el => { el.style.display = v === '3d' ? '' : 'none'; });
+  V3.on = v === '3d'; view.classList.toggle('v3', V3.on); dirty = true;
+  if (V3.on && !V3.ready){ $('v3load').style.display = '';
+    load3D().then(() => { if (!V3.ready) init3D(); $('v3load').style.display = 'none'; dirty = true; updPanel(); })
+      .catch(err => { console.error(err); $('v3load').textContent = 'לא הצלחתי לטעון את התלת-ממד. בדקו את החיבור לאינטרנט.'; }); }
+  updPanel();
+}
+if ($('views')) $('views').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setView(b.dataset.view); });
+// חץ "שמן" (גליל + חרוט) שנראה טוב מכל זווית
+function fatArrow(col, rad){
+  const g = new THREE.Group(), m = new THREE.MeshLambertMaterial({color:col, emissive:col, emissiveIntensity:0.25});
+  const sh = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, 1, 10), m); sh.geometry.translate(0, 0.5, 0);
+  const hd = new THREE.Mesh(new THREE.ConeGeometry(rad*2.7, 1, 14), m); hd.geometry.translate(0, 0.5, 0);
+  g.add(sh, hd); g.userData = {sh, hd, rad, m}; return g;
+}
+function setFat(a, from, dir, len){
+  if (!(len > 1e-3) || dir.lengthSq() < 1e-12){ a.visible = false; return; } a.visible = true;
+  const hl = Math.min(len*0.45, a.userData.rad*7);
+  a.position.copy(from); a.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+  a.userData.sh.scale.set(1, Math.max(1e-3, len - hl), 1); a.userData.hd.scale.set(1, hl, 1); a.userData.hd.position.y = len - hl;
+}
+function fib(N){ const out = [], ga = Math.PI*(3 - Math.sqrt(5)); for (let i = 0; i < N; i++){ const z = 1 - 2*(i + 0.5)/N, r = Math.sqrt(1 - z*z), t = ga*i; out.push([r*Math.cos(t), r*Math.sin(t), z]); } return out; }
+
 /* ======================================================================
    חלק ייחודי לסימולציה הזו
    ====================================================================== */
 
 bindRange('rR', 'r');
 bindChk('partChk', 'parts');
-bindChk('heatChk', 'heat', true);
+
 ['rA', 'rB'].forEach(id => $(id).addEventListener('input', e => { S[id === 'rA' ? 'a' : 'b'] = +e.target.value; if (S.field !== 'customD') setField('customD'); dirty = true; updPanel(); }));
 syncUI();
 setField(S.field);
 const sq = v => Math.sign(v)*Math.sqrt(Math.abs(v)/3);
+const sq3 = v => Math.sign(v)*Math.sqrt(Math.abs(v)/8);
 function updPanel(){
+  if (V3.on) return updPanel3();
+  $('fluxTtl').innerHTML = 'שטף נטו החוצה <bdi dir="ltr">∮F·n ds</bdi>'; $('divTtl').textContent = 'דיברגנץ ≈ שטף ÷ שטח'; $('divRow').textContent = 'לכל יחידת שטח';
   const [x, y] = S.probe, I = loopInts(x, y, S.r), dv = I.flux/I.area;
   $('rV').textContent = S.r.toFixed(2);
   $('fluxV').textContent = sgn(I.flux); sbar('fluxBar', sq(I.flux)); $('fluxBar').style.background = I.flux >= 0 ? '#46e39a' : '#ff4d5e';
@@ -544,6 +613,84 @@ function updPanel(){
   $('calc').innerHTML = k('∂Fx/∂x') + ' = ' + dxx.toFixed(3) + '<br>' + k('∂Fy/∂y') + ' = ' + dyy.toFixed(3) + '<br>' + k('∇·F') + '    = ' + (dxx + dyy).toFixed(3) + '  (במרכז)<br>' +
     k('∮F·n ds') + ' = ' + I.flux.toFixed(3) + '<br>' + k('÷ πr²') + '  = ' + dv.toFixed(3) + '  (r = ' + S.r.toFixed(2) + ')';
 }
+/* ---------- מבט תלת-ממד: מטען אמיתי בחלל, וכדור במקום עיגול ---------- */
+const Q3 = 0.6, A3 = 0.08;                           // מטען (שטף כולל 4πQ) ורדיוס ה"מריחה" שלו
+function F3(x, y, h){                                // השדה בחלל (h = גובה)
+  const pc = (cx, q) => { const dx = x - cx, r2 = dx*dx + y*y + h*h + A3*A3, k = q/Math.pow(r2, 1.5); return [k*dx, k*y, k*h]; };
+  if (S.field === 'src') return pc(0, Q3);
+  if (S.field === 'sink') return pc(0, -Q3);
+  if (S.field === 'dipole'){ const a = pc(-1.3, Q3), b = pc(1.3, -Q3); return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]; }
+  const v = VECTORS[S.field](x, y); return [v[0], v[1], 0];   // שאר השדות: אותו זרם בכל שכבה
+}
+const FIB = fib(900);
+function sphereFlux(cx, cy, r){ let t = 0; for (const [a, b, c] of FIB){ const v = F3(cx + r*a, cy + r*b, r*c); t += v[0]*a + v[1]*b + v[2]*c; } return t*4*Math.PI*r*r/FIB.length; }
+function div3(x, y, h){ const e = 1e-3; return (F3(x + e, y, h)[0] - F3(x - e, y, h)[0] + F3(x, y + e, h)[1] - F3(x, y - e, h)[1] + F3(x, y, h + e)[2] - F3(x, y, h - e)[2])/(2*e); }
+function updPanel3(){
+  const [x, y] = S.probe, fl = sphereFlux(x, y, S.r), vol = 4/3*Math.PI*S.r**3, dv = fl/vol;
+  $('fluxTtl').innerHTML = 'שטף נטו החוצה מהכדור <bdi dir="ltr">∯F·dA</bdi>'; $('divTtl').textContent = 'דיברגנץ ≈ שטף ÷ נפח'; $('divRow').textContent = 'לכל יחידת נפח';
+  $('rV').textContent = S.r.toFixed(2);
+  $('fluxV').textContent = sgn(fl); sbar('fluxBar', sq3(fl)); $('fluxBar').style.background = fl >= 0 ? '#46e39a' : '#ff4d5e';
+  $('divV').textContent = sgn(dv); sbar('divBar', sq3(dv)); $('divBar').style.background = dv >= 0 ? '#46e39a' : '#ff4d5e';
+  const st = $('status');
+  if (fl > 0.05){ st.className = 'chip ok'; st.textContent = 'יש בפנים מקור: יוצא יותר משנכנס'; }
+  else if (fl < -0.05){ st.className = 'chip bad'; st.textContent = 'יש בפנים בור: נכנס יותר משיוצא'; }
+  else { st.className = 'chip neu'; st.textContent = 'רק עובר: נכנס = יוצא'; }
+  $('aV').textContent = S.a.toFixed(2); $('bV').textContent = S.b.toFixed(2);
+  const k = t => '<span class="k">' + t + '</span>', ch = S.field === 'src' || S.field === 'sink' || S.field === 'dipole';
+  $('calc').innerHTML = k('∯F·dA') + '   = ' + fl.toFixed(3) + '<br>' + k('÷ 4πr³/3') + ' = ' + dv.toFixed(3) + '  (r = ' + S.r.toFixed(2) + ')<br>' + k('∇·F') + '     = ' + div3(x, y, 0).toFixed(3) + '  (במרכז)' +
+    (ch ? '<br>' + k('4πQ') + '     = ' + (4*Math.PI*Q3).toFixed(3) + '  (שטף מכל מטען)' : '');
+}
+const d3 = {};
+Object.assign(SIM3, {
+  probeH: () => 0,
+  build(){
+    const sc = V3.scene;
+    d3.grid = new THREE.GridHelper(1, 14, 0x2a3a5c, 0x141d33); d3.grid.position.y = -1.7; sc.add(d3.grid);
+    d3.lat = []; for (let i = 0; i < 9*5*3; i++){ const a = fatArrow(0x8cbeff, 0.017); a.userData.m.transparent = true; a.userData.m.opacity = 0.45; sc.add(a); d3.lat.push(a); }
+    d3.sph = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 24), new THREE.MeshLambertMaterial({color:0xffffff, transparent:true, opacity:0.1, depthWrite:false})); sc.add(d3.sph);
+    const eq = new THREE.Mesh(new THREE.TorusGeometry(1, 0.012, 6, 72), new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.8})); eq.rotation.x = Math.PI/2; d3.sph.add(eq);
+    d3.dirs = fib(48); d3.nA = d3.dirs.map(() => { const a = fatArrow(0x46e39a, 0.02); sc.add(a); return a; });
+    d3.qp = new THREE.Mesh(new THREE.SphereGeometry(0.09, 20, 14), new THREE.MeshBasicMaterial({color:0x46e39a})); d3.qn = new THREE.Mesh(new THREE.SphereGeometry(0.09, 20, 14), new THREE.MeshBasicMaterial({color:0xff4d5e})); sc.add(d3.qp, d3.qn);
+    d3.N = 800; d3.pos = new Float32Array(d3.N*3); d3.age = new Float32Array(d3.N); d3.life = new Float32Array(d3.N);
+    const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(d3.pos, 3));
+    d3.pts = new THREE.Points(pg, new THREE.PointsMaterial({color:0xdcebff, size:0.045, transparent:true, opacity:0.85})); sc.add(d3.pts);
+    V3.handles = [d3.sph];
+    V3.ctl.target.set(0, 0, 0); V3.cam.position.set(0, 4.2, 8.6);
+  },
+  spawn(i){                                          // חלקיק חדש: ליד המקור, או בכל הקופסה
+    const f = S.field, src = f === 'src' ? 0 : f === 'dipole' ? -1.3 : null; let x, y, h;
+    if (src !== null && Math.random() < 0.75){ const u = Math.random()*2 - 1, t = Math.random()*6.283, r = 0.12 + Math.random()*0.3, q = Math.sqrt(1 - u*u); x = src + r*q*Math.cos(t); y = r*q*Math.sin(t); h = r*u; }
+    else { x = (Math.random()*2 - 1)*W; y = (Math.random()*2 - 1)*HH; h = (Math.random()*2 - 1)*1.5; }
+    d3.pos[3*i] = x; d3.pos[3*i + 1] = h; d3.pos[3*i + 2] = -y; d3.age[i] = 0; d3.life[i] = 2 + Math.random()*4;
+  },
+  onBg(){
+    d3.grid.scale.set(2*W, 1, 2*HH);
+    const xs = [], vs = [];
+    for (let i = 0; i < 9; i++) for (let j = 0; j < 5; j++) for (let l = 0; l < 3; l++){ const x = -W + (i + 0.5)*2*W/9, y = -HH + (j + 0.5)*2*HH/5, h = -1.1 + l*1.1, v = F3(x, y, h); xs.push([x, y, h]); vs.push(v); }
+    const ms = vs.map(v => Math.hypot(v[0], v[1], v[2])), ref = ms.slice().sort((a, b) => a - b)[Math.floor(ms.length*0.9)] || 1;
+    d3.lat.forEach((a, n) => { const [x, y, h] = xs[n], v = vs[n], L = 0.55*Math.pow(Math.min(1, ms[n]/ref), 0.7); setFat(a, P3(x, y, h), new THREE.Vector3(v[0], v[2], -v[1]), ms[n] > 1e-6 ? L : 0); });
+    d3.qp.visible = S.field === 'src' || S.field === 'dipole'; d3.qp.position.copy(P3(S.field === 'dipole' ? -1.3 : 0, 0, 0));
+    d3.qn.visible = S.field === 'sink' || S.field === 'dipole'; d3.qn.position.copy(P3(S.field === 'dipole' ? 1.3 : 0, 0, 0));
+    for (let i = 0; i < d3.N; i++){ SIM3.spawn(i); d3.age[i] = Math.random()*d3.life[i]; }
+  },
+  update(dt){
+    const [cx, cy] = S.probe, r = S.r;
+    d3.sph.position.copy(P3(cx, cy, 0)); d3.sph.scale.setScalar(r);
+    d3.dirs.forEach(([a, b, c], n) => { const v = F3(cx + r*a, cy + r*b, r*c), fn = v[0]*a + v[1]*b + v[2]*c, o = Math.min(0.75, Math.abs(fn)*0.4), A = d3.nA[n];
+      const col = fn > 0 ? 0x46e39a : 0xff4d5e; A.userData.m.color.set(col); A.userData.m.emissive.set(col);
+      const p = P3(cx + r*a, cy + r*b, r*c), d = new THREE.Vector3(a, c, -b);
+      if (o < 0.05) A.visible = false; else if (fn > 0) setFat(A, p, d, o); else setFat(A, p.clone().addScaledVector(d, o), d.clone().negate(), o); });
+    if (!S.parts){ d3.pts.visible = false; return; } d3.pts.visible = true;
+    for (let i = 0; i < d3.N; i++){
+      const x = d3.pos[3*i], h = d3.pos[3*i + 1], y = -d3.pos[3*i + 2], v = F3(x, y, h); let sx = v[0]*dt*TIME, sy = v[1]*dt*TIME, sh = v[2]*dt*TIME; const L = Math.hypot(sx, sy, sh);
+      if (L > 0.1){ sx *= 0.1/L; sy *= 0.1/L; sh *= 0.1/L; }
+      d3.pos[3*i] += sx; d3.pos[3*i + 1] += sh; d3.pos[3*i + 2] -= sy; d3.age[i] += dt;
+      const nx = d3.pos[3*i], ny = -d3.pos[3*i + 2], nh = d3.pos[3*i + 1];
+      if (d3.age[i] > d3.life[i] || Math.abs(nx) > W || Math.abs(ny) > HH || Math.abs(nh) > 1.7 || ((S.field === 'sink') && nx*nx + ny*ny + nh*nh < 0.01) || (S.field === 'dipole' && (nx - 1.3)**2 + ny*ny + nh*nh < 0.01)) SIM3.spawn(i);
+    }
+    d3.pts.geometry.attributes.position.needsUpdate = true;
+  }
+});
 /* פתיח: השדה "מאיץ" מהמעבדה, ועיגול ברדיוס 1 במרכז */
 (function(){
   const o = {x0:0, y0:0, w:340, h:250, ww:3.2, wh:2.35, nx:9, ny:7, col:'#8cbeff', mk:'mkB'}, Fn = VECTORS.accel, sc = 340/6.4;
@@ -588,6 +735,11 @@ requestAnimationFrame(frame);
   const dragProbe = (x, y, dur) => { const [x0, y0] = PROBE.pos(); return pathProbe(k => [x0 + (x - x0)*k, y0 + (y - y0)*k], dur); };
   const orbit = (cx, cy, r, turns, dur) => { const [x0, y0] = PROBE.pos(), a0 = Math.atan2(y0 - cy, x0 - cx);
     return dragProbe(cx + r*Math.cos(a0), cy + r*Math.sin(a0), 700).then(() => pathProbe(k => [cx + r*Math.cos(a0 + 2*Math.PI*turns*k), cy + r*Math.sin(a0 + 2*Math.PI*turns*k)], dur)); };
+  // מסובב את המצלמה סביב המרכז (להדגמות במבט התלת-ממדי)
+  async function orbitCam(deg, dur){ const c = V3.cam, t = V3.ctl.target, r0 = c.position.clone().sub(t), a0 = Math.atan2(r0.x, r0.z), rr = Math.hypot(r0.x, r0.z);
+    await anim(dur || 3000, k => { const a = a0 + deg*Math.PI/180*k; c.position.set(t.x + rr*Math.sin(a), c.position.y, t.z + rr*Math.cos(a)); c.lookAt(t); }); }
+  async function to3D(){ await ensureAdv(); if (S.view !== '3d') await click(viewBtn('3d')); await waitFor(() => V3.ready, 20000); await sleep(600); }
+  const S3 = [7];
   const SCRIPTS = [
     async () => { await click(fb('src')); await dragProbe(0, 0, 1200); say('העיגול על המקור: הכול יוצא (ירוק)'); await sleep(3000);
       say('השטף והדיברגנץ חיוביים: כאן נוצר חומר'); await sleep(2500); },
@@ -599,13 +751,17 @@ requestAnimationFrame(frame);
     async () => { await click(fb('accel')); await dragSlider(byId('rR'), 0.9, 1000); await dragProbe(0, 0, 1000); say('חצים מקבילים, אבל ימינה הם ארוכים יותר'); await sleep(2500);
       say('יוצא יותר משנכנס: דיברגנץ 0.3+'); await sleep(2500); say('מכווצים את העיגול: השטף קטן, הדיברגנץ נשאר'); await dragSlider(byId('rR'), 0.2, 5000); await sleep(2500);
       await dragSlider(byId('rR'), 0.55, 1000); },
-    async () => { await ensureAdv(); await click(fb('dipole')); await toggle(byId('heatChk'), true); say('מפת הדיברגנץ: ירוק = מקור, אדום = בור'); await sleep(3000);
+    async () => { await ensureAdv(); await click(fb('dipole')); await click(viewBtn('heat')); say('מפת הדיברגנץ: ירוק = מקור, אדום = בור'); await sleep(3000);
       await dragProbe(0, 0, 1500); say('באמצע הזרם הכי חזק, אבל הדיברגנץ אפס: הוא רק עובר'); await sleep(3000); await dragProbe(-1.3, 0, 2000); say('על המקור: חיובי'); await sleep(2000);
       await dragProbe(1.3, 0, 2500); say('על הבור: שלילי'); await sleep(2200); },
     async () => { await ensureAdv(); await dragSlider(byId('rA'), 0.5, 900); await dragSlider(byId('rB'), 0.5, 900); await dragProbe(0.8, 0.6, 1000);
       say('a = b = 0.5: הכול מתפזר, דיברגנץ = 1'); await sleep(2500); say('מזיזים את b לאט...'); await dragSlider(byId('rB'), -0.5, 5000);
-      say('b = −0.5: נמתח לרוחב, נדחס לגובה, דיברגנץ = a + b = 0'); await sleep(3200); await dragSlider(byId('rB'), -1, 2500); say('b = −1: דיברגנץ = 0.5−, בור'); await sleep(2500); }
-  ];
+      say('b = −0.5: נמתח לרוחב, נדחס לגובה, דיברגנץ = a + b = 0'); await sleep(3200); await dragSlider(byId('rB'), -1, 2500); say('b = −1: דיברגנץ = 0.5−, בור'); await sleep(2500); },
+    async () => { await ensureAdv(); await click(fb('src')); PROBE.set(0, 0); await dragSlider(byId('rR'), 0.55, 800); say('עוברים לתלת-ממד: מטען אמיתי, והעיגול הופך לכדור'); await to3D(); await orbitCam(-25, 3000);
+      say('מגדילים את הכדור... השטף כמעט לא משתנה'); await dragSlider(byId('rR'), 1.3, 5000); await sleep(2000);
+      await dragSlider(byId('rR'), 0.7, 1500); say('מזיזים את הכדור הצידה, עד שהמטען בחוץ'); await dragProbe(2.0, 0.6, 4500);
+      say('השטף אפס: כל מה שנכנס יוצא. כאן הדיברגנץ אפס'); await sleep(3000); await orbitCam(25, 2500); }
+  ].map((fn, i) => S3.includes(i) ? fn : async () => { if (S.view === '3d') await click(viewBtn('2d')); return fn(); });
   const byId = id => document.getElementById(id);
   const LAB = document.querySelector('section.lab'), VIEW = LAB.querySelector('.view');
   const cur = byId('demoCursor'), D = {alive:0, i:-1, x:0, y:0};
