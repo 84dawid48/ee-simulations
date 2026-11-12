@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.sw{animation:spin 12s linear infinite;transform-origin:320px 180px}
+.wh{animation:spin 2.6s linear infinite;transform-origin:530px 180px}
+.pt{animation:spin 5s linear infinite;transform-origin:320px 180px}.p2{animation-delay:-1.7s}.p3{animation-delay:-3.3s}
+.src{animation:br 1.8s ease-in-out infinite alternate}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes br{from{opacity:.55}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".5" r=".8"><stop offset="0" stop-color="#1a1640"/><stop offset="1" stop-color="#05070d"/></radialGradient>
+<marker id="m" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#8cbeff"/></marker>
+<marker id="g" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#46e39a"/></marker></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<g class="sw" stroke="#8cbeff" stroke-width="3" marker-end="url(#m)" opacity=".8">
+<line x1="320" y1="70" x2="368" y2="76"/><line x1="408" y1="110" x2="424" y2="154"/><line x1="428" y1="202" x2="408" y2="244"/><line x1="368" y1="284" x2="320" y2="290"/>
+<line x1="272" y1="284" x2="232" y2="258"/><line x1="212" y1="218" x2="212" y2="170"/><line x1="222" y1="130" x2="256" y2="96"/>
+<line x1="322" y1="130" x2="346" y2="136"/><line x1="364" y1="166" x2="364" y2="194"/><line x1="340" y1="224" x2="312" y2="228"/><line x1="282" y1="204" x2="276" y2="176"/><line x1="290" y1="140" x2="304" y2="132"/>
+</g>
+<g fill="#dcebff"><circle class="pt" cx="320" cy="62" r="5"/><circle class="pt p2" cx="320" cy="62" r="5"/><circle class="pt p3" cx="320" cy="62" r="5"/></g>
+<circle cx="110" cy="180" r="42" fill="rgba(70,227,154,.13)" stroke="#fff" stroke-width="3"/>
+<g class="src" stroke="#46e39a" stroke-width="4" marker-end="url(#g)"><line x1="152" y1="180" x2="186" y2="180"/><line x1="68" y1="180" x2="34" y2="180"/><line x1="110" y1="138" x2="110" y2="104"/><line x1="110" y1="222" x2="110" y2="256"/><line x1="140" y1="150" x2="164" y2="126"/><line x1="80" y1="210" x2="56" y2="234"/></g>
+<circle cx="530" cy="180" r="38" fill="none" stroke="#9d8bff" stroke-width="3"/>
+<g class="wh" stroke="#9d8bff" stroke-width="6" stroke-linecap="round"><line x1="496" y1="180" x2="564" y2="180"/><line x1="530" y1="146" x2="530" y2="214"/></g>
+<circle cx="530" cy="180" r="6" fill="#fff"/>
+</svg>

@@ -2,7 +2,7 @@
    אחרי שינוי מחלקות ב-index.html או ב-gallery/app.js בונים מחדש (מתיקיית "סימולציות"):
    npx tailwindcss@3.4.16 -c gallery/tailwind.config.js -i gallery/tailwind.src.css -o gallery/tailwind.css --minify */
 module.exports = {
-  content: ['./index.html', './gallery/app.js', './simulationsData.js'],
+  content: ['./index.html', './course.html', './gallery/app.js', './simulationsData.js'],
   darkMode: 'class',
   theme: {
     extend: {

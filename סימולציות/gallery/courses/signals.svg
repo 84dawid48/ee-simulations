@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.s{animation:shift 3s linear infinite}@keyframes shift{to{transform:translateX(-120px)}}
+.d{animation:pop 1.5s ease-in-out infinite}.d:nth-child(2n){animation-delay:-.5s}.d:nth-child(3n){animation-delay:-1s}
+@keyframes pop{0%,100%{opacity:.6}50%{opacity:1}}
+.rep{animation:sl 4s ease-in-out infinite alternate}@keyframes sl{to{transform:translateX(-26px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".4" r=".85"><stop offset="0" stop-color="#2a1d0c"/><stop offset="1" stop-color="#05070d"/></radialGradient>
+<clipPath id="c"><rect x="20" y="20" width="600" height="190"/></clipPath></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<line x1="20" y1="115" x2="620" y2="115" stroke="#4a5d84"/>
+<g clip-path="url(#c)"><g class="s">
+<path d="M20 115 C35 55 55 55 70 115 S105 175 120 115 S155 55 170 115 S205 175 220 115 S255 55 270 115 S305 175 320 115 S355 55 370 115 S405 175 420 115 S455 55 470 115 S505 175 520 115 S555 55 570 115 S605 175 620 115 S655 55 670 115 S705 175 720 115 S755 55 770 115" fill="none" stroke="#ffb347" stroke-width="4"/>
+<g fill="#fff"><circle class="d" cx="45" cy="70" r="7"/><circle class="d" cx="105" cy="158" r="7"/><circle class="d" cx="165" cy="72" r="7"/><circle class="d" cx="225" cy="152" r="7"/><circle class="d" cx="285" cy="70" r="7"/><circle class="d" cx="345" cy="158" r="7"/><circle class="d" cx="405" cy="72" r="7"/><circle class="d" cx="465" cy="152" r="7"/><circle class="d" cx="525" cy="70" r="7"/><circle class="d" cx="585" cy="158" r="7"/><circle class="d" cx="645" cy="72" r="7"/><circle class="d" cx="705" cy="152" r="7"/></g>
+</g></g>
+<line x1="20" y1="320" x2="620" y2="320" stroke="#4a5d84"/>
+<path d="M270 320 L320 240 L370 320" fill="rgba(108,184,255,.25)" stroke="#6cb8ff" stroke-width="3"/>
+<g class="rep"><path d="M120 320 L170 240 L220 320" fill="none" stroke="#9d8bff" stroke-width="3"/><path d="M420 320 L470 240 L520 320" fill="none" stroke="#9d8bff" stroke-width="3"/></g>
+<rect x="245" y="230" width="150" height="90" fill="none" stroke="#ffd479" stroke-width="2" stroke-dasharray="6 4"/>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.in{stroke-dasharray:14 10;animation:run 1s linear infinite}@keyframes run{to{stroke-dashoffset:-48}}
+.fan{animation:br 2.6s ease-in-out infinite alternate}@keyframes br{from{opacity:.6}to{opacity:1}}
+.wv{animation:wv 2s linear infinite}@keyframes wv{to{transform:translateX(-120px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".5" r=".8"><stop offset="0" stop-color="#1b1236"/><stop offset="1" stop-color="#05070d"/></radialGradient>
+<linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfe3ff" stop-opacity=".35"/><stop offset="1" stop-color="#7da9ff" stop-opacity=".12"/></linearGradient>
+<clipPath id="cw"><rect x="20" y="262" width="600" height="90"/></clipPath></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<path class="in" d="M30 150 L268 150" stroke="#fff" stroke-width="5"/>
+<polygon points="320,40 410,210 230,210" fill="url(#gl)" stroke="#bcd3ff" stroke-width="2.5"/>
+<g class="fan" stroke-width="5" stroke-linecap="round">
+<path d="M352 150 L620 116" stroke="#ff3a2e"/><path d="M352 152 L620 138" stroke="#ffa52e"/><path d="M352 154 L620 160" stroke="#e8f53d"/>
+<path d="M352 156 L620 182" stroke="#3ddc84"/><path d="M352 158 L620 204" stroke="#2fb5ff"/><path d="M352 160 L620 226" stroke="#7a3cff"/></g>
+<g clip-path="url(#cw)"><g class="wv"><path d="M20 306 c30 -36 60 -36 60 0 s30 36 60 0 s30 -36 60 0 s30 36 60 0 s30 -36 60 0 s30 36 60 0 s30 -36 60 0 s30 36 60 0 s30 -36 60 0 s30 36 60 0 s30 -36 60 0 s30 36 60 0" fill="none" stroke="#facc15" stroke-width="4"/></g></g>
+<rect x="300" y="258" width="14" height="96" rx="4" fill="rgba(250,204,21,.22)" stroke="#facc15" stroke-width="2"/>
+</svg>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>קורס · LIMA</title>
+<meta name="description" content="LIMA Simulative Labs: מעבדות סימולציה אינטראקטיביות ללמידה עצמאית של נושאים מסובכים בהנדסה, פיזיקה ולמידת מכונה.">
+<!-- מיתוג: LIMA Simulative Labs (קבצי הלוגו והאייקונים ב-gallery/brand) -->
+<link rel="icon" href="gallery/brand/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="gallery/brand/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="gallery/brand/apple-touch-icon.png">
+<meta name="theme-color" content="#05070d">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LIMA Simulative Labs">
+<meta property="og:title" content="LIMA · מעבדות סימולציה אינטראקטיביות">
+<meta property="og:description" content="LIMA Simulative Labs: מעבדות סימולציה אינטראקטיביות ללמידה עצמאית של נושאים מסובכים בהנדסה, פיזיקה ולמידת מכונה.">
+<meta property="og:url" content="https://84dawid48.github.io/ee-simulations/%D7%A1%D7%99%D7%9E%D7%95%D7%9C%D7%A6%D7%99%D7%95%D7%AA/">
+<meta property="og:image" content="https://84dawid48.github.io/ee-simulations/%D7%A1%D7%99%D7%9E%D7%95%D7%9C%D7%A6%D7%99%D7%95%D7%AA/gallery/brand/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="he_IL">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- הגדרת ערכת הנושא לפני הציור, כדי שלא יהיה "הבהוב" של מצב בהיר -->
+<script>
+  try { if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark'); } catch (e) {}
+</script>
+
+<!-- Tailwind: CSS בנוי מראש (gallery/tailwind.css). הוראות בנייה מחדש: gallery/tailwind.config.js -->
+<link rel="stylesheet" href="gallery/tailwind.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="gallery/styles.css">
+<script data-goatcounter="https://84dawid48.goatcounter.com/count" data-goatcounter-settings='{"allow_frame": true}' async src="//gc.zgo.at/count.js"></script>
+</head>
+
+<body class="min-h-screen bg-slate-50 text-slate-800 antialiased transition-colors duration-500 dark:bg-[#05070d] dark:text-slate-200">
+
+  <!-- רקע: כתמי אור מטושטשים ורשת עדינה -->
+  <div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div class="absolute -top-40 right-[-10%] h-[520px] w-[520px] rounded-full bg-neon-violet/25 blur-[120px] animate-float dark:bg-neon-violet/20"></div>
+    <div class="absolute top-1/3 left-[-12%] h-[480px] w-[480px] rounded-full bg-neon-blue/25 blur-[120px] animate-float [animation-delay:-4s] dark:bg-neon-blue/15"></div>
+    <div class="grid-bg absolute inset-0"></div>
+  </div>
+
+  <!-- ===================== סרגל עליון ===================== -->
+  <header class="sticky top-0 z-40 border-b border-slate-200/70 bg-white/70 backdrop-blur-xl dark:border-white/10 dark:bg-[#05070d]/70">
+    <div class="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
+      <!-- ימין: בס״ד, קישורים ומצב כהה/בהיר -->
+      <div class="flex items-center gap-3">
+        <span class="text-xs text-slate-500 dark:text-slate-400">בס״ד</span>
+        <!-- מקום שמור לקישורים עתידיים (למשל: אודות, צור קשר) -->
+        <nav id="headerLinks" class="hidden items-center gap-1 sm:flex" aria-label="קישורים"></nav>
+        <button id="themeBtn" type="button" aria-label="החלפת מצב כהה/בהיר"
+          class="grid h-9 w-9 place-items-center rounded-xl border border-slate-200 bg-white/70 transition hover:scale-105 hover:border-neon-violet dark:border-white/10 dark:bg-white/5">
+          <svg class="h-5 w-5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+          <svg class="hidden h-5 w-5 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+      </div>
+      <!-- שמאל: הלוגו -->
+      <a href="index.html" dir="ltr" class="flex items-center gap-2.5 transition hover:opacity-90" aria-label="LIMA Simulative Labs, לכל הקורסים">
+        <img src="gallery/brand/lima-icon.svg" alt="" class="h-9 w-9">
+        <span class="flex flex-col items-start leading-none">
+          <svg viewBox="0 0 226 76" class="h-[17px] w-[51px] text-slate-900 dark:text-white" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="5" stroke-miterlimit="2"><path d="M3 16V72H40"/><path d="M64 27V72"/><path d="M88 72V16L117 60L146 16V72"/><path d="M168 72L195 16L222 72"/><path d="M178 52H212"/></g><circle cx="64" cy="17" r="4.75" fill="currentColor"/></svg>
+          <span class="mt-[5px] text-[8px] font-medium tracking-[.34em] text-slate-500 dark:text-slate-400">SIMULATIVE LABS</span>
+        </span>
+      </a>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ===================== כותרת הקורס ===================== -->
+    <section class="mx-auto max-w-7xl px-4 pb-8 pt-8 sm:px-6">
+      <a href="index.html" class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm text-slate-500 transition hover:bg-slate-200/60 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-white">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg>
+        כל הקורסים
+      </a>
+      <div class="mt-6 grid items-center gap-8 md:grid-cols-[1fr_minmax(0,440px)]">
+        <div class="animate-rise">
+          <h1 id="courseTitle" class="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl"></h1>
+          <p id="courseDesc" class="mt-4 max-w-2xl text-lg leading-relaxed text-slate-700 dark:text-slate-300"></p>
+          <p id="courseCount" class="mt-3 text-sm font-medium text-slate-500 dark:text-slate-400"></p>
+        </div>
+        <div class="animate-rise relative overflow-hidden rounded-3xl border border-slate-200 shadow-2xl [animation-delay:.1s] dark:border-white/10" style="box-shadow:0 24px 60px -24px var(--accent, #38bdf8)">
+          <img id="courseArt" alt="" class="block aspect-video w-full object-cover">
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== הסימולציות של הקורס, לפי סדר הלימוד ===================== -->
+    <section class="mx-auto max-w-7xl px-4 pb-24 sm:px-6">
+      <div id="simList" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
+    </section>
+  </main>
+
+  <!-- ===================== Footer ===================== -->
+  <footer class="border-t border-slate-200/70 bg-white/40 backdrop-blur dark:border-white/10 dark:bg-white/[.02]">
+    <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-8 text-sm sm:flex-row sm:px-6">
+      <a href="index.html" class="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-200">
+        <span dir="ltr" class="flex items-center gap-2"><img src="gallery/brand/lima-icon.svg" alt="" class="h-7 w-7"><svg viewBox="0 0 226 76" class="h-[13px] w-[39px] text-slate-900 dark:text-white" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="5.5" stroke-miterlimit="2"><path d="M3 16V72H40"/><path d="M64 27V72"/><path d="M88 72V16L117 60L146 16V72"/><path d="M168 72L195 16L222 72"/><path d="M178 52H212"/></g><circle cx="64" cy="17" r="5.225" fill="currentColor"/></svg></span>
+        <span class="font-normal text-slate-500 dark:text-slate-400">· לחוש את המשוואות בידיים</span>
+      </a>
+      <p class="text-slate-500 dark:text-slate-400">© כל הזכויות שמורות לדוד יצחקי. הסימולציות לשימוש אישי בלבד; אין להעתיק, להפיץ או לשנות אותן ללא רשות בכתב.</p>
+    </div>
+  </footer>
+
+  <!-- ===================== חלון הפעלת סימולציה ===================== -->
+  <div id="modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div data-close class="modal-backdrop absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+    <div class="modal-panel absolute inset-2 flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#070a12] shadow-2xl sm:inset-6">
+      <div class="flex items-center gap-3 border-b border-white/10 px-3 py-2 text-slate-200">
+        <button data-close type="button" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition hover:bg-white/10">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>
+          חזרה לקורס
+        </button>
+        <h2 id="modalTitle" class="flex-1 truncate text-center text-sm font-semibold"></h2>
+        <a id="modalNewTab" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition hover:bg-white/10">
+          חלון חדש
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/></svg>
+        </a>
+        <button data-close type="button" aria-label="סגירה" class="grid h-8 w-8 place-items-center rounded-lg transition hover:bg-white/10">✕</button>
+      </div>
+      <div class="relative flex-1 bg-black">
+        <div id="loader" class="absolute inset-0 grid place-items-center text-slate-400">
+          <div class="flex flex-col items-center gap-3"><span class="h-10 w-10 animate-spin rounded-full border-2 border-white/20 border-t-neon-blue"></span>טוען סימולציה...</div>
+        </div>
+        <iframe id="frame" title="סימולציה" class="relative h-full w-full border-0" allow="fullscreen; autoplay" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- קודם הנתונים, אחר כך הקוד שמצייר אותם -->
+  <script src="simulationsData.js"></script>
+  <script src="gallery/app.js"></script>
+</body>
+</html>

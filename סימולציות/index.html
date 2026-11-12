@@ -69,8 +69,8 @@
   </header>
 
   <main id="top">
-    <!-- ===================== Hero ===================== -->
-    <section class="mx-auto max-w-7xl px-4 pb-16 pt-20 text-center sm:px-6 sm:pt-28">
+    <!-- ===================== פתיח ===================== -->
+    <section class="mx-auto max-w-7xl px-4 pb-12 pt-16 text-center sm:px-6 sm:pt-20">
       <div class="animate-rise mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/60 px-4 py-1.5 text-sm text-slate-600 backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
         <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400"></span>
         <span id="simCount">סימולציות אינטראקטיביות</span>
@@ -83,63 +83,12 @@
         מעבדות וירטואליות שבניתי כדי להבין לעומק נושאים מסובכים.
         כל סימולציה מתחילה בהסבר קצר, ממשיכה למעבדה שאפשר לשחק בה, ומסתיימת בניסויים מודרכים.
       </p>
-
-      <!-- המחשה חיה: כף יד מרשת לייזר שממששת כדור דמיוני (gallery/hero3d.js) -->
-      <div class="animate-rise relative -mx-4 mt-2 sm:-mx-6 [animation-delay:.22s]">
-        <div id="hero3d" class="relative mx-auto h-[400px] max-w-6xl sm:h-[560px]">
-          <img id="heroPoster" src="gallery/hand-poster.webp" alt="" aria-hidden="true" class="hero-fade pointer-events-none absolute inset-0 h-full w-full object-cover">
-          <canvas id="heroCanvas" class="hero-fade absolute inset-0 h-full w-full cursor-grab active:cursor-grabbing" aria-label="כף יד תלת-ממדית מרשת לייזר שממששת כדור דמיוני"></canvas>
-          <div aria-hidden="true" class="hero-fade hero-scan pointer-events-none absolute inset-0"></div>
-        </div>
-        <!-- פאנל שליטה בצד -->
-        <div id="handPanel" class="relative mx-auto mt-2 w-[min(18rem,calc(100%-2rem))] rounded-2xl border border-white/10 bg-white/60 p-4 text-right text-sm shadow-xl backdrop-blur-xl sm:absolute sm:left-6 sm:top-1/2 sm:mt-0 sm:-translate-y-1/2 dark:bg-black/45">
-          <div class="mb-4 flex items-center gap-3">
-            <button id="playBtn" type="button" aria-label="עצירה / הפעלה"
-              class="grid h-12 w-12 shrink-0 place-items-center rounded-full text-white shadow-lg transition hover:scale-105"
-              style="background:var(--laser,#3dff6a);box-shadow:0 0 24px var(--laser,#3dff6a)">
-              <svg id="icPause" class="h-5 w-5" viewBox="0 0 24 24" fill="#05070d"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
-              <svg id="icPlay" class="hidden h-5 w-5" viewBox="0 0 24 24" fill="#05070d"><path d="M8 5v14l11-7z"/></svg>
-            </button>
-            <div class="leading-tight">
-                            <div id="lamName" class="text-xs text-slate-500 dark:text-slate-400"></div>
-            </div>
-          </div>
-          <label class="mb-3 block">
-            <span class="mb-1.5 flex justify-between text-slate-700 dark:text-slate-200"><span>מהירות</span><span id="spdV" class="font-mono text-xs" dir="ltr"></span></span>
-            <input id="spd" type="range" min="0.1" max="2.5" step="0.05" value="1" class="w-full accent-neon-blue">
-          </label>
-          <label class="block">
-            <span class="mb-1.5 flex justify-between text-slate-700 dark:text-slate-200"><span>אורך גל</span><span id="lamV" class="font-mono text-xs" dir="ltr"></span></span>
-            <input id="lam" type="range" min="400" max="700" step="1" value="532" class="spec w-full">
-          </label>
-        </div>
-      </div>
-
-      <div class="animate-rise mt-10 flex flex-wrap items-center justify-center gap-3 [animation-delay:.24s]">
-        <a href="#gallery" class="btn-glow group inline-flex items-center gap-2 rounded-2xl bg-gradient-to-l from-neon-blue to-neon-violet px-7 py-3.5 font-semibold text-white shadow-xl shadow-neon-violet/30 transition hover:-translate-y-0.5">
-          לגלריה
-          <svg class="h-5 w-5 transition group-hover:translate-y-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-        </a>
-      </div>
     </section>
 
-    <!-- ===================== גלריה ===================== -->
+    <!-- ===================== גלריית הקורסים (נבנית מ-window.COURSES ב-simulationsData.js) ===================== -->
     <section id="gallery" class="mx-auto max-w-7xl scroll-mt-20 px-4 pb-24 sm:px-6">
-      <!-- סינון וחיפוש: הכפתורים נבנים אוטומטית מתוך שדה category שבקובץ הנתונים -->
-      <div class="mb-8 flex flex-wrap items-center gap-3">
-        <div id="filters" class="flex flex-wrap gap-2" role="tablist" aria-label="סינון לפי נושא"></div>
-        <span aria-hidden="true" class="hidden h-7 w-px bg-slate-300 sm:block dark:bg-white/15"></span>
-        <label class="relative block w-full sm:w-64">
-          <span class="sr-only">חיפוש</span>
-          <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input id="search" type="search" placeholder="חיפוש סימולציה או תגית..."
-            class="w-full rounded-xl border border-slate-300 bg-white/80 py-2.5 pl-3 pr-9 text-sm outline-none backdrop-blur transition placeholder:text-slate-500 focus:border-neon-violet focus:ring-4 focus:ring-neon-violet/15 dark:border-white/20 dark:bg-white/10 dark:placeholder:text-slate-400">
-        </label>
-      </div>
-
-      <!-- הכרטיסיות נוצרות כאן אוטומטית (gallery/app.js) -->
-      <div id="grid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
-      <p id="empty" class="hidden py-16 text-center text-slate-500">לא נמצאו סימולציות שמתאימות לחיפוש.</p>
+      <h2 class="sr-only">הקורסים</h2>
+      <div id="courses" class="grid gap-7 sm:grid-cols-2 lg:grid-cols-3"></div>
     </section>
   </main>
 
@@ -154,42 +103,8 @@
     </div>
   </footer>
 
-  <!-- ===================== חלון הפעלת סימולציה ===================== -->
-  <div id="modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div data-close class="modal-backdrop absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
-    <div class="modal-panel absolute inset-2 flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#070a12] shadow-2xl sm:inset-6">
-      <div class="flex items-center gap-3 border-b border-white/10 px-3 py-2 text-slate-200">
-        <button data-close type="button" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition hover:bg-white/10">
-          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>
-          חזרה לגלריה
-        </button>
-        <h2 id="modalTitle" class="flex-1 truncate text-center text-sm font-semibold"></h2>
-        <a id="modalNewTab" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition hover:bg-white/10">
-          חלון חדש
-          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/></svg>
-        </a>
-        <button data-close type="button" aria-label="סגירה" class="grid h-8 w-8 place-items-center rounded-lg transition hover:bg-white/10">✕</button>
-      </div>
-      <div class="relative flex-1 bg-black">
-        <div id="loader" class="absolute inset-0 grid place-items-center text-slate-400">
-          <div class="flex flex-col items-center gap-3"><span class="h-10 w-10 animate-spin rounded-full border-2 border-white/20 border-t-neon-blue"></span>טוען סימולציה...</div>
-        </div>
-        <iframe id="frame" title="סימולציה" class="relative h-full w-full border-0" allow="fullscreen; autoplay" allowfullscreen></iframe>
-      </div>
-    </div>
-  </div>
-
   <!-- קודם הנתונים, אחר כך הקוד שמצייר אותם -->
   <script src="simulationsData.js"></script>
   <script src="gallery/app.js"></script>
-  <!-- ההמחשה התלת-ממדית נטענת רק אחרי שהדף כבר מוצג; עד אז רואים את תמונת היד (gallery/hand-poster.webp) -->
-  <script>
-    window.addEventListener('load', () => {
-      const go = () => ['gallery/hero.bundle.js', 'gallery/handModel.js', 'gallery/hero3d.js'].forEach(src => {
-        const el = document.createElement('script'); el.src = src; el.async = false; document.body.appendChild(el);
-      });
-      'requestIdleCallback' in window ? requestIdleCallback(go, {timeout: 600}) : setTimeout(go, 150);
-    });
-  </script>
 </body>
 </html>

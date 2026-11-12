@@ -235,3 +235,55 @@ window.SIMULATIONS = [
   }
   ------------------------------------------------------------------------------ */
 ];
+
+/* ==========================================================================
+   הקורסים: מה שמוצג בעמוד הראשי. כל קורס מוביל לדף (course.html?c=<id>)
+   שבו הסימולציות שלו מסודרות לפי סדר הלימוד בקורס.
+
+   ➕ סימולציה חדשה: מוסיפים אותה ל-SIMULATIONS למעלה, ואז מוסיפים את ה-id שלה
+      לרשימת sims של הקורס, במקום המתאים בסדר הלימוד.
+   ➕ קורס חדש: מעתיקים אובייקט, נותנים id באנגלית, אנימציה ב-gallery/courses/<id>.svg,
+      ורשימת sims לפי הסדר.
+   ========================================================================== */
+window.COURSES = [
+  {
+    id: "optical-comm",
+    title: "תקשורת אופטית",
+    description: "מהגל והסיב, דרך דיספרסיה ופיצוי, ועד הלייזר: איך מעבירים מידע באור לאורך עשרות קילומטרים.",
+    thumbnailUrl: "gallery/courses/optical-comm.svg",
+    accent: "#46e39a",
+    sims: ["phase-group-velocity", "tir-na", "db-power-budget", "modal-dispersion", "slab-waveguide-modes", "gaussian-pulse-dispersion", "dispersion-compensation", "fabry-perot-laser"]
+  },
+  {
+    id: "vector-calculus",
+    title: "חשבון וקטורי",
+    description: "גרדיאנט, דיברגנץ ורוטור: שלושה גששים שמודדים מה שדה עושה בכל נקודה.",
+    thumbnailUrl: "gallery/courses/vector-calculus.svg",
+    accent: "#9d8bff",
+    sims: ["gradient", "divergence", "curl"]
+  },
+  {
+    id: "signals",
+    title: "אותות ומערכות",
+    description: "דגימה, ספקטרום והתחזות: מה קורה לאות כשמחשב רואה רק נקודות בודדות ממנו.",
+    thumbnailUrl: "gallery/courses/signals.svg",
+    accent: "#ffb347",
+    sims: ["sampling-aliasing"]
+  },
+  {
+    id: "electro-optics",
+    title: "אלקטרואופטיקה",
+    description: "שבירה ונפיצה, קיטוב והתאבכות: האור כגל, דרך מנסרות, מקטבים ומהודים.",
+    thumbnailUrl: "gallery/courses/electro-optics.svg",
+    accent: "#a855f7",
+    sims: ["prism-rainbow", "malus", "fabry-perot"]
+  },
+  {
+    id: "machine-learning",
+    title: "למידת מכונה",
+    description: "רגרסיה, שכנים קרובים ותערובת גאוסיאנים: איך מכונה לומדת מתוך נתונים, בתמונות שאפשר לסובב.",
+    thumbnailUrl: "gallery/courses/machine-learning.svg",
+    accent: "#38bdf8",
+    sims: ["linear-regression", "knn-cv", "gmm-em"]
+  }
+];
