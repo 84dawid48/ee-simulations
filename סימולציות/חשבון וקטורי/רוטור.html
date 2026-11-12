@@ -177,6 +177,12 @@ body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
 <link rel="icon" href="../gallery/brand/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="../gallery/brand/apple-touch-icon.png">
 <script data-goatcounter="https://84dawid48.goatcounter.com/count" data-goatcounter-settings='{"allow_frame": true}' async src="//gc.zgo.at/count.js"></script>
+<!--TEX-HEAD-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>.katex{font-size:1.07em;direction:ltr;unicode-bidi:isolate}.law .katex{font-size:1.12em}.katex-display{margin:.4em 0}.calc .katex{font-size:1em}</style>
+<!--/TEX-HEAD-->
 </head>
 <body>
 <div id="topbar"><a id="brand" href="../index.html" target="_top" title="LIMA Simulative Labs: לכל הסימולציות"><img src="../gallery/brand/lima-icon.svg" alt="LIMA"><svg viewBox="0 0 226 76" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="5.5" stroke-miterlimit="2"><path d="M3 16V72H40"/><path d="M64 27V72"/><path d="M88 72V16L117 60L146 16V72"/><path d="M168 72L195 16L222 72"/><path d="M178 52H212"/></g><circle cx="64" cy="17" r="5.225" fill="currentColor"/></svg></a><div id="bsd">בס״ד</div><div id="copyr" title="אין להעתיק, להפיץ או לשנות ללא רשות בכתב">כל הזכויות שמורות לדוד יצחקי · לשימוש אישי בלבד</div></div>
@@ -792,5 +798,134 @@ requestAnimationFrame(frame);
 
 })();
 </script>
+<!--TEX-BODY-->
+<script>
+/* ======================================================================
+   tex_runtime.js: הצגת נוסחאות ב-LaTeX (KaTeX) בכל הסימולציות
+   - כתיבה ישירה ב-LaTeX: \( ... \) בתוך הטקסט, או \[ ... \] לנוסחה בשורה נפרדת.
+   - תאימות לאחור: כל <bdi dir="ltr">…</bdi> (וגם .law .eq) מומר אוטומטית ל-LaTeX.
+   - עובד גם על טקסט שנוצר תוך כדי ריצה (פאנלים, משוב, מסגרת ההדגמה) בעזרת MutationObserver.
+   - אם KaTeX לא נטען (אין רשת), הטקסט המקורי נשאר כמו שהוא.
+   הקובץ הזה מוזרק לכל סימולציה ע"י tex_inject.js, וגם משמש את הבדיקה ב-node.
+   ====================================================================== */
+(function(root){
+'use strict';
+const GREEK = {'α':'\\alpha','β':'\\beta','γ':'\\gamma','δ':'\\delta','ε':'\\varepsilon','ϵ':'\\epsilon','ζ':'\\zeta','η':'\\eta','θ':'\\theta','ϑ':'\\vartheta','ι':'\\iota','κ':'\\kappa','λ':'\\lambda','μ':'\\mu','µ':'\\mu','ν':'\\nu','ξ':'\\xi','π':'\\pi','ρ':'\\rho','σ':'\\sigma','τ':'\\tau','υ':'\\upsilon','φ':'\\varphi','ϕ':'\\phi','χ':'\\chi','ψ':'\\psi','ω':'\\omega',
+  'Γ':'\\Gamma','Δ':'\\Delta','Θ':'\\Theta','Λ':'\\Lambda','Ξ':'\\Xi','Π':'\\Pi','Σ':'\\Sigma','Φ':'\\Phi','Ψ':'\\Psi','Ω':'\\Omega'};
+const SYM = {'·':'\\cdot','⋅':'\\cdot','×':'\\times','÷':'\\div','−':'-','–':'-','≈':'\\approx','≃':'\\simeq','≅':'\\cong','≤':'\\le','≥':'\\ge','≠':'\\neq','≡':'\\equiv','≜':'\\triangleq',
+  '→':'\\to','←':'\\leftarrow','⇒':'\\Rightarrow','⇔':'\\Leftrightarrow','↔':'\\leftrightarrow','∞':'\\infty','∂':'\\partial','∇':'\\nabla','∮':'\\oint','∯':'\\oiint','∫':'\\int','∑':'\\sum',
+  '∝':'\\propto','±':'\\pm','∓':'\\mp','°':'^{\\circ}','′':"'",'″':"''",'⌊':'\\lfloor','⌋':'\\rfloor','⌈':'\\lceil','⌉':'\\rceil','∈':'\\in','∉':'\\notin','≫':'\\gg','≪':'\\ll',
+  '½':'\\tfrac{1}{2}','¼':'\\tfrac{1}{4}','⊙':'\\odot','⊗':'\\otimes','∘':'\\circ','ℏ':'\\hbar','‖':'\\|','⟨':'\\langle','⟩':'\\rangle','∠':'\\angle','…':'\\ldots','⋯':'\\cdots',
+  '%':'\\%','#':'\\#','&':'\\&','$':'\\$','{':'\\{','}':'\\}','~':'\\sim','∀':'\\forall','∃':'\\exists','∧':'\\wedge','∨':'\\vee','¬':'\\neg','⊥':'\\perp','∥':'\\parallel','√':'\\surd','∖':'\\setminus','∪':'\\cup','∩':'\\cap','⊂':'\\subset'};
+const SUPS = {'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁺':'+','⁻':'-','⁼':'=','⁽':'(','⁾':')','ⁿ':'n','ⁱ':'i','ᵀ':'T'};
+const SUBS = {'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9','₊':'+','₋':'-','₌':'=','₍':'(','₎':')','ₐ':'a','ₑ':'e','ₒ':'o','ₓ':'x','ₕ':'h','ₖ':'k','ₗ':'l','ₘ':'m','ₙ':'n','ₚ':'p','ₛ':'s','ₜ':'t','ᵢ':'i','ⱼ':'j','ᵣ':'r','ᵤ':'u','ᵥ':'v'};
+const FUNCS = {sin:1, cos:1, tan:1, cot:1, sec:1, csc:1, arcsin:1, arccos:1, arctan:1, sinh:1, cosh:1, tanh:1, ln:1, log:1, exp:1, lim:1, max:1, min:1, det:1, arg:1, sup:1, inf:1, deg:1, dim:1, ker:1, Pr:1};
+const OPNAMES = {sinc:1, erfc:1, erf:1, sgn:1, sign:1, Re:1, Im:1, argmax:1, argmin:1, rect:1, tri:1, diag:1, rank:1, tr:1, var:1, Var:1, cov:1, Cov:1};
+const UNITS = {nm:1, 'µm':1, um:1, mm:1, cm:1, km:1, m:1, ps:1, ns:1, fs:1, 'µs':1, ms:1, s:1, Hz:1, kHz:1, MHz:1, GHz:1, THz:1, dB:1, dBm:1, mW:1, 'µW':1, nW:1, W:1, mA:1, 'µA':1, A:1, V:1, mV:1, J:1, eV:1, rad:1, K:1, 'Ω':1, kg:1, g:1, Gb:1, Mb:1, kb:1, Tb:1, b:1, bit:1, Gbit:1, Mbit:1, Bd:1, GBd:1, baud:1, mrad:1, sr:1};
+const TEXT2 = {in:1, th:1, rx:1, tx:1, sp:1, ex:1, op:1, ac:1, dc:1, on:1, of:1, or:1, if:1, NA:1, ER:1, OK:1};
+const isL = c => /[A-Za-z]/.test(c), isD = c => /[0-9]/.test(c);
+const decode = s => s.replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+// ממיר מחרוזת (טקסט בלבד, אחרי טיפול בתגיות) ל-LaTeX
+function conv(s){
+  let out = '', i = 0, prevNum = false;
+  const cmd = c => { out += c + (/[A-Za-z]$/.test(c) ? ' ' : ''); };
+  while (i < s.length){
+    const c = s[i];
+    if (c === '\u0001'){ const j = s.indexOf('\u0002', i); out += s.slice(i + 1, j); i = j + 1; prevNum = false; continue; }   // קטע שכבר הומר (sub/sup)
+    if (isD(c) || (c === '.' && isD(s[i + 1] || ''))){ let j = i; while (j < s.length && /[0-9.,]/.test(s[j]) && !(s[j] === ',' && !isD(s[j + 1] || ''))) j++; out += s.slice(i, j).replace(/,/g, '{,}'); i = j;
+      // יחידות אחרי מספר: 1550nm, 0.2 dB/km, 10 MHz·km, 50Ω
+      let k = i; while (s[k] === ' ') k++;
+      const m = /^([A-Za-zµΩ]+(?:[\/·][A-Za-zµΩ]+)*)/.exec(s.slice(k));
+      if (m){ let u = m[1]; const parts = () => u.split(/[\/·]/);
+        while (/[\/·]/.test(u) && !parts().every(p => UNITS[p])) u = u.replace(/[\/·][^\/·]*$/, '');    // רק חלקים שהם באמת יחידות
+        if (parts().every(p => UNITS[p]) && !(s[k + u.length] && isL(s[k + u.length]))){
+          out += '\\,' + u.split(/([\/·])/).map(p => p === '/' ? '/' : p === '·' ? '\\cdot ' : p === 'Ω' ? '\\Omega ' : p[0] === 'µ' ? '\\mu\\text{' + p.slice(1) + '}' : '\\text{' + p + '}').join('');
+          i = k + u.length; } }
+      prevNum = true; continue; }
+    if (isL(c)){ let j = i; while (j < s.length && isL(s[j])) j++; const w = s.slice(i, j);
+      if (s[j] === '̄'){ out += (w.length > 1 ? w.slice(0, -1) : '') + '\\bar{' + w.slice(-1) + '}'; i = j + 1; continue; }
+      if (FUNCS[w]) cmd('\\' + w);
+      else if (OPNAMES[w]) out += '\\operatorname{' + w + '}';
+      else if (w.length === 1) out += w;
+      else if (w.length >= 3 || TEXT2[w] || /^[A-Z][A-Za-z]/.test(w) || UNITS[w]) out += '\\text{' + w + '}';
+      else out += w;                                                    // מכפלה של שני משתנים, למשל kz או pa
+      i = j; prevNum = false; continue; }
+    if (SUPS[c] !== undefined){ let t = ''; while (i < s.length && SUPS[s[i]] !== undefined){ t += SUPS[s[i]]; i++; } out += '^{' + t + '}'; continue; }
+    if (SUBS[c] !== undefined){ let t = ''; while (i < s.length && SUBS[s[i]] !== undefined){ t += SUBS[s[i]]; i++; } out += '_{' + t + '}'; continue; }
+    if (c === '√'){                                                       // שורש: √(…) או √x
+      if (s[i + 1] === '('){ let d = 0, j = i + 1; for (; j < s.length; j++){ if (s[j] === '(') d++; else if (s[j] === ')'){ d--; if (!d) break; } }
+        out += '\\sqrt{' + conv(s.slice(i + 2, j)) + '}'; i = j + 1; continue; }
+      let j = i + 1; const m = /^(\u0001[^\u0002]*\u0002|[0-9.]+|[A-Za-z](?:[₀-₉]+)?|[α-ωΑ-Ω](?:[₀-₉]+)?)/.exec(s.slice(j));
+      if (m){ out += '\\sqrt{' + conv(m[1]) + '}'; i = j + m[1].length; continue; }
+      out += '\\surd '; i++; continue; }
+    if (c === 'Σ'){ cmd('\\sum'); i++; continue; }
+    if (GREEK[c]){ cmd(GREEK[c]); i++; continue; }
+    if (SYM[c] !== undefined){ cmd(SYM[c]); i++; continue; }
+    if (c === '\\'){ out += '\\backslash '; i++; continue; }
+    if (c === ' '){ if (!/ $/.test(out)) out += ' '; i++; continue; }
+    if (c === '^' || c === '_'){ out += c; i++; continue; }
+    if (/[̀-ͯ]/.test(c)){ i++; continue; }
+    out += c; i++;
+  }
+  return out;
+}
+// <bdi> פנימי: מטפלים ב-<sub>/<sup>/<b>/<i>, ואז ממירים. מחזיר null אם יש עברית (משאירים כמו שהוא)
+function toTeX(html){
+  if (/[֐-׿]/.test(html)) return null;
+  let s = html.replace(/<br\s*\/?>/gi, ' ');
+  for (let guard = 0; guard < 20 && /<su[bp]>/i.test(s); guard++)
+    s = s.replace(/<(sub|sup)>((?:(?!<su[bp]>)[\s\S])*?)<\/\1>/i, (m, t, inner) => '\u0001' + (t.toLowerCase() === 'sub' ? '_' : '^') + '{' + conv(decode(inner.replace(/<[^>]+>/g, ''))) + '}\u0002');
+  s = decode(s.replace(/<[^>]+>/g, ''));
+  // סימנים מעל אות (גג, קו, גל, וקטור, נקודה): β̂ ⇒ \hat{\beta}
+  const ACC = {'̂':'\\hat', '̄':'\\bar', '̃':'\\tilde', '⃗':'\\vec', '̇':'\\dot'};
+  s = s.replace(/([A-Za-zα-ωΑ-Ω])([̂̄̃⃗̇])/g, (m, ch, a) => '\u0001' + ACC[a] + '{' + conv(ch) + '}\u0002');
+  // סוגריים: ה-Σ בתחילת ביטוי כמו Σ(x) הוא סכום. ה-Σ בתוך מטריצה (GMM) נשאר \Sigma כשאחריו ⁻¹ או ₖ
+  s = s.replace(/Σ(?=⁻|[ₖ₀-₉ᵢⱼ]+⁻|[ₖ₀-₉ᵢⱼ]+\s*(?:[,)|\]]|$))/g, '\u0003');   // מטריצת שונות (Σ⁻¹, Σₖ⁻¹, "μₖ, Σₖ)") ולא סכום
+  let t = conv(s).replace(/\u0003/g, '\\Sigma ');
+  return t.trim();
+}
+root.toTeX = toTeX;
+if (typeof module !== 'undefined') { module.exports = {toTeX}; return; }
+/* ---------- דפדפן: רינדור ---------- */
+const SEL = 'bdi[dir="ltr"], .law .eq, .fml, .eqb';
+function renderOne(el){
+  if (el.querySelector('.katex') || el.closest('.calc') || el.closest('.katex')) return;
+  const tex = toTeX(el.innerHTML); if (tex === null || !tex) return;
+  try { el.innerHTML = katex.renderToString(tex, {throwOnError:true, output:'html', strict:false}); el.classList.add('tex-done'); } catch (e) { /* משאירים את הטקסט המקורי */ }
+}
+function delim(rootEl){
+  if (!window.renderMathInElement) return;
+  try { renderMathInElement(rootEl, {delimiters:[{left:'\\(', right:'\\)', display:false}, {left:'\\[', right:'\\]', display:true}], ignoredClasses:['calc', 'katex'], throwOnError:false}); } catch (e) {}
+}
+// סורקים רק את מה שהשתנה (פאנלים מתעדכנים הרבה), כדי לא לעבור על כל הדף בכל פריים
+let pending = null;
+// סימולציות ישנות סימנו סמלים בודדים בהדגשה (<b>α</b>, <b>β₁</b>): ממירים רק אם זה סמל מתמטי קצר
+const SYMB = /^[\sA-Za-z0-9.,=+\-−·×\/()|α-ωΑ-Ωµ∇∂√∑Σ≈≤≥′₀-₉ₐ-ₜᵢⱼ⁰-⁹⁻⁺ⁿᵀ̂̄̃]{1,16}$/, HASM = /[α-ωΑ-Ωµ∇∂√∑Σ₀-₉ₐ-ₜᵢⱼ⁰-⁹⁻ᵀ̂̄]/;
+function boldMath(el){ const t = el.textContent; return ![...el.children].some(c => !/^(SUB|SUP)$/.test(c.tagName)) && SYMB.test(t) && HASM.test(t) && !/[A-Za-z]{2,}/.test(t); }
+function scan(rootEl){
+  if (rootEl.matches && rootEl.matches(SEL)) renderOne(rootEl);
+  if (rootEl.querySelectorAll) rootEl.querySelectorAll(SEL).forEach(renderOne);
+  if (rootEl.querySelectorAll) rootEl.querySelectorAll('b').forEach(b => { if (!b.closest('.calc, .katex, #topbar, svg') && boldMath(b)) renderOne(b); });
+  const host = rootEl.nodeType === 1 ? rootEl : rootEl.parentElement; if (host) delim(host);
+}
+function flush(){ const roots = pending; pending = null; roots.forEach(r => { if (r.isConnected) scan(r); }); }
+function start(){
+  if (!window.katex) return setTimeout(start, 120);
+  scan(document.body);
+  new MutationObserver(muts => {
+    for (const m of muts){
+      const t = m.target.nodeType === 1 ? m.target : m.target.parentElement;
+      if (!t || t.closest('.katex')) continue;
+      const host = t.closest(SEL) || t;
+      if (!pending){ pending = new Set(); setTimeout(flush, 16); }   // טיימר ולא rAF: עובד גם בלשונית ברקע
+      pending.add(host);
+    }
+  }).observe(document.body, {childList:true, subtree:true, characterData:true});
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<!--/TEX-BODY-->
 </body>
 </html>
