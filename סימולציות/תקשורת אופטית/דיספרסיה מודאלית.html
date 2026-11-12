@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>דיספרסיה מודאלית: step-index מול graded-index</title>
+<!--
+  תדריך (קמפץ)
+  1. האהה: בסיב step-index קרן תלולה עוברת דרך ארוכה יותר ומאחרת, והפולס מתמרח (ΔT ∝ Δ). בסיב graded-index הקרן התלולה עוברת באזורים שבהם מקדם השבירה נמוך, כלומר מהירים, ומשלימה את הפער. כל הקרניים מגיעות כמעט יחד (ΔT ∝ Δ², פי ~300 טוב יותר בדוגמה מהתרגול).
+  2. הבלבול: "כל האור בסיב נע באותה מהירות, אז מגיע יחד", "דרך ארוכה יותר תמיד מאחרת".
+  3. הצורה: השוואה צד לצד בצורת מרוץ. שני סיבים זה מעל זה, 9 קרניים שיוצאות יחד ומשאירות שובל (חלון שנע לאורך סיב ארוך), ומתחת הפולס שמגיע במוצא של כל סיב, על אותו ציר זמן. דו-ממד.
+  4. הבסיס: Δ, אורך הסיב, כמה מחרוט הקבלה ממלאים. מורחב: מבט "חתך | תלת-ממד", מעריך הפרופיל α (2 = פרבולי, גדול = step-index), רכבת ביטים בקצב B.
+  5. נדחה: קרניים מסולפות, דיספרסיה כרומטית (סימולציה #6), תורת האופנים (סימולציה #5). המרוץ מוגדל בזמן כדי שיהיה אפשר לראות אותו. המספרים במדים הם האמיתיים.
+  6. פיצול: לא. סימולציה #4 מתוך תוכנית תקשורת אופטית.
+-->
+<style>
+:root{--bg:#05070d;--card:#0c1222;--line:#1f2b44;--txt:#e3eaf6;--mut:#93a3bf;--acc:#6cb8ff;--grn:#46e39a;--red:#ff4d5e;--yel:#ffd479;--vio:#9d8bff}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:"Segoe UI","Rubik",Arial,sans-serif;padding-top:30px}
+#topbar{position:fixed;top:0;left:0;right:0;height:30px;background:#060912;border-bottom:1px solid var(--line);z-index:100}
+#bsd{position:absolute;top:7px;right:12px;font-size:12px;color:#c9d6ea}
+#copyr{position:absolute;top:4px;left:8px;font-size:12px;color:#dce6f5;background:#10172a;border:1px solid var(--line);border-radius:6px;padding:2px 10px}
+bdi{unicode-bidi:isolate}
+
+/* ===== פתיח ===== */
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+#intro{padding-top:46px;padding-bottom:40px;line-height:1.75}
+#intro h1{font-size:34px;line-height:1.25;margin:0 0 8px;font-weight:700}
+#intro h1 span{background:linear-gradient(90deg,#6cb8ff,#9d8bff,#ff4d5e);-webkit-background-clip:text;background-clip:text;color:transparent}
+#intro .lead{font-size:18px;color:var(--mut);margin:0 0 30px}
+.prob{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.prob p{margin:0 0 10px;font-size:15.5px;color:#d0d9ea}
+.prob p:last-child{margin-bottom:0}
+.prob svg{width:100%;height:auto;display:block;background:#080d18;border:1px solid var(--line);border-radius:12px}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:14px}
+.rd{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.rd .ic{flex:0 0 38px;height:38px;border-radius:10px;background:#101a30;display:grid;place-items:center}
+.rd h3{margin:0 0 2px;font-size:15.5px}
+.rd p{margin:0;font-size:14.5px;color:#c3cfe3}
+@media (max-width:900px){.prob{grid-template-columns:1fr}}
+h2.sec{font-size:21px;margin:40px 0 14px;color:var(--acc)}
+.theory{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}
+.th{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px}
+.th .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;font-size:14px;margin-bottom:6px}
+.th h3{margin:0 0 4px;font-size:16.5px}
+.th p{margin:0;font-size:14.5px;color:#c3cfe3}
+.chain{margin:14px 0 0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+.chain svg{width:100%;height:auto;display:block}
+.law{margin:14px 0 0;text-align:center;font-size:21px;background:linear-gradient(90deg,rgba(108,184,255,.08),rgba(157,139,255,.07),rgba(255,77,94,.06));border:1px solid var(--line);border-radius:16px;padding:14px;font-family:"Cambria Math","Times New Roman",serif}
+.law .eq{direction:ltr;display:inline-block;margin:0 14px}
+.law small{display:block;font-family:"Segoe UI",Arial,sans-serif;font-size:14px;color:var(--mut);margin-top:4px}
+.cta{display:block;width:max-content;margin:34px auto 0;text-decoration:none;color:#fff;font:inherit;font-size:17px;font-weight:600;background:linear-gradient(180deg,#2167b8,#18508f);border:1px solid #3b86e0;border-radius:40px;padding:12px 30px;box-shadow:0 0 30px rgba(59,134,224,.35);cursor:pointer}
+.cta:hover{filter:brightness(1.15)}
+
+/* ===== מעבדה ===== */
+.lab{position:relative;height:calc(100vh - 30px);min-height:600px;border-top:1px solid var(--line)}
+.view{position:absolute;top:14px;bottom:84px;left:14px;right:320px;display:grid;grid-template-rows:1fr 1fr;gap:10px}
+.plot{position:relative;background:#080d18;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.plot canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.plot .pt{position:absolute;top:8px;right:12px;font-size:13px;color:var(--mut);pointer-events:none}
+.pnl{position:absolute;top:14px;background:rgba(10,15,28,.86);border:1px solid var(--line);border-radius:18px;padding:16px;backdrop-filter:blur(10px);z-index:10;max-height:calc(100% - 100px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2a3550 transparent}
+.pnl.r{right:14px;width:292px}
+.c-row{margin-bottom:14px}
+.c-lbl{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px;color:#cdd8ea}
+.c-val{font-family:Consolas,monospace;font-size:13.5px;color:#fff;direction:ltr}
+input[type=range]{width:100%;accent-color:var(--acc);margin:0}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{flex:1;background:#0a0f1c;border:1px solid var(--line);color:var(--mut);border-radius:9px;padding:7px 4px;font:inherit;font-size:14px;cursor:pointer;white-space:nowrap}
+.seg button.on{border-color:var(--acc);color:#fff;background:#16243f}
+.sep{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.ttl{font-size:13px;color:var(--mut);margin-bottom:8px}
+.meter{margin-bottom:12px}
+.meter .bar{position:relative;height:12px;background:#141c30;border-radius:7px;overflow:visible}
+.meter .bar i{position:absolute;top:0;bottom:0;right:0;border-radius:7px;transition:width .15s,background .15s}
+.meter .bar b{position:absolute;top:-4px;bottom:-4px;width:2px;background:#fff;opacity:.8}
+.meter .row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--mut);margin-top:5px}
+.meter .row span:last-child{font-family:Consolas,monospace;direction:ltr;color:#fff}
+.chip{display:block;text-align:center;font-size:14px;font-weight:600;border-radius:10px;padding:7px;margin-top:4px}
+.chip.ok{background:rgba(70,227,154,.12);color:var(--grn);border:1px solid rgba(70,227,154,.35)}
+.chip.edge{background:rgba(255,212,121,.12);color:var(--yel);border:1px solid rgba(255,212,121,.35)}
+.chip.bad{background:rgba(255,77,94,.13);color:#ff8a96;border:1px solid rgba(255,77,94,.4)}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:#cdd8ea;margin:8px 0;cursor:pointer}
+.sw{position:relative;display:inline-block;width:34px;height:19px;flex:0 0 auto}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:#2a3550;border-radius:20px;cursor:pointer;transition:.2s}
+.sw span::before{content:"";position:absolute;width:15px;height:15px;top:2px;right:2px;background:#c7d2e6;border-radius:50%;transition:.2s}
+.sw input:checked+span{background:#1f5fa8}
+.sw input:checked+span::before{right:17px;background:#fff}
+.calc{font-family:Consolas,"Cambria Math",monospace;font-size:12.5px;direction:ltr;text-align:left;color:#fff;background:#0a0f1c;border:1px solid var(--line);border-radius:8px;padding:8px 10px;line-height:1.75}
+.calc .k{color:var(--yel)}
+body:not(.adv) .adv-only{display:none!important}
+body.adv .basic-only{display:none!important}
+.morebtn{position:absolute;bottom:14px;left:14px;z-index:12;display:flex;align-items:center;gap:10px;font:inherit;font-size:18px;font-weight:700;color:#fff;border:none;border-radius:40px;padding:15px 28px;cursor:pointer;background:linear-gradient(135deg,#7b2ff7,#e0218a);box-shadow:0 8px 30px rgba(123,47,247,.45);animation:pulse 2.2s infinite}
+.morebtn .ic{font-size:22px}
+.morebtn:hover{filter:brightness(1.15)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(224,33,138,.55),0 8px 30px rgba(123,47,247,.45)}70%{box-shadow:0 0 0 16px rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}100%{box-shadow:0 0 0 0 rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}}
+.lessbtn{position:absolute;bottom:14px;left:14px;z-index:12;font:inherit;font-size:14px;color:#cdd8ea;background:rgba(10,15,28,.88);border:1px solid #3a4a6e;border-radius:30px;padding:9px 18px;cursor:pointer}
+.lessbtn:hover{border-color:var(--acc);color:#fff}
+
+#brand{position:absolute;top:3px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;height:24px;text-decoration:none;color:#e8edf5;direction:ltr;opacity:.92}
+#brand:hover{opacity:1}
+#brand img{width:22px;height:22px;display:block}
+#brand svg{width:39px;height:13px;display:block}
+@media (max-width:700px){#brand{left:auto;right:44px;transform:none}#brand svg{display:none}}
+.plot.full{grid-row:1/-1}
+#cv3d{display:none;cursor:grab;touch-action:none}
+.view.v3 #cv3d{display:block}
+.view.v3 .hide3d{visibility:hidden}
+#v3load{position:absolute;inset:0;display:grid;place-items:center;color:var(--mut);font-size:15px;pointer-events:none}
+.pbtn2{position:absolute;top:8px;left:10px;z-index:3;background:rgba(10,15,28,.8);border:1px solid var(--line);color:#cdd8ea;border-radius:9px;padding:4px 10px;font:inherit;font-size:13px;cursor:pointer}
+.pbtn2:hover{border-color:var(--acc);color:#fff}
+.meter .bar.neutral{overflow:hidden}
+.law .eq{max-width:100%}
+@media (max-width:600px){.law{font-size:16px}.law .eq{display:block;margin:4px 0}}
+/* ===== ניסויים ===== */
+#exps{padding-top:10px;padding-bottom:30px;line-height:1.75}
+.exps{list-style:none;margin:0;padding:0;counter-reset:ex}
+.exp{counter-increment:ex;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.exp .top{display:flex;align-items:center;gap:14px}
+.exp .top::before{content:counter(ex);flex:0 0 30px;height:30px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;display:grid;place-items:center}
+.exp .task{flex:1;font-size:16px}
+.exp .tag{display:inline-block;font-size:12px;color:#e9b8ff;border:1px solid #5b2d7a;background:#1d0f2a;border-radius:10px;padding:0 8px;margin-left:6px}
+.xbtn{flex:0 0 auto;background:#1a1608;border:1px solid #6b5520;color:var(--yel);border-radius:20px;padding:5px 16px;font:inherit;font-size:14px;cursor:pointer}
+.xbtn:hover{filter:brightness(1.25)}
+.exp .ans{display:none;margin:12px 44px 2px 0;padding:10px 14px;border-right:3px solid var(--yel);background:rgba(255,212,121,.06);border-radius:8px;font-size:15px;color:#d6dcea;line-height:1.7}
+.exp.open .ans{display:block}
+.exp.open .xbtn{background:#2b230b}
+/* בדוק את עצמך */
+#quiz{padding-bottom:60px}
+.qz{background:linear-gradient(135deg,rgba(157,139,255,.10),rgba(108,184,255,.06));border:1px solid #3a3a7a;border-radius:18px;padding:18px}
+.qz p{margin:0 0 12px;font-size:16px}
+.qz .opts{display:flex;gap:8px;flex-wrap:wrap}
+.qz .opts button{background:#0a0f1c;border:1px solid var(--line);color:#e3eaf6;border-radius:12px;padding:8px 18px;font:inherit;font-size:15px;cursor:pointer}
+.qz .opts button:hover{border-color:var(--vio)}
+.qz .opts button.right{border-color:var(--grn);background:rgba(70,227,154,.12)}
+.qz .opts button.wrong{border-color:var(--red);background:rgba(255,77,94,.1)}
+.qz .fb{display:none;margin-top:12px;font-size:15px;color:#d6dcea;line-height:1.7}
+.qz .fb.on{display:block}
+.qz .go{margin-top:10px;background:#0f2a1c;border:1px solid #2f7a52;color:#7dffb4;border-radius:20px;padding:6px 16px;font:inherit;font-size:14px;cursor:pointer}
+@media (max-width:900px){
+  #intro h1{font-size:26px}
+  .lab{height:auto;min-height:0}
+  .view{position:relative;inset:auto;height:70vh;margin:12px}
+  .pnl{position:static;width:auto!important;margin:12px;max-height:none}
+  .morebtn,.lessbtn{position:static;margin:12px auto 18px;animation:none}
+}
+/* ===== הדגמה אוטומטית של ניסוי ===== */
+.pbtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:#0f2a1c;border:1px solid #2f7a52;color:#7dffb4;border-radius:20px;padding:5px 14px;font:inherit;font-size:14px;cursor:pointer}
+.pbtn:hover{filter:brightness(1.25)}
+.pbtn svg{width:12px;height:12px}
+#demoBox{display:none;position:relative;height:190px;border-top:1px solid var(--line);background:linear-gradient(180deg,#0a1322,#070b16);padding:14px 20px;overflow-y:auto;line-height:1.6}
+body.demo #demoBox{display:block}
+.lab{scroll-margin-top:30px}
+body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
+#demoBox .dh{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+#demoBox .dn{flex:0 0 28px;height:28px;border-radius:50%;background:#123a27;color:#7dffb4;font-weight:700;display:grid;place-items:center}
+#demoBox .dt{flex:1;font-size:15.5px;font-weight:600}
+#demoBox .say{font-size:14px;color:#7dffb4;min-height:22px;margin-bottom:6px}
+#demoBox .say::before{content:"▶ ";opacity:.7}
+#demoBox .dx{font-size:15px;color:#d6dcea;line-height:1.7;border-right:3px solid #ffd479;background:rgba(255,212,121,.06);border-radius:8px;padding:8px 12px}
+#demoBox .db{background:#0a0f1c;border:1px solid var(--line);color:#cdd8ea;border-radius:10px;padding:5px 12px;font:inherit;font-size:13.5px;cursor:pointer}
+#demoBox .db:hover{border-color:var(--acc);color:#fff}
+#demoCursor{position:fixed;left:0;top:0;z-index:300;pointer-events:none;opacity:0;transition:opacity .3s}
+#demoCursor.on{opacity:1}
+#demoCursor svg{width:30px;height:30px;filter:drop-shadow(0 0 6px rgba(125,255,180,.9)) drop-shadow(0 2px 3px rgba(0,0,0,.6));transition:transform .12s}
+#demoCursor.down svg{transform:scale(.82)}
+.demoRipple{position:fixed;z-index:299;pointer-events:none;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;border:2px solid #7dffb4;animation:demoRip .55s ease-out forwards}
+@keyframes demoRip{from{transform:scale(.4);opacity:1}to{transform:scale(3.4);opacity:0}}
+</style>
+<link rel="icon" href="../gallery/brand/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../gallery/brand/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../gallery/brand/apple-touch-icon.png">
+<script data-goatcounter="https://84dawid48.goatcounter.com/count" data-goatcounter-settings='{"allow_frame": true}' async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div id="topbar"><a id="brand" href="../index.html" target="_top" title="LIMA Simulative Labs: לכל הסימולציות"><img src="../gallery/brand/lima-icon.svg" alt="LIMA"><svg viewBox="0 0 226 76" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="5.5" stroke-miterlimit="2"><path d="M3 16V72H40"/><path d="M64 27V72"/><path d="M88 72V16L117 60L146 16V72"/><path d="M168 72L195 16L222 72"/><path d="M178 52H212"/></g><circle cx="64" cy="17" r="5.225" fill="currentColor"/></svg></a><div id="bsd">בס״ד</div><div id="copyr" title="אין להעתיק, להפיץ או לשנות ללא רשות בכתב">כל הזכויות שמורות לדוד יצחקי · לשימוש אישי בלבד</div></div>
+
+<!-- ===================== פתיח ===================== -->
+<section id="intro" class="wrap">
+  <h1>למה פולס חד <span>יוצא מרוח</span>?</h1>
+  <p class="lead">שולחים לסיב הבזק אור קצר מאוד. אחרי קילומטר אחד הוא כבר נמרח על פני עשרות ננו-שניות, ושני ביטים סמוכים מתחילים להתערבב. מה מורח אותו? ולמה שינוי בפרופיל של מקדם השבירה משפר את זה פי 300?</p>
+
+  <h2 class="sec">הבעיה</h2>
+  <div class="prob">
+    <div>
+      <p>בסיב <b>רב-אופני</b> (multi-mode) הליבה רחבה, והאור נכנס בהרבה זוויות בתוך חרוט הקבלה. כל הקרניים יוצאות יחד, אבל כל אחת עוברת <b>דרך באורך אחר</b>: הקרן הישרה רצה לאורך הציר, והתלולה מזגזגת בין הדפנות.</p>
+      <p>בציור יש שתי קרניים מאותו פולס בסיב step-index. התלולה מגיעה מאוחר יותר, והפולס במוצא נמרח על כל הזמן שבין שתיהן. אם ביט הבא יוצא לפני שהקודם "גמר להגיע", אי אפשר להבדיל ביניהם.</p>
+      <p><b>המשימה:</b> לחשב את המריחה <bdi dir="ltr">ΔT</bdi> ואת קצב הביטים המרבי, ולהבין למה סיב graded-index, שבו מקדם השבירה יורד בהדרגה מהמרכז, טוב פי מאות.</p>
+    </div>
+    <svg id="probSvg" viewBox="0 0 340 250" aria-label="קרן ישרה וקרן תלולה בסיב, והפולס המרוח במוצא"></svg>
+  </div>
+
+  <h2 class="sec">איך לקרוא את המעבדה</h2>
+  <div class="read">
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="1" y="3" width="22" height="7" fill="#1b3f70"/><rect x="1" y="14" width="22" height="7" fill="url(#gi)"/><defs><linearGradient id="gi" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#13203a"/><stop offset=".5" stop-color="#2d6ab8"/><stop offset="1" stop-color="#13203a"/></linearGradient></defs></svg></div><div><h3>שני סיבים</h3><p>למעלה step-index (ליבה אחידה), למטה graded-index (בהיר = מקדם שבירה גבוה).</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="6" cy="12" r="3" fill="#5ee0ff"/><circle cx="14" cy="12" r="3" fill="#9d8bff"/></svg></div><div><h3>נקודות = קרניים</h3><p>תכלת = ישרה (לאורך הציר), סגול = תלולה. כולן יצאו באותו רגע.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 12h20" stroke="#93a3bf" stroke-dasharray="3 3"/><path d="M8 4v16M16 4v16" stroke="#93a3bf" stroke-width="1.5"/></svg></div><div><h3>חלון נע</h3><p>הסיב ארוך מאוד, ורואים קטע אחד שנע איתן. ככה רואים איך הפער ביניהן גדל.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 20C6 20 7 8 9 8s3 12 6 12h7" fill="none" stroke="#ff9f43" stroke-width="2"/></svg></div><div><h3>גרף תחתון = הפולס במוצא</h3><p>מתי מגיע האור בסוף הסיב, בננו-שניות. כתום = step-index, תכלת = graded-index.</p></div></div>
+  </div>
+
+  <h2 class="sec">התאוריה בקצרה</h2>
+  <div class="theory">
+    <div class="th"><div class="n">1</div><h3>step-index</h3><p>קרן בזווית <bdi dir="ltr">θ</bdi> עוברת דרך <bdi dir="ltr">L/cos θ</bdi> במהירות <bdi dir="ltr">c/n₁</bdi>. התלולה ביותר שעדיין לכודה: <bdi dir="ltr">cos θ = n₂/n₁</bdi>.</p></div>
+    <div class="th"><div class="n">2</div><h3>המריחה</h3><p><bdi dir="ltr">ΔT<sub>SI</sub> = (L·n₁/c)(n₁/n₂ − 1) ≈ L·n₁²Δ/(c·n₂)</bdi>. ליניארי ב-<bdi dir="ltr">Δ</bdi> ובאורך.</p></div>
+    <div class="th"><div class="n">3</div><h3>graded-index</h3><p>מקדם השבירה יורד מהמרכז: <bdi dir="ltr">n²(r) = n₁² − (n₁² − n₂²)(r/a)<sup>α</sup></bdi>. הקרן התלולה מתעקלת, ובשוליים היא מהירה יותר.</p></div>
+    <div class="th"><div class="n">4</div><h3>פרבולי (α = 2)</h3><p><bdi dir="ltr">ΔT<sub>GI</sub> ≈ L·n₁Δ²/(2c)</bdi>. ריבועי ב-<bdi dir="ltr">Δ</bdi>, ולכן קטן פי <bdi dir="ltr">~2/Δ</bdi>, כלומר פי מאות.</p></div>
+    <div class="th"><div class="n">5</div><h3>קצב מרבי</h3><p>כדי שביטים לא יידרסו: <bdi dir="ltr">B·ΔT &lt; 1</bdi>. כיוון ש-<bdi dir="ltr">ΔT ∝ L</bdi>, מדד הביצועים הוא המכפלה <bdi dir="ltr">B·L</bdi>.</p></div>
+  </div>
+  <div class="law"><span class="eq">B·L<sub>SI</sub> &lt; c·n₂/(n₁²Δ)</span><span class="eq">B·L<sub>GI</sub> &lt; 2c/(n₁Δ²)</span><small>בדוגמה מהתרגול (n₁ = 1.46, n₂ = 1.45): בערך 30MHz·km מול 9GHz·km</small></div>
+  <a class="cta" href="#lab">למעבדה ↓</a>
+</section>
+
+<!-- ===================== מעבדה ===================== -->
+<section class="lab" id="lab">
+  <div class="view" id="view" style="grid-template-rows:1.35fr 1fr">
+    <div class="plot"><canvas id="cvR" class="hide3d"></canvas><canvas id="cvT" class="hide3d"></canvas><canvas id="cv3d"></canvas><div id="v3load" style="display:none">טוען תלת-ממד…</div><div class="pt" id="kmTxt"></div></div>
+    <div class="plot"><canvas id="cvO"></canvas></div>
+  </div>
+  <div class="pnl r">
+    <div class="c-row"><div class="c-lbl"><span>הפרש מקדמי השבירה <bdi dir="ltr">Δ</bdi></span><span class="c-val" id="DV"></span></div><input type="range" id="rD" data-k="D" min="0.002" max="0.03" step="0.00005"></div>
+    <div class="c-row"><div class="c-lbl"><span>אורך הסיב <bdi dir="ltr">L</bdi></span><span class="c-val" id="LV"></span></div><input type="range" id="rL" data-k="L" min="0.1" max="10" step="0.1"></div>
+    <div class="c-row"><div class="c-lbl"><span>מילוי חרוט הקבלה</span><span class="c-val" id="fillV"></span></div><input type="range" id="rFill" data-k="fill" min="0.1" max="1" step="0.01"></div>
+    <div class="sep">
+      <div class="meter"><div class="ttl">מריחה ב-step-index <bdi dir="ltr">ΔT</bdi></div><div class="bar"><i id="siBar"></i></div>
+        <div class="row"><span id="siBL"></span><span id="siV"></span></div></div>
+      <div class="meter"><div class="ttl">מריחה ב-graded-index <bdi dir="ltr">ΔT</bdi></div><div class="bar"><i id="giBar"></i></div>
+        <div class="row"><span id="giBL"></span><span id="giV"></span></div></div>
+      <span class="chip ok" id="status"></span>
+    </div>
+    <div class="sep adv-only">
+      <div class="c-row"><div class="c-lbl">מבט</div><div class="seg" id="views" data-seg="view"><button data-view="2d" data-v="2d" class="on">חתך</button><button data-view="3d" data-v="3d">תלת-ממד</button></div></div>
+      <div class="c-row"><div class="c-lbl"><span>מעריך הפרופיל <bdi dir="ltr">α</bdi> (בסיב התחתון)</span><span class="c-val" id="alV"></span></div><input type="range" id="rAl" data-k="al" min="1.6" max="10" step="0.01"></div>
+      <label class="chk"><label class="sw"><input type="checkbox" id="cBits" data-k="bits"><span></span></label>רכבת ביטים במוצא</label>
+      <div class="c-row"><div class="c-lbl"><span>קצב הביטים <bdi dir="ltr">B</bdi></span><span class="c-val" id="BV"></span></div><input type="range" id="rB" data-k="B" min="1" max="4" step="0.01"></div>
+      <div class="calc" id="calc"></div>
+    </div>
+  </div>
+  <button id="more" class="morebtn basic-only"><span class="ic">🔬</span>אני רוצה לחקור יותר</button>
+  <button id="less" class="lessbtn adv-only">→ לחזור למעבדה הבסיסית</button>
+</section>
+<!-- מסגרת ההסבר של ההדגמה האוטומטית (מופיעה מתחת למעבדה, לא מעליה) -->
+<section id="demoBox" aria-live="polite">
+  <div class="dh"><div class="dn" id="demoNum">1</div><div class="dt" id="demoTitle"></div>
+    <button class="db" id="demoStop">⏹ עצור</button><button class="db" id="demoAgain">↻ שוב</button><button class="db" id="demoClose">✕ סגור</button></div>
+  <div class="say" id="demoSay"></div>
+  <div class="dx" id="demoText"></div>
+</section>
+<div id="demoCursor"><svg viewBox="0 0 24 24"><path d="M4 2l15 11-6.5 1.2L16.5 22l-3 1.3-3.6-7.6L5 20z" fill="#fff" stroke="#0b1a12" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+
+<!-- ===================== ניסויים ===================== -->
+<section id="exps" class="wrap">
+  <h2 class="sec">ניסויים לנסות במעבדה</h2>
+  <ol class="exps">
+    <li class="exp"><div class="top"><div class="task">הסתכלו על המרוץ: כל 9 הקרניים יצאו יחד. בסיב העליון (step-index) הקרניים התלולות (סגול) נשארות מאחור, ובתחתון (graded-index) כולן נשארות צמודות.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">ב-step-index מהירות האור זהה בכל הליבה (<bdi dir="ltr">c/n₁</bdi>), והקרן התלולה פשוט עוברת דרך ארוכה יותר: <bdi dir="ltr">L/cos θ</bdi>. ב-graded-index מקדם השבירה יורד כלפי השוליים, ולכן האור שם <b>מהיר</b> יותר. הקרן התלולה אמנם עוברת דרך ארוכה, אבל רובה באזורים המהירים, והיא "משלימה" את הפער. שימו לב לנקודות הסגולות בסיב התחתון: הן מאיצות כשהן רחוקות מהציר ומאטות כשהן חוצות אותו.</div></li>
+    <li class="exp"><div class="top"><div class="task">הגדילו את <bdi dir="ltr">Δ</bdi>. המריחה ב-step-index גדלה ליניארית, וב-graded-index ריבועית, אבל היא עדיין קטנה בהרבה.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">ב-step-index <bdi dir="ltr">ΔT ∝ Δ</bdi>, וב-graded-index (פרבולי) <bdi dir="ltr">ΔT ∝ Δ²</bdi>. היחס ביניהם הוא בערך <bdi dir="ltr">2/Δ</bdi>: ב-<bdi dir="ltr">Δ = 0.01</bdi> זה פי 200, וב-<bdi dir="ltr">Δ = 0.005</bdi> פי 400. הפרש מקדמים גדול נותן חרוט קבלה רחב (קל לצמד אליו אור), אבל משלמים עליו במריחה. לכן Δ בסיבים אמיתיים קטן.</div></li>
+    <li class="exp"><div class="top"><div class="task">הגדילו את אורך הסיב פי 10. המריחה גדלה פי 10 בשני הסיבים, ולכן הקצב המרבי יורד פי 10. המכפלה <bdi dir="ltr">B·L</bdi> נשארת קבועה.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">כל קרן צוברת את האיחור שלה בקצב קבוע לכל ק"מ, ולכן <bdi dir="ltr">ΔT ∝ L</bdi>. הקצב המרבי הוא <bdi dir="ltr">B ≈ 1/ΔT ∝ 1/L</bdi>, ולכן המכפלה <bdi dir="ltr">B·L</bdi> תלויה רק בסיב ולא באורך. זה המספר שמופיע בגיליון הנתונים של סיב רב-אופני: "500MHz·km" פירושו 500Mb/s לק"מ אחד, או 50Mb/s ל-10 ק"מ.</div></li>
+    <li class="exp"><div class="top"><div class="task">הקטינו את מילוי חרוט הקבלה ל-30%, כמו לייזר שמוזרק בזווית צרה. המריחה ב-step-index יורדת בערך פי 10.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">כשמכניסים אור רק בזוויות קטנות, אין קרניים תלולות שמאחרות. המריחה תלויה בזווית הגדולה ביותר שנכנסה: <bdi dir="ltr">1/cos θ − 1 ≈ θ²/2</bdi>, ולכן היא יורדת <b>ריבועית</b> עם המילוי (30% ⇒ כ-9%). זו אחת הסיבות שלייזר עדיף על LED גם בסיב רב-אופני. אבל לאורך הסיב פיזור וכיפופים "ממלאים" את החרוט מחדש, ולכן אי אפשר לסמוך על זה לגמרי.</div></li>
+    <li class="exp"><div class="top"><div class="task">הגדירו את הדוגמה מהתרגול: <bdi dir="ltr">n₁ = 1.46</bdi>, <bdi dir="ltr">n₂ = 1.45</bdi>, כלומר <bdi dir="ltr">Δ ≈ 0.00685</bdi>. step-index נותן כ-30MHz·km, ו-graded-index כ-9GHz·km.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">מהתרגול: <bdi dir="ltr">B·L<sub>SI</sub> &lt; c·n₂/(n₁²Δ) = 3·10⁸·1.45/(1.46²·6.85·10⁻³) ≈ 29.8MHz·km</bdi>, ו-<bdi dir="ltr">B·L<sub>GI</sub> &lt; 2c/(n₁Δ²) ≈ 8.76GHz·km</bdi>. שיפור של כמעט פי 300, רק משינוי הפרופיל של מקדם השבירה. המדים כאן מחושבים מעקיבת קרניים אמיתית, והם יוצאים קרובים מאוד לנוסחאות האלה.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>שנו את <bdi dir="ltr">α</bdi> של הסיב התחתון. ב-<bdi dir="ltr">α = 2</bdi> המריחה קטנה. סביב <bdi dir="ltr">α ≈ 1.98</bdi> היא קטנה עוד פי 4. ב-<bdi dir="ltr">α</bdi> גדול הסיב מתנהג כמו step-index.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">הפרופיל <bdi dir="ltr">(r/a)<sup>α</sup></bdi>: ב-<bdi dir="ltr">α → ∞</bdi> הוא מדרגה, כלומר step-index. ב-<bdi dir="ltr">α = 2</bdi> הוא פרבולי, וזה המקרה של הנוסחה מהתרגול, <bdi dir="ltr">ΔT ≈ L·n₁Δ²/(2c)</bdi>. המינימום האמיתי נמצא מעט מתחת, ב-<bdi dir="ltr">α<sub>opt</sub> ≈ 2 − 2Δ</bdi>, ושם <bdi dir="ltr">ΔT ≈ L·n₁Δ²/(8c)</bdi>. בפועל קשה מאוד לייצר פרופיל מדויק כל כך, וסטייה קטנה מ-α האופטימלי מבזבזת חלק גדול מהשיפור.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>הדליקו "רכבת ביטים" בקצב 100Mb/s לסיב של 1 ק"מ. במוצא ה-step-index הביטים נמרחים זה לתוך זה, ובגרף-index הם נשארים נפרדים.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">זו "התאבכות בין-סימבולית" (ISI): כשהמריחה מתקרבת לזמן הביט (<bdi dir="ltr">1/B = 10ns</bdi> כאן), אנרגיה של ביט "1" נשפכת לתוך החריץ של ה-"0" הבא, והמקלט כבר לא יכול להבדיל. ב-step-index עם <bdi dir="ltr">Δ = 0.01</bdi> המריחה היא כ-50ns לק"מ, הרבה יותר מזמן הביט. העלו את הקצב וראו מאיפה גם ה-graded-index מתחיל להיכשל.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>עברו ל"תלת-ממד": בסיב step-index הקרניים מזגזגות בקווים ישרים בין הדפנות, ובגרף-index הן מתעקלות בעדינות, כמו גלים, ואף פעם לא פוגעות בדופן.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">ב-graded-index אין "החזרה" אחת חדה: הקרן מתכופפת בהדרגה לעבר האזור עם מקדם השבירה הגבוה (המרכז), כמו שקרן אור מתעקלת באוויר חם מעל כביש (מיראז׳). בפרופיל פרבולי כל הקרניים חוזרות לציר אחרי <b>אותו</b> מרחק בערך, כמו עדשה שחוזרת על עצמה, וזו דרך נוספת לראות למה הן מגיעות יחד. הקרניים כאן "מרידיונליות", כלומר עוברות דרך הציר. קרניים מסולפות נדחו בסימולציה הזו.</div></li>
+  </ol>
+</section>
+
+<section id="quiz" class="wrap">
+  <h2 class="sec">בדוק את עצמך</h2>
+  <div class="qz">
+    <p>למריחה בסיב step-index יש קצב של <bdi dir="ltr">50ns</bdi> לכל ק"מ. משתמשים בקטע באורך <bdi dir="ltr">2</bdi> ק"מ. מה בערך קצב הביטים המרבי?</p>
+    <div class="opts" id="qOpts"><button data-a="10">10 Mb/s</button><button data-a="20">20 Mb/s</button><button data-a="100">100 Mb/s</button><button data-a="na">לא תלוי באורך</button></div>
+    <div class="fb" id="qFb"></div>
+    <button class="go" id="qGo" style="display:none">🔬 בדקו במעבדה</button>
+  </div>
+</section>
+
+<script>
+const START = {"D":0.01,"L":1,"fill":1,"al":2,"bits":false,"B":2,"view":"2d"};
+const ADV_DEF = {"al":2,"bits":false,"B":2,"view":"2d"};
+"use strict";
+/* ======================================================================
+   שכבה משותפת לסימולציות תקשורת אופטית: מצב, פקדים, מצב מורחב, ציור, תלת-ממד
+   ====================================================================== */
+const $ = id => document.getElementById(id);
+let adv = false;
+const S = Object.assign({}, START);
+// מסנכרן את הפקדים (data-k) ואת כפתורי הבחירה (data-seg) לערכים שב-S
+function syncUI(){
+  document.querySelectorAll('[data-k]').forEach(el => { const k = el.dataset.k; if (!(k in S)) return; if (el.type === 'checkbox') el.checked = !!S[k]; else el.value = S[k]; });
+  document.querySelectorAll('[data-seg]').forEach(seg => { const k = seg.dataset.seg; seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === String(S[k]))); });
+}
+function bindAll(onChange){
+  document.querySelectorAll('input[data-k]').forEach(el => el.addEventListener(el.type === 'checkbox' ? 'change' : 'input', () => {
+    const k = el.dataset.k; S[k] = el.type === 'checkbox' ? el.checked : +el.value; onChange(k); }));
+  document.querySelectorAll('[data-seg]').forEach(seg => seg.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return; const k = seg.dataset.seg, v = b.dataset.v;
+    S[k] = v !== '' && !isNaN(+v) ? +v : v; syncUI(); onChange(k); }));
+}
+function setMode(on){
+  adv = on; document.body.classList.toggle('adv', on);
+  if (!on){ Object.assign(S, ADV_DEF); syncUI(); }
+  if (window.onModeChange) onModeChange(on);
+  $('lab').scrollIntoView({behavior:'smooth'});
+}
+$('more').addEventListener('click', () => setMode(true));
+$('less').addEventListener('click', () => setMode(false));
+document.querySelectorAll('.exp .xbtn').forEach(b => b.addEventListener('click', () => { const li = b.closest('.exp'); li.classList.toggle('open'); b.textContent = li.classList.contains('open') ? 'סגור' : 'הסבר'; }));
+const sgn = v => Math.abs(v) < 0.005 ? '0.00' : (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const deg = r => r*180/Math.PI, rad = d => d*Math.PI/180;
+function bar(id, frac, col){ const el = $(id); el.style.width = clamp(frac, 0, 1)*100 + '%'; if (col) el.style.background = col; }
+// קנבס בגודל התצוגה, חד גם במסכי רטינה
+function fitCanvas(cv){
+  const r = cv.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1), w = Math.max(1, r.width), h = Math.max(1, r.height);
+  if (cv.width !== Math.round(w*d) || cv.height !== Math.round(h*d)){ cv.width = Math.round(w*d); cv.height = Math.round(h*d); }
+  const g = cv.getContext('2d'); g.setTransform(d, 0, 0, d, 0, 0); g.direction = 'ltr'; return {g, w, h};   // ltr: מספרים ויחידות בסדר הנכון
+}
+function arrow(g, x0, y0, x1, y1, col, wd, head){
+  const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy); if (L < 0.5) return;
+  const ux = dx/L, uy = dy/L, hs = head || Math.min(9, L*0.45);
+  g.strokeStyle = col; g.fillStyle = col; g.lineWidth = wd || 1.6;
+  g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1 - ux*hs*0.6, y1 - uy*hs*0.6); g.stroke();
+  g.beginPath(); g.moveTo(x1, y1); g.lineTo(x1 - ux*hs - uy*hs*0.5, y1 - uy*hs + ux*hs*0.5); g.lineTo(x1 - ux*hs + uy*hs*0.5, y1 - uy*hs - ux*hs*0.5); g.closePath(); g.fill();
+}
+const svgMarker = (id, col) => '<marker id="' + id + '" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="' + col + '"/></marker>';
+/* ---------- תלת-ממד: Three.js נטען רק כשפותחים את המבט ---------- */
+const V3 = {on:false, ready:false, loading:null};
+function loadScript(src){ return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+function load3D(){
+  if (!V3.loading) V3.loading = (window.THREE ? Promise.resolve() : loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'))
+    .then(() => THREE.OrbitControls ? 0 : loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js'));
+  return V3.loading;
+}
+function make3D(cv){
+  const R = new THREE.WebGLRenderer({canvas:cv, antialias:true}); R.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); R.setClearColor(0x080d18, 1);
+  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(38, 1, 0.05, 400);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.65)); const dl = new THREE.DirectionalLight(0xffffff, 0.7); dl.position.set(3, 8, 5); scene.add(dl);
+  const ctl = new THREE.OrbitControls(cam, cv); ctl.enableDamping = true; ctl.dampingFactor = 0.08; ctl.enablePan = false;
+  Object.assign(V3, {cv, R, scene, cam, ctl, ready:true});
+  return V3;
+}
+function size3D(w, h){ if (!V3.ready) return; V3.R.setSize(w, h, false); V3.cam.aspect = w/h; V3.cam.updateProjectionMatrix(); }
+// מעבר בין מבט שטוח לתלת-ממד (כפתורי #views)
+function setView(v){
+  S.view = v; syncUI(); V3.on = v === '3d'; document.querySelector('.lab .view').classList.toggle('v3', V3.on);
+  if (V3.on && !V3.ready){ $('v3load').style.display = '';
+    load3D().then(() => { if (!V3.ready){ make3D($('cv3d')); SIM3.build(); } $('v3load').style.display = 'none'; dirty = true; })
+      .catch(err => { console.error(err); $('v3load').textContent = 'לא הצלחתי לטעון את התלת-ממד. בדקו את החיבור לאינטרנט.'; }); }
+  dirty = true;
+}
+const SIM3 = {};
+/* ---------- לולאת אנימציה ---------- */
+let dirty = true, last = performance.now(), visible = true;
+new IntersectionObserver(e => { visible = e[0].isIntersecting; }).observe(document.querySelector('.lab .view'));
+new ResizeObserver(() => { dirty = true; }).observe(document.querySelector('.lab .view'));
+function loop(now){
+  requestAnimationFrame(loop);
+  const dt = clamp((now - last)/1000, 0, 0.05); last = now;
+  if (visible) tick(dt);
+}
+
+/* ======================================================================
+   חלק ייחודי לסימולציה הזו
+   ====================================================================== */
+
+/* ---------- מודל: עקיבת קרניים מרידיונליות. רדיוס הליבה = 1, זמן כפול c (כמו אורך אופטי) ---------- */
+const C = 3e8, N1 = 1.46, NRAY = 9, NDIST = 49;
+const N2 = () => N1*(1 - S.D);
+const SI = 60;                                     // α גדול = step-index
+function prof(r, al){ const a2 = N1*N1, b2 = N2()*N2(), x = Math.abs(r); if (x >= 1) return b2; if (al >= SI) return a2; return a2 - (a2 - b2)*Math.pow(x, al); }
+function dprof(r, al){ const x = Math.abs(r); if (x >= 1 || al >= SI || x === 0) return 0; return -(N1*N1 - N2()*N2())*al*Math.pow(x, al - 1)*Math.sign(r); }
+// קרן שיוצאת מהציר בזווית th: מחזור אחד שלם (z, r, ct) ועיכוב ליחידת אורך tau = ct/z
+function ray(th, al){
+  if (th < 1e-7) return {Z:1, T:N1, tau:N1, zs:[0, 1], rs:[0, 0], ts:[0, N1]};
+  const bt = N1*Math.cos(th);
+  if (al >= SI){ const q = 1/Math.tan(th), Z = 4*q, tz = N1/Math.cos(th); return {Z, T:tz*Z, tau:tz, zs:[0, q, 3*q, Z], rs:[0, 1, -1, 0], ts:[0, tz*q, 3*tz*q, tz*Z]}; }
+  const f = (r, p) => [p, dprof(r, al)/(2*bt*bt), prof(r, al)/bt];
+  const per = 2*Math.PI/Math.sqrt(2*S.D), h = per/5000;
+  let r = 0, p = Math.tan(th), t = 0, z = 0; const zs = [0], rs = [0], ts = [0]; let down = false;
+  for (let i = 1; i < 200000; i++){
+    const k1 = f(r, p), k2 = f(r + h/2*k1[0], p + h/2*k1[1]), k3 = f(r + h/2*k2[0], p + h/2*k2[1]), k4 = f(r + h*k3[0], p + h*k3[1]);
+    const r2 = r + h/6*(k1[0] + 2*k2[0] + 2*k3[0] + k4[0]), p2 = p + h/6*(k1[1] + 2*k2[1] + 2*k3[1] + k4[1]), t2 = t + h/6*(k1[2] + 2*k2[2] + 2*k3[2] + k4[2]);
+    if (r2 < 0) down = true;
+    if (down && r < 0 && r2 >= 0){ const fr = -r/(r2 - r), Z = z + fr*h, T = t + fr*(t2 - t); zs.push(Z); rs.push(0); ts.push(T); return {Z, T, tau:T/Z, zs, rs, ts}; }
+    r = r2; p = p2; t = t2; z += h;
+    if (i % 25 === 0){ zs.push(z); rs.push(r); ts.push(t); }
+  }
+  return {Z:z, T:t, tau:t/z, zs, rs, ts};
+}
+const thMax = () => Math.acos(N2()/N1)*0.999;
+let lanes = [];                                    // [step-index, graded-index]
+function compute(){
+  lanes = [SI, adv ? S.al : 2].map(al => {
+    const anim = [], dist = [];
+    for (let k = 0; k < NRAY; k++){ const fr = Math.abs(k - 4)/4; anim.push(Object.assign(ray(S.fill*thMax()*fr, al), {sg:k < 4 ? -1 : 1, fr})); }
+    for (let k = 0; k < NDIST; k++) dist.push(ray(S.fill*thMax()*Math.sqrt(k/(NDIST - 1)), al).tau);   // אחיד ב-θ²: כמו אופנים בסיב מלא
+    return {al, anim, dist, dtau:Math.max(...dist) - Math.min(...dist)};
+  });
+}
+const dT = lane => S.L*1000*lane.dtau/C;            // שניות
+const fmtT = s => s >= 1e-6 ? (s*1e6).toFixed(2) + ' µs' : s >= 1e-9 ? (s*1e9).toFixed(s >= 1e-8 ? 1 : 2) + ' ns' : (s*1e12).toFixed(1) + ' ps';
+const fmtBL = s => { const bl = 1/(s/S.L); return bl >= 1e9 ? (bl/1e9).toFixed(2) + ' GHz·km' : (bl/1e6).toFixed(1) + ' MHz·km'; };
+const Bbps = () => Math.pow(10, S.B)*1e6;
+function onChange(k){
+  if (k === 'view') setView(S.view);
+  if (['D', 'fill', 'al'].includes(k)) compute();
+  if (k === 'L' || k === 'D' || k === 'fill' || k === 'al') { race0 = performance.now(); clearTrail = true; }
+  dirty = true; updPanel();
+}
+bindAll(onChange);
+window.onModeChange = on => { if (!on) setView('2d'); compute(); dirty = true; clearTrail = true; updPanel(); };
+function updPanel(){
+  const si = dT(lanes[0]), gi = dT(lanes[1]), lg = s => clamp((Math.log10(s*1e9) + 3)/6, 0, 1);
+  $('DV').textContent = S.D.toFixed(4); $('LV').textContent = S.L.toFixed(1) + ' km'; $('fillV').textContent = Math.round(S.fill*100) + '%';
+  $('siV').textContent = fmtT(si); bar('siBar', lg(si), '#ff9f43'); $('siBL').innerHTML = '<bdi dir="ltr">B·L ≈ ' + fmtBL(si) + '</bdi>';
+  $('giV').textContent = fmtT(gi); bar('giBar', lg(gi), '#5ee0ff'); $('giBL').innerHTML = '<bdi dir="ltr">B·L ≈ ' + fmtBL(gi) + '</bdi>';
+  const st = $('status'), ratio = si/Math.max(gi, 1e-18);
+  st.className = 'chip ' + (ratio > 3 ? 'ok' : 'neu'); st.textContent = ratio >= 1 ? 'graded-index טוב פי ' + (ratio >= 100 ? Math.round(ratio) : ratio.toFixed(1)) : 'step-index טוב פי ' + (1/ratio).toFixed(1);
+  if (!adv) return;
+  $('alV').textContent = S.al >= 9.99 ? '10 (כמעט מדרגה)' : S.al.toFixed(2); $('BV').textContent = fmtRate(Bbps());
+  const k = s => '<span class="k">' + s + '</span>', c = C;
+  $('calc').innerHTML = k('ΔT_SI') + ' (נוסחה) = L·n₁²Δ/(c·n₂) = ' + fmtT(S.L*1000*N1*N1*S.D/(c*N2())) + '<br>' + k('ΔT_GI') + ' (α=2) = L·n₁Δ²/(2c) = ' + fmtT(S.L*1000*N1*S.D*S.D/(2*c)) +
+    '<br>' + k('α_opt') + ' ≈ 2 − 2Δ = ' + (2 - 2*S.D).toFixed(3) + '<br>' + k('1/B') + ' = ' + fmtT(1/Bbps()) + '<br>' + k('ΔT·B') + ': SI ' + (si*Bbps()).toFixed(2) + ', GI ' + (gi*Bbps()).toFixed(3);
+}
+const fmtRate = b => b >= 1e9 ? (b/1e9).toFixed(2) + ' Gb/s' : (b/1e6).toFixed(b >= 1e7 ? 0 : 1) + ' Mb/s';
+/* ---------- המרוץ: חלון שנע לאורך סיב ארוך ---------- */
+let race0 = performance.now(), clearTrail = true, prevPos = [];
+const RACE = 8, HOLD = 1.6;
+function posOf(rr, ct){                            // מיקום (z, r) של קרן אחרי "זמן" ct
+  const k = Math.floor(ct/rr.T), rem = ct - k*rr.T; let j = 1; while (j < rr.ts.length - 1 && rr.ts[j] < rem) j++;
+  const f = (rem - rr.ts[j - 1])/((rr.ts[j] - rr.ts[j - 1]) || 1);
+  return [k*rr.Z + rr.zs[j - 1] + (rr.zs[j] - rr.zs[j - 1])*f, rr.rs[j - 1] + (rr.rs[j] - rr.rs[j - 1])*f];
+}
+function raceState(Lwin){
+  const tauRef = N1, siFull = Math.acos(N2()/N1), lagFrac = 1/Math.cos(siFull) - 1;            // המריחה היחסית ב-step-index במילוי מלא
+  const D = Math.min(0.6*Lwin/0.0101*S.L, 0.85*Lwin/lagFrac);                                // מרחק המרוץ (ברדיוסי ליבה), מוגבל כדי שלא יתבלבל
+  let ta = (performance.now() - race0)/1000; if (ta > RACE + HOLD){ race0 = performance.now(); ta = 0; clearTrail = true; }
+  return {D, ta:Math.min(ta, RACE), ct:tauRef*D*Math.min(ta, RACE)/RACE};
+}
+const colOf = fr => { const a = [94, 224, 255], b = [157, 139, 255]; return 'rgb(' + a.map((v, i) => Math.round(v + (b[i] - v)*fr)).join(',') + ')'; };
+function drawRace(){
+  const cvR = $('cvR'), {g, w, h} = fitCanvas(cvR), T = fitCanvas($('cvT')), gt = T.g;
+  g.clearRect(0, 0, w, h);
+  const m = 40, laneH = h/2, a = laneH*0.27, Lwin = (w - 2*m)/a, st = raceState(Lwin);
+  if (clearTrail){ gt.clearRect(0, 0, w, h); clearTrail = false; prevPos = []; }
+  gt.globalCompositeOperation = 'destination-out'; gt.fillStyle = 'rgba(0,0,0,.06)'; gt.fillRect(0, 0, w, h); gt.globalCompositeOperation = 'source-over';
+  const zLead = st.ct/N1, ws = Math.max(0, zLead - 0.8*Lwin), Xz = z => m + (z - ws)/Lwin*(w - 2*m);
+  lanes.forEach((ln, li) => {
+    const yc = laneH*(li + 0.55);
+    // הסיב
+    g.fillStyle = '#13203a'; g.fillRect(m, yc - a*1.6, w - 2*m, a*3.2);
+    if (ln.al >= SI){ g.fillStyle = '#1b3f70'; g.fillRect(m, yc - a, w - 2*m, 2*a); }
+    else { const gr = g.createLinearGradient(0, yc - a, 0, yc + a); gr.addColorStop(0, '#13203a'); gr.addColorStop(0.5, '#2d6ab8'); gr.addColorStop(1, '#13203a'); g.fillStyle = gr; g.fillRect(m, yc - a, w - 2*m, 2*a); }
+    g.strokeStyle = 'rgba(147,163,191,.35)'; g.lineWidth = 1;                     // שנתות קבועות בסיב: זזות כשהחלון עוקב
+    for (let z = Math.ceil(ws/5)*5; z < ws + Lwin; z += 5){ const x = Xz(z); g.beginPath(); g.moveTo(x, yc + a*1.6); g.lineTo(x, yc + a*1.6 - 7); g.stroke(); }
+    g.fillStyle = '#cdd8ea'; g.font = '13px Segoe UI,Arial'; g.textAlign = 'left'; g.fillText(li ? (ln.al >= SI ? 'step-index' : 'graded-index' + (Math.abs(ln.al - 2) > 0.005 ? '  (α = ' + ln.al.toFixed(2) + ')' : '')) : 'step-index', m, yc - a*1.6 - 7);
+    // הקרניים
+    ln.anim.forEach((rr, k) => {
+      const pz = posOf(rr, st.ct); const x = Xz(pz[0]), y = yc - rr.sg*pz[1]*a, id = li*NRAY + k, col = colOf(rr.fr);
+      const pv = prevPos[id]; gt.strokeStyle = col; gt.lineWidth = 2;
+      if (pv){ gt.beginPath(); gt.moveTo(pv[0], pv[1]); gt.lineTo(x, y); gt.stroke(); }
+      prevPos[id] = [x, y];
+      g.fillStyle = col; g.beginPath(); g.arc(x, y, 5, 0, 7); g.fill(); g.strokeStyle = '#05070d'; g.lineWidth = 1.5; g.stroke();
+    });
+  });
+  $('kmTxt').innerHTML = '<bdi dir="ltr">z ≈ ' + (S.L*st.ta/RACE).toFixed(2) + ' km</bdi>' + (st.ta >= RACE ? ' · הגיעו' : '');
+}
+/* ---------- הפולס במוצא ---------- */
+function drawOut(){
+  const {g, w, h} = fitCanvas($('cvO')); g.clearRect(0, 0, w, h);
+  const m = 40, laneH = (h - 30)/2, all = lanes.flatMap(l => l.dist), t0 = Math.min(...all);
+  const toS = tau => S.L*1000*(tau - t0)/C, spread = Math.max(...lanes.map(l => toS(Math.max(...l.dist))));
+  const bits = adv && S.bits, Tb = 1/Bbps(), pat = [1, 0, 1, 1, 0, 1, 0, 0, 1, 1];
+  const R = bits ? Tb*pat.length : Math.max(spread*1.25, 1e-12), sig = bits ? Tb*0.12 : R/70;
+  const X = t => m + (t + (bits ? 0.5*Tb : R*0.04))/(R + (bits ? Tb : R*0.08))*(w - 2*m);
+  g.fillStyle = '#7f8fab'; g.font = '12px Consolas,monospace'; g.textAlign = 'center';
+  const unit = R >= 1e-6 ? [1e-6, 'µs'] : R >= 1e-9 ? [1e-9, 'ns'] : [1e-12, 'ps'];
+  const stp = Math.pow(10, Math.floor(Math.log10(R/unit[0]/4)))*unit[0];
+  for (let t = 0; t <= R*1.001; t += stp*(R/stp > 12 ? 2 : 1)){ g.fillText(+(t/unit[0]).toPrecision(3), X(t), h - 8); g.strokeStyle = 'rgba(147,163,191,.12)'; g.beginPath(); g.moveTo(X(t), 6); g.lineTo(X(t), h - 22); g.stroke(); }
+  g.textAlign = 'right'; g.fillText(unit[1], w - 6, h - 8);
+  const curves = lanes.map(ln => { const ys = []; for (let i = 0; i <= 400; i++){ const t = -0.04*R + 1.08*R*i/400; let v = 0;
+    (bits ? pat.map((b, j) => b ? j*Tb : null).filter(v => v !== null) : [0]).forEach(t1 => ln.dist.forEach(tau => { const d = t - t1 - toS(tau); v += Math.exp(-d*d/(2*sig*sig)); })); ys.push([t, v/ln.dist.length]); } return ys; });
+  const mxs = curves.map(cv => Math.max(...cv.map(p => p[1]), 1e-9));        // כל מסלול בסקאלה שלו: הצורה היא העיקר
+  curves.forEach((cv, li) => { const base = 8 + laneH*(li + 1) - 4, col = li ? '#5ee0ff' : '#ff9f43';
+    g.strokeStyle = 'rgba(147,163,191,.25)'; g.beginPath(); g.moveTo(m, base); g.lineTo(w - m, base); g.stroke();
+    if (bits) pat.forEach((b, j) => { const x0 = X(j*Tb - Tb/2); g.strokeStyle = 'rgba(147,163,191,.18)'; g.setLineDash([3, 4]); g.beginPath(); g.moveTo(x0, base - laneH + 10); g.lineTo(x0, base); g.stroke(); g.setLineDash([]);
+      g.fillStyle = '#7f8fab'; g.textAlign = 'center'; g.font = '11px Consolas,monospace'; g.fillText(b, X(j*Tb), base - laneH + 18); });
+    g.strokeStyle = col; g.lineWidth = 2.2; g.beginPath(); cv.forEach(([t, v], i) => { const x = X(t), y = base - v/mxs[li]*(laneH - 16); i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke();
+    g.fillStyle = col; g.font = '12px Segoe UI,Arial'; g.textAlign = 'left'; g.fillText(li ? 'graded-index' : 'step-index', m + 4, base - laneH + 22); });
+}
+/* ---------- תלת-ממד: שני גלילים, מסלולי הקרניים סביב הציר ---------- */
+const m3 = {};
+Object.assign(SIM3, {
+  build(){
+    const sc = V3.scene; m3.Lw = 30; m3.lines = []; m3.dots = [];
+    [-2.4, 2.4].forEach((zo, li) => {
+      const mk = (r, col, op) => { const ms = new THREE.Mesh(new THREE.CylinderGeometry(r, r, m3.Lw, 48, 1, true), new THREE.MeshLambertMaterial({color:col, transparent:true, opacity:op, side:THREE.DoubleSide, depthWrite:false})); ms.rotation.z = Math.PI/2; ms.position.set(m3.Lw/2, 0, zo); sc.add(ms); };
+      mk(1, li ? 0x2d6ab8 : 0x3a7fd0, 0.16); mk(1.6, 0x8fb0e0, 0.06);
+      const ln = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({vertexColors:true, transparent:true, opacity:0.9})); sc.add(ln); m3.lines.push(ln);
+      const ds = []; for (let k = 0; k < NRAY; k++){ const d = new THREE.Mesh(new THREE.SphereGeometry(0.11, 12, 8), new THREE.MeshBasicMaterial({color:0xffffff})); sc.add(d); ds.push(d); } m3.dots.push(ds);
+    });
+    V3.cam.position.set(-6, 9, 16); V3.ctl.target.set(12, 0, 0); V3.ctl.minDistance = 5; V3.ctl.maxDistance = 60;
+  },
+  update(){                                         // המסלולים (מחושבים מחדש כשמשהו משתנה)
+    lanes.forEach((ln, li) => { const zo = li ? 2.4 : -2.4, P = [], Cc = [];
+      ln.anim.forEach((rr, k) => { const ps = Math.PI*k/NRAY*2, c = Math.cos(ps), s = Math.sin(ps), col = new THREE.Color(colOf(rr.fr));
+        let prev = null; for (let z = 0; z <= m3.Lw; z += 0.15){ const zz = z % rr.Z; let j = 1; while (j < rr.zs.length - 1 && rr.zs[j] < zz) j++;
+          const f = (zz - rr.zs[j - 1])/((rr.zs[j] - rr.zs[j - 1]) || 1), r = rr.sg*(rr.rs[j - 1] + (rr.rs[j] - rr.rs[j - 1])*f), pt = [z, r*c, zo + r*s];
+          if (prev){ P.push(...prev, ...pt); Cc.push(col.r, col.g, col.b, col.r, col.g, col.b); } prev = pt; } });
+      m3.lines[li].geometry.setAttribute('position', new THREE.Float32BufferAttribute(P, 3)); m3.lines[li].geometry.setAttribute('color', new THREE.Float32BufferAttribute(Cc, 3)); });
+  },
+  dots(){
+    const st = raceState(m3.Lw);
+    lanes.forEach((ln, li) => { const zo = li ? 2.4 : -2.4; ln.anim.forEach((rr, k) => { const ps = Math.PI*k/NRAY*2, p = posOf(rr, st.ct), r = rr.sg*p[1];
+      m3.dots[li][k].position.set(p[0] % m3.Lw, r*Math.cos(ps), zo + r*Math.sin(ps)); m3.dots[li][k].material.color.set(colOf(rr.fr)); }); });
+  }
+});
+let lastKey = '';
+function tick(){
+  const key = [S.D, S.L, S.fill, S.al, S.bits, S.B, adv].join();
+  if (V3.on && V3.ready){
+    if (dirty || key !== lastKey){ const r = $('cv3d').getBoundingClientRect(); size3D(r.width, r.height); SIM3.update(); }
+    SIM3.dots(); V3.ctl.update(); V3.R.render(V3.scene, V3.cam);
+    const st = raceState(30); $('kmTxt').innerHTML = '<bdi dir="ltr">z ≈ ' + (S.L*st.ta/RACE).toFixed(2) + ' km</bdi>';
+  } else drawRace();
+  if (dirty || key !== lastKey){ drawOut(); dirty = false; lastKey = key; }
+}
+compute(); updPanel();
+/* פתיח: קרן ישרה וקרן תלולה (Δ = 0.03 לשם הבהירות), והפולס במוצא */
+(function(){
+  const a = 30, yc = 92, x0 = 20, x1 = 320, th = 0.24, q = a/Math.tan(th);
+  let h = '<rect x="' + x0 + '" y="' + (yc - a*1.5) + '" width="' + (x1 - x0) + '" height="' + 3*a + '" fill="#13203a"/><rect x="' + x0 + '" y="' + (yc - a) + '" width="' + (x1 - x0) + '" height="' + 2*a + '" fill="#1b3f70"/>';
+  h += '<line x1="' + x0 + '" y1="' + yc + '" x2="' + x1 + '" y2="' + yc + '" stroke="#5ee0ff" stroke-width="2.4"/>';
+  let d = 'M' + x0 + ' ' + yc, x = x0, y = 0, dir = -1; const pts = [];
+  while (x < x1){ const nx = Math.min(x1, x + (y === 0 ? q : 2*q)), ny = nx === x1 ? y + dir*(nx - x)/q*a : dir*a; d += ' L' + nx.toFixed(1) + ' ' + (yc + ny).toFixed(1); x = nx; y = ny; dir = -dir; }
+  h += '<path d="' + d + '" fill="none" stroke="#9d8bff" stroke-width="2.4"/>';
+  const ty = 225, X = t => 60 + t*200;
+  h += '<line x1="40" y1="' + ty + '" x2="320" y2="' + ty + '" stroke="#4a5d84"/><path d="M' + X(0) + ' ' + ty + ' L' + X(0) + ' ' + (ty - 50) + ' L' + X(1) + ' ' + (ty - 50) + ' L' + X(1) + ' ' + ty + '" fill="rgba(255,159,67,.2)" stroke="#ff9f43" stroke-width="2"/>';
+  h += '<line x1="' + X(0) + '" y1="' + (ty - 58) + '" x2="' + X(0) + '" y2="' + ty + '" stroke="#5ee0ff" stroke-width="3"/><line x1="' + X(1) + '" y1="' + (ty - 58) + '" x2="' + X(1) + '" y2="' + ty + '" stroke="#9d8bff" stroke-width="3"/>';
+  h += '<text x="' + ((X(0) + X(1))/2) + '" y="' + (ty - 60) + '" fill="#cdd8ea" font-size="13" text-anchor="middle" direction="ltr">ΔT</text><text x="320" y="' + (ty + 16) + '" fill="#7f8fab" font-size="11" text-anchor="end" direction="ltr">t →</text>';
+  $('probSvg').innerHTML = h;
+})();
+/* בדוק את עצמך */
+$('qOpts').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#qOpts button').forEach(x => x.classList.remove('right', 'wrong'));
+  const ok = b.dataset.a === '10'; b.classList.add(ok ? 'right' : 'wrong');
+  if (!ok) document.querySelector('#qOpts button[data-a="10"]').classList.add('right');
+  $('qFb').innerHTML = (ok ? '✓ נכון! ' : '✗ לא בדיוק. ') + "המריחה מצטברת לאורך הסיב: <bdi dir=\"ltr\">ΔT = 50ns/km × 2km = 100ns</bdi>, ולכן <bdi dir=\"ltr\">B ≈ 1/ΔT = 10Mb/s</bdi>. 20Mb/s מתקבל אם שוכחים את האורך (כמו ב-1 ק\"מ). במילים של <bdi dir=\"ltr\">B·L</bdi>: הסיב הזה הוא 20Mb/s·km, וב-2 ק\"מ זה 10Mb/s. במעבדה: <bdi dir=\"ltr\">Δ ≈ 0.0103</bdi> נותן בערך 50ns/km.";
+  $('qFb').classList.add('on'); $('qGo').style.display = '';
+});
+$('qGo').addEventListener('click', () => { if (adv) setMode(false); S.D = 0.0103; S.L = 2; S.fill = 1; syncUI(); onChange('D'); $('lab').scrollIntoView({behavior:'smooth'}); });
+syncUI();
+if (location.hash === '#adv') setMode(true);
+requestAnimationFrame(loop);
+</script>
+<script>
+/* ======================================================================
+   הדגמה אוטומטית: כפתור "▶ הדגמה" ליד כל ניסוי. סמן "רפאים" מבצע את הניסוי במעבדה בזמן אמת,
+   וההסבר מוצג במסגרת מתחת למעבדה.
+   ====================================================================== */
+(function(){
+'use strict';
+  const sv = (k, v) => document.querySelector('[data-seg="' + k + '"] button[data-v="' + v + '"]');
+  async function orbitCam(degs, dur){ const c = V3.cam, t = V3.ctl.target, r0 = c.position.clone().sub(t), a0 = Math.atan2(r0.x, r0.z), rr = Math.hypot(r0.x, r0.z);
+    await anim(dur || 3000, k => { const a = a0 + degs*Math.PI/180*k; c.position.set(t.x + rr*Math.sin(a), c.position.y, t.z + rr*Math.cos(a)); c.lookAt(t); }); }
+  async function to3D(){ await ensureAdv(); if (S.view !== '3d') await click(viewBtn('3d')); await waitFor(() => V3.ready, 20000); await sleep(600); }
+
+  const S3 = [7];
+  const SCRIPTS = [
+    async () => { await dragSlider(byId('rD'), 0.01, 900); await dragSlider(byId('rL'), 1, 800); await dragSlider(byId('rFill'), 1, 700);
+      say('כל הקרניים יוצאות יחד. צופים במרוץ...'); await sleep(6000); say('step-index: הסגולות (תלולות) נשארו מאחור. graded-index: כולן יחד'); await sleep(5000); },
+    async () => { await dragSlider(byId('rD'), 0.004, 1500); say('Δ קטן: המריחה ב-step-index קטנה'); await sleep(3000);
+      say('מגדילים את Δ...'); await dragSlider(byId('rD'), 0.025, 5000); say('SI גדל ליניארית, GI ריבועית, אבל עדיין פי עשרות קטן יותר'); await sleep(3500); await dragSlider(byId('rD'), 0.01, 1200); },
+    async () => { await dragSlider(byId('rL'), 1, 900); say('1 ק"מ. שימו לב ל-ΔT ול-B·L במדים'); await sleep(2500);
+      await dragSlider(byId('rL'), 10, 4000); say('פי 10 באורך: פי 10 במריחה. המכפלה B·L לא השתנתה'); await sleep(4000); await dragSlider(byId('rL'), 1, 1200); },
+    async () => { await dragSlider(byId('rFill'), 1, 800); say('חרוט מלא'); await sleep(2000); say('מכניסים אור רק בזוויות קטנות...'); await dragSlider(byId('rFill'), 0.3, 4000);
+      say('המריחה ב-step-index ירדה בערך פי 10 (ריבועית במילוי)'); await sleep(4000); await dragSlider(byId('rFill'), 1, 1200); },
+    async () => { say('הדוגמה מהתרגול: n₁ = 1.46, n₂ = 1.45'); await dragSlider(byId('rD'), 0.00685, 3000); await dragSlider(byId('rL'), 1, 800); await dragSlider(byId('rFill'), 1, 800);
+      say('step-index: כ-30MHz·km. graded-index: כ-9GHz·km. פי ~300'); await sleep(5000); },
+    async () => { await ensureAdv(); await dragSlider(byId('rD'), 0.01, 800); await dragSlider(byId('rAl'), 2, 1000); say('α = 2: פרבולי, כמו בתרגול'); await sleep(2500);
+      await dragSlider(byId('rAl'), 1.98, 2000); say('α ≈ 2 − 2Δ = 1.98: עוד פי 4 פחות מריחה'); await sleep(3000);
+      await dragSlider(byId('rAl'), 10, 4000); say('α גדול: הפרופיל הופך למדרגה, וחוזרים ל-step-index'); await sleep(3500); await dragSlider(byId('rAl'), 2, 1500); },
+    async () => { await ensureAdv(); await dragSlider(byId('rAl'), 2, 600); await dragSlider(byId('rD'), 0.01, 600); await dragSlider(byId('rL'), 1, 600); await toggle(byId('cBits'), true);
+      await dragSlider(byId('rB'), 2, 1500); say('100Mb/s לק"מ אחד: ב-step-index הביטים נמרחים זה לתוך זה'); await sleep(4000);
+      say('מעלים את הקצב...'); await dragSlider(byId('rB'), 3.6, 5000); say('גם graded-index מתחיל להיכשל בסביבות כמה Gb/s'); await sleep(3500); await toggle(byId('cBits'), false); },
+    async () => { await dragSlider(byId('rD'), 0.01, 600); say('עוברים לתלת-ממד'); await to3D(); say('למעלה: זיגזג בקווים ישרים. למטה: קרניים שמתעקלות בעדינות'); await orbitCam(-35, 4500); await sleep(2500); await orbitCam(35, 3500); }
+  ].map((fn, i) => S3.includes(i) ? fn : async () => { if (S.view === '3d') await click(viewBtn('2d')); return fn(); });
+  const byId = id => document.getElementById(id);
+  const LAB = document.querySelector('section.lab'), VIEW = LAB.querySelector('.view');
+  const cur = byId('demoCursor'), D = {alive:0, i:-1, x:0, y:0};
+  const sleep = ms => { const tok = D.alive; return new Promise(r => setTimeout(r, ms)).then(() => { if (D.alive !== tok) throw 'stop'; }); };
+  const ease = k => k*k*(3 - 2*k);
+  function anim(dur, fn){
+    const tok = D.alive;
+    return new Promise((res, rej) => { const t0 = performance.now();
+      (function step(now){ if (D.alive !== tok) return rej('stop'); const k = Math.min(1, (now - t0)/dur); fn(ease(k)); if (k < 1) requestAnimationFrame(step); else res(); })(t0); });
+  }
+  function place(x, y){ D.x = x; D.y = y; cur.style.transform = 'translate(' + (x - 3) + 'px,' + (y - 2) + 'px)'; }
+  function moveTo(x, y, dur){ const x0 = D.x, y0 = D.y; dur = dur || Math.min(1100, 350 + Math.hypot(x - x0, y - y0)*0.9); return anim(dur, k => place(x0 + (x - x0)*k, y0 + (y - y0)*k)); }
+  const center = el => { const r = el.getBoundingClientRect(); return [r.left + r.width/2, r.top + r.height/2]; };
+  function ripple(){ const r = document.createElement('div'); r.className = 'demoRipple'; r.style.left = D.x + 'px'; r.style.top = D.y + 'px'; document.body.appendChild(r); setTimeout(() => r.remove(), 600); }
+  async function press(){ cur.classList.add('down'); ripple(); await sleep(140); cur.classList.remove('down'); }
+  async function click(el){ if (!el) return; await moveTo(...center(el)); await press(); el.click(); await sleep(400); }
+  async function select(el, v){ if (el.value === v) return; await moveTo(...center(el)); await press(); el.value = v; el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(500); }
+  async function toggle(el, want){                   // מתג (checkbox מוסתר בתוך label)
+    if (el.checked === want) return;
+    await moveTo(...center(el.closest('label') || el)); await press(); el.click(); await sleep(400);
+  }
+  async function dragSlider(el, to, dur){            // גרירה אמיתית: אירועי input בזמן אמת ו-change בסוף
+    const r = el.getBoundingClientRect(), mn = +el.min, mx = +el.max, rtl = getComputedStyle(el).direction === 'rtl';
+    const xOf = v => { const f = (v - mn)/(mx - mn); return rtl ? r.right - 8 - f*(r.width - 16) : r.left + 8 + f*(r.width - 16); };
+    const from = +el.value, y = r.top + r.height/2;
+    await moveTo(xOf(from), y); cur.classList.add('down');
+    try { await anim(dur || 1500, k => { const v = from + (to - from)*k; el.value = v; el.dispatchEvent(new Event('input', {bubbles:true})); place(xOf(+el.value), y); }); }
+    finally { cur.classList.remove('down'); }
+    el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(300);
+  }
+  async function waitFor(fn, limit){ const t0 = performance.now(); while (!fn() && performance.now() - t0 < (limit || 30000)) await sleep(200); }
+  async function ensureAdv(){ if (!document.body.classList.contains('adv')){ say('פותחים את המצב המורחב'); await click(byId('more')); await sleep(900); } }
+  const say = t => { byId('demoSay').textContent = t; };
+  const seg = (id, attr, v) => document.querySelector('#' + id + ' button[data-' + attr + '="' + v + '"]');
+  const viewBtn = v => document.querySelector('#views button[data-view="' + v + '"]');
+
+  async function runDemo(i){
+    stopDemo(false);
+    const tok = D.alive; D.i = i;
+    const li = document.querySelectorAll('.exp')[i];
+    byId('demoNum').textContent = i + 1; byId('demoTitle').innerHTML = li.querySelector('.task').innerHTML;
+    byId('demoText').innerHTML = li.querySelector('.ans').innerHTML; say('עוברים למעבדה...');
+    byId('demoStop').style.display = '';
+    document.body.classList.add('demo');
+    LAB.scrollIntoView({behavior:'smooth', block:'start'});
+    try {
+      await sleep(850);
+      const r = VIEW.getBoundingClientRect(); place(r.left + r.width/2, r.top + r.height/2); cur.classList.add('on');
+      await SCRIPTS[i]();
+      if (D.alive === tok){ cur.classList.remove('on'); byId('demoStop').style.display = 'none'; }
+    } catch (e) { if (e !== 'stop') console.warn(e); }
+  }
+  function stopDemo(close){ D.alive++; cur.classList.remove('on', 'down'); if (close){ document.body.classList.remove('demo'); D.i = -1; } }
+  byId('demoStop').addEventListener('click', () => { stopDemo(false); say('ההדגמה נעצרה. אפשר להמשיך לשחק במעבדה בעצמכם.'); byId('demoStop').style.display = 'none'; });
+  byId('demoAgain').addEventListener('click', () => { if (D.i >= 0) runDemo(D.i); });
+  byId('demoClose').addEventListener('click', () => stopDemo(true));
+  document.querySelectorAll('.exp').forEach((li, i) => {
+    if (!SCRIPTS[i]) return;
+    const b = document.createElement('button'); b.className = 'pbtn'; b.type = 'button'; b.title = 'הדגמה אוטומטית במעבדה';
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>הדגמה';
+    li.querySelector('.top').insertBefore(b, li.querySelector('.xbtn'));
+    b.addEventListener('click', () => runDemo(i));
+  });
+  if (location.hash.startsWith('#demo')) setTimeout(() => runDemo(+location.hash.slice(5) || 0), 400);
+
+
+})();
+</script>
+</body>
+</html>

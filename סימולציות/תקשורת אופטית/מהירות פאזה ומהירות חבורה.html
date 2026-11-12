@@ -322,7 +322,7 @@ function bar(id, frac, col){ const el = $(id); el.style.width = clamp(frac, 0, 1
 function fitCanvas(cv){
   const r = cv.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1), w = Math.max(1, r.width), h = Math.max(1, r.height);
   if (cv.width !== Math.round(w*d) || cv.height !== Math.round(h*d)){ cv.width = Math.round(w*d); cv.height = Math.round(h*d); }
-  const g = cv.getContext('2d'); g.setTransform(d, 0, 0, d, 0, 0); return {g, w, h};
+  const g = cv.getContext('2d'); g.setTransform(d, 0, 0, d, 0, 0); g.direction = 'ltr'; return {g, w, h};   // ltr: מספרים ויחידות בסדר הנכון
 }
 function arrow(g, x0, y0, x1, y1, col, wd, head){
   const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy); if (L < 0.5) return;
@@ -512,6 +512,7 @@ requestAnimationFrame(loop);
   async function orbitCam(degs, dur){ const c = V3.cam, t = V3.ctl.target, r0 = c.position.clone().sub(t), a0 = Math.atan2(r0.x, r0.z), rr = Math.hypot(r0.x, r0.z);
     await anim(dur || 3000, k => { const a = a0 + degs*Math.PI/180*k; c.position.set(t.x + rr*Math.sin(a), c.position.y, t.z + rr*Math.cos(a)); c.lookAt(t); }); }
   async function to3D(){ await ensureAdv(); if (S.view !== '3d') await click(viewBtn('3d')); await waitFor(() => V3.ready, 20000); await sleep(600); }
+
   const S3 = [];
   const SCRIPTS = [
     async () => { say('הנפיצה עכשיו 0.45: הפסגות והחבורה זזות במהירויות שונות'); await sleep(2500);

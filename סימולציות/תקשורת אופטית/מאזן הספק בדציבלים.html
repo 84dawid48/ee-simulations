@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מאזן הספק בדציבלים</title>
+<!--
+  תדריך (קמפץ)
+  1. האהה: בדציבלים דעיכה מעריכית הופכת לקו ישר, וכל הגבר או הפסד הופך מכפל לחיבור. "פי 2" = 3dB, "פי 10" = 10dB, ו-dBm הוא פשוט הספק ביחס ל-1mW.
+  2. הבלבול: "0dBm פירושו אין הספק", "ניחות של 20dB פירושו פי 20", "סיב כפול באורך מאבד פי 2".
+  3. הצורה: קו תקשורת (משדר, סיב, מקלט) עם שני גרפים מקושרים של אותו הספק לאורך הקו: ב-dBm (קו ישר ומדרגות) וב-mW (דעיכה מעריכית). גשש מרחק נגרר מראה את אותה נקודה בשתי היחידות. דו-ממד.
+  4. הבסיס: הספק המשדר, אורך הסיב, מקדם הניחות α. מורחב: מגבר (הדלקה, מיקום, הגבר), הפסד מחברים, רגישות מקלט ומרווח, חישוב α_lin.
+  5. נדחה: תלת-ממד (אין לו ערך כאן), רעש מגברים (בסימולציה #14), תלות של α באורך הגל.
+  6. פיצול: לא. סימולציה #3 מתוך תוכנית תקשורת אופטית.
+-->
+<style>
+:root{--bg:#05070d;--card:#0c1222;--line:#1f2b44;--txt:#e3eaf6;--mut:#93a3bf;--acc:#6cb8ff;--grn:#46e39a;--red:#ff4d5e;--yel:#ffd479;--vio:#9d8bff}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:"Segoe UI","Rubik",Arial,sans-serif;padding-top:30px}
+#topbar{position:fixed;top:0;left:0;right:0;height:30px;background:#060912;border-bottom:1px solid var(--line);z-index:100}
+#bsd{position:absolute;top:7px;right:12px;font-size:12px;color:#c9d6ea}
+#copyr{position:absolute;top:4px;left:8px;font-size:12px;color:#dce6f5;background:#10172a;border:1px solid var(--line);border-radius:6px;padding:2px 10px}
+bdi{unicode-bidi:isolate}
+
+/* ===== פתיח ===== */
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+#intro{padding-top:46px;padding-bottom:40px;line-height:1.75}
+#intro h1{font-size:34px;line-height:1.25;margin:0 0 8px;font-weight:700}
+#intro h1 span{background:linear-gradient(90deg,#6cb8ff,#9d8bff,#ff4d5e);-webkit-background-clip:text;background-clip:text;color:transparent}
+#intro .lead{font-size:18px;color:var(--mut);margin:0 0 30px}
+.prob{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.prob p{margin:0 0 10px;font-size:15.5px;color:#d0d9ea}
+.prob p:last-child{margin-bottom:0}
+.prob svg{width:100%;height:auto;display:block;background:#080d18;border:1px solid var(--line);border-radius:12px}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:14px}
+.rd{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.rd .ic{flex:0 0 38px;height:38px;border-radius:10px;background:#101a30;display:grid;place-items:center}
+.rd h3{margin:0 0 2px;font-size:15.5px}
+.rd p{margin:0;font-size:14.5px;color:#c3cfe3}
+@media (max-width:900px){.prob{grid-template-columns:1fr}}
+h2.sec{font-size:21px;margin:40px 0 14px;color:var(--acc)}
+.theory{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}
+.th{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px}
+.th .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;font-size:14px;margin-bottom:6px}
+.th h3{margin:0 0 4px;font-size:16.5px}
+.th p{margin:0;font-size:14.5px;color:#c3cfe3}
+.chain{margin:14px 0 0;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+.chain svg{width:100%;height:auto;display:block}
+.law{margin:14px 0 0;text-align:center;font-size:21px;background:linear-gradient(90deg,rgba(108,184,255,.08),rgba(157,139,255,.07),rgba(255,77,94,.06));border:1px solid var(--line);border-radius:16px;padding:14px;font-family:"Cambria Math","Times New Roman",serif}
+.law .eq{direction:ltr;display:inline-block;margin:0 14px}
+.law small{display:block;font-family:"Segoe UI",Arial,sans-serif;font-size:14px;color:var(--mut);margin-top:4px}
+.cta{display:block;width:max-content;margin:34px auto 0;text-decoration:none;color:#fff;font:inherit;font-size:17px;font-weight:600;background:linear-gradient(180deg,#2167b8,#18508f);border:1px solid #3b86e0;border-radius:40px;padding:12px 30px;box-shadow:0 0 30px rgba(59,134,224,.35);cursor:pointer}
+.cta:hover{filter:brightness(1.15)}
+
+/* ===== מעבדה ===== */
+.lab{position:relative;height:calc(100vh - 30px);min-height:600px;border-top:1px solid var(--line)}
+.view{position:absolute;top:14px;bottom:84px;left:14px;right:320px;display:grid;grid-template-rows:1fr 1fr;gap:10px}
+.plot{position:relative;background:#080d18;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.plot canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.plot .pt{position:absolute;top:8px;right:12px;font-size:13px;color:var(--mut);pointer-events:none}
+.pnl{position:absolute;top:14px;background:rgba(10,15,28,.86);border:1px solid var(--line);border-radius:18px;padding:16px;backdrop-filter:blur(10px);z-index:10;max-height:calc(100% - 100px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2a3550 transparent}
+.pnl.r{right:14px;width:292px}
+.c-row{margin-bottom:14px}
+.c-lbl{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px;color:#cdd8ea}
+.c-val{font-family:Consolas,monospace;font-size:13.5px;color:#fff;direction:ltr}
+input[type=range]{width:100%;accent-color:var(--acc);margin:0}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{flex:1;background:#0a0f1c;border:1px solid var(--line);color:var(--mut);border-radius:9px;padding:7px 4px;font:inherit;font-size:14px;cursor:pointer;white-space:nowrap}
+.seg button.on{border-color:var(--acc);color:#fff;background:#16243f}
+.sep{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.ttl{font-size:13px;color:var(--mut);margin-bottom:8px}
+.meter{margin-bottom:12px}
+.meter .bar{position:relative;height:12px;background:#141c30;border-radius:7px;overflow:visible}
+.meter .bar i{position:absolute;top:0;bottom:0;right:0;border-radius:7px;transition:width .15s,background .15s}
+.meter .bar b{position:absolute;top:-4px;bottom:-4px;width:2px;background:#fff;opacity:.8}
+.meter .row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--mut);margin-top:5px}
+.meter .row span:last-child{font-family:Consolas,monospace;direction:ltr;color:#fff}
+.chip{display:block;text-align:center;font-size:14px;font-weight:600;border-radius:10px;padding:7px;margin-top:4px}
+.chip.ok{background:rgba(70,227,154,.12);color:var(--grn);border:1px solid rgba(70,227,154,.35)}
+.chip.edge{background:rgba(255,212,121,.12);color:var(--yel);border:1px solid rgba(255,212,121,.35)}
+.chip.bad{background:rgba(255,77,94,.13);color:#ff8a96;border:1px solid rgba(255,77,94,.4)}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:#cdd8ea;margin:8px 0;cursor:pointer}
+.sw{position:relative;display:inline-block;width:34px;height:19px;flex:0 0 auto}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:#2a3550;border-radius:20px;cursor:pointer;transition:.2s}
+.sw span::before{content:"";position:absolute;width:15px;height:15px;top:2px;right:2px;background:#c7d2e6;border-radius:50%;transition:.2s}
+.sw input:checked+span{background:#1f5fa8}
+.sw input:checked+span::before{right:17px;background:#fff}
+.calc{font-family:Consolas,"Cambria Math",monospace;font-size:12.5px;direction:ltr;text-align:left;color:#fff;background:#0a0f1c;border:1px solid var(--line);border-radius:8px;padding:8px 10px;line-height:1.75}
+.calc .k{color:var(--yel)}
+body:not(.adv) .adv-only{display:none!important}
+body.adv .basic-only{display:none!important}
+.morebtn{position:absolute;bottom:14px;left:14px;z-index:12;display:flex;align-items:center;gap:10px;font:inherit;font-size:18px;font-weight:700;color:#fff;border:none;border-radius:40px;padding:15px 28px;cursor:pointer;background:linear-gradient(135deg,#7b2ff7,#e0218a);box-shadow:0 8px 30px rgba(123,47,247,.45);animation:pulse 2.2s infinite}
+.morebtn .ic{font-size:22px}
+.morebtn:hover{filter:brightness(1.15)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(224,33,138,.55),0 8px 30px rgba(123,47,247,.45)}70%{box-shadow:0 0 0 16px rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}100%{box-shadow:0 0 0 0 rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}}
+.lessbtn{position:absolute;bottom:14px;left:14px;z-index:12;font:inherit;font-size:14px;color:#cdd8ea;background:rgba(10,15,28,.88);border:1px solid #3a4a6e;border-radius:30px;padding:9px 18px;cursor:pointer}
+.lessbtn:hover{border-color:var(--acc);color:#fff}
+
+#brand{position:absolute;top:3px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;height:24px;text-decoration:none;color:#e8edf5;direction:ltr;opacity:.92}
+#brand:hover{opacity:1}
+#brand img{width:22px;height:22px;display:block}
+#brand svg{width:39px;height:13px;display:block}
+@media (max-width:700px){#brand{left:auto;right:44px;transform:none}#brand svg{display:none}}
+.plot.full{grid-row:1/-1}
+#cv3d{display:none;cursor:grab;touch-action:none}
+.view.v3 #cv3d{display:block}
+.view.v3 .hide3d{visibility:hidden}
+#v3load{position:absolute;inset:0;display:grid;place-items:center;color:var(--mut);font-size:15px;pointer-events:none}
+.pbtn2{position:absolute;top:8px;left:10px;z-index:3;background:rgba(10,15,28,.8);border:1px solid var(--line);color:#cdd8ea;border-radius:9px;padding:4px 10px;font:inherit;font-size:13px;cursor:pointer}
+.pbtn2:hover{border-color:var(--acc);color:#fff}
+.meter .bar.neutral{overflow:hidden}
+.law .eq{max-width:100%}
+@media (max-width:600px){.law{font-size:16px}.law .eq{display:block;margin:4px 0}}
+/* ===== ניסויים ===== */
+#exps{padding-top:10px;padding-bottom:30px;line-height:1.75}
+.exps{list-style:none;margin:0;padding:0;counter-reset:ex}
+.exp{counter-increment:ex;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.exp .top{display:flex;align-items:center;gap:14px}
+.exp .top::before{content:counter(ex);flex:0 0 30px;height:30px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;display:grid;place-items:center}
+.exp .task{flex:1;font-size:16px}
+.exp .tag{display:inline-block;font-size:12px;color:#e9b8ff;border:1px solid #5b2d7a;background:#1d0f2a;border-radius:10px;padding:0 8px;margin-left:6px}
+.xbtn{flex:0 0 auto;background:#1a1608;border:1px solid #6b5520;color:var(--yel);border-radius:20px;padding:5px 16px;font:inherit;font-size:14px;cursor:pointer}
+.xbtn:hover{filter:brightness(1.25)}
+.exp .ans{display:none;margin:12px 44px 2px 0;padding:10px 14px;border-right:3px solid var(--yel);background:rgba(255,212,121,.06);border-radius:8px;font-size:15px;color:#d6dcea;line-height:1.7}
+.exp.open .ans{display:block}
+.exp.open .xbtn{background:#2b230b}
+/* בדוק את עצמך */
+#quiz{padding-bottom:60px}
+.qz{background:linear-gradient(135deg,rgba(157,139,255,.10),rgba(108,184,255,.06));border:1px solid #3a3a7a;border-radius:18px;padding:18px}
+.qz p{margin:0 0 12px;font-size:16px}
+.qz .opts{display:flex;gap:8px;flex-wrap:wrap}
+.qz .opts button{background:#0a0f1c;border:1px solid var(--line);color:#e3eaf6;border-radius:12px;padding:8px 18px;font:inherit;font-size:15px;cursor:pointer}
+.qz .opts button:hover{border-color:var(--vio)}
+.qz .opts button.right{border-color:var(--grn);background:rgba(70,227,154,.12)}
+.qz .opts button.wrong{border-color:var(--red);background:rgba(255,77,94,.1)}
+.qz .fb{display:none;margin-top:12px;font-size:15px;color:#d6dcea;line-height:1.7}
+.qz .fb.on{display:block}
+.qz .go{margin-top:10px;background:#0f2a1c;border:1px solid #2f7a52;color:#7dffb4;border-radius:20px;padding:6px 16px;font:inherit;font-size:14px;cursor:pointer}
+@media (max-width:900px){
+  #intro h1{font-size:26px}
+  .lab{height:auto;min-height:0}
+  .view{position:relative;inset:auto;height:70vh;margin:12px}
+  .pnl{position:static;width:auto!important;margin:12px;max-height:none}
+  .morebtn,.lessbtn{position:static;margin:12px auto 18px;animation:none}
+}
+/* ===== הדגמה אוטומטית של ניסוי ===== */
+.pbtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:#0f2a1c;border:1px solid #2f7a52;color:#7dffb4;border-radius:20px;padding:5px 14px;font:inherit;font-size:14px;cursor:pointer}
+.pbtn:hover{filter:brightness(1.25)}
+.pbtn svg{width:12px;height:12px}
+#demoBox{display:none;position:relative;height:190px;border-top:1px solid var(--line);background:linear-gradient(180deg,#0a1322,#070b16);padding:14px 20px;overflow-y:auto;line-height:1.6}
+body.demo #demoBox{display:block}
+.lab{scroll-margin-top:30px}
+body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
+#demoBox .dh{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+#demoBox .dn{flex:0 0 28px;height:28px;border-radius:50%;background:#123a27;color:#7dffb4;font-weight:700;display:grid;place-items:center}
+#demoBox .dt{flex:1;font-size:15.5px;font-weight:600}
+#demoBox .say{font-size:14px;color:#7dffb4;min-height:22px;margin-bottom:6px}
+#demoBox .say::before{content:"▶ ";opacity:.7}
+#demoBox .dx{font-size:15px;color:#d6dcea;line-height:1.7;border-right:3px solid #ffd479;background:rgba(255,212,121,.06);border-radius:8px;padding:8px 12px}
+#demoBox .db{background:#0a0f1c;border:1px solid var(--line);color:#cdd8ea;border-radius:10px;padding:5px 12px;font:inherit;font-size:13.5px;cursor:pointer}
+#demoBox .db:hover{border-color:var(--acc);color:#fff}
+#demoCursor{position:fixed;left:0;top:0;z-index:300;pointer-events:none;opacity:0;transition:opacity .3s}
+#demoCursor.on{opacity:1}
+#demoCursor svg{width:30px;height:30px;filter:drop-shadow(0 0 6px rgba(125,255,180,.9)) drop-shadow(0 2px 3px rgba(0,0,0,.6));transition:transform .12s}
+#demoCursor.down svg{transform:scale(.82)}
+.demoRipple{position:fixed;z-index:299;pointer-events:none;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;border:2px solid #7dffb4;animation:demoRip .55s ease-out forwards}
+@keyframes demoRip{from{transform:scale(.4);opacity:1}to{transform:scale(3.4);opacity:0}}
+</style>
+<link rel="icon" href="../gallery/brand/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../gallery/brand/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../gallery/brand/apple-touch-icon.png">
+<script data-goatcounter="https://84dawid48.goatcounter.com/count" data-goatcounter-settings='{"allow_frame": true}' async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div id="topbar"><a id="brand" href="../index.html" target="_top" title="LIMA Simulative Labs: לכל הסימולציות"><img src="../gallery/brand/lima-icon.svg" alt="LIMA"><svg viewBox="0 0 226 76" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="5.5" stroke-miterlimit="2"><path d="M3 16V72H40"/><path d="M64 27V72"/><path d="M88 72V16L117 60L146 16V72"/><path d="M168 72L195 16L222 72"/><path d="M178 52H212"/></g><circle cx="64" cy="17" r="5.225" fill="currentColor"/></svg></a><div id="bsd">בס״ד</div><div id="copyr" title="אין להעתיק, להפיץ או לשנות ללא רשות בכתב">כל הזכויות שמורות לדוד יצחקי · לשימוש אישי בלבד</div></div>
+
+<!-- ===================== פתיח ===================== -->
+<section id="intro" class="wrap">
+  <h1>כמה הספק <span>מגיע לסוף הקו</span>?</h1>
+  <p class="lead">משדר שולח אור לסיב באורך 100 ק"מ. בכל ק"מ הולך לאיבוד חלק קטן מההספק. כמה נשאר בסוף? ולמה כל המהנדסים עונים על זה בדציבלים ולא במיליוואטים?</p>
+
+  <h2 class="sec">הבעיה</h2>
+  <div class="prob">
+    <div>
+      <p>בכל ק"מ של סיב נשאר אותו <b>חלק יחסי</b> מההספק, למשל 95.5%. לכן ההספק דועך <b>מעריכית</b>: <bdi dir="ltr">P(z) = P(0)·e<sup>−αz</sup></bdi>. בגרף ליניארי (למטה בציור) זו עקומה שקשה לקרוא, ואחרי כמה עשרות ק"מ היא נראית כמו אפס.</p>
+      <p>אותו הספק בדיוק, בסקאלה לוגריתמית (למעלה בציור), הוא <b>קו ישר</b>. כל ק"מ מוריד את אותו מספר דציבלים, והחשבון כולו נעשה בחיבור וחיסור.</p>
+      <p><b>המשימה:</b> לחשב מאזן הספק כמו בתרגול 2: משדר של <bdi dir="ltr">5mW</bdi>, סיב של <bdi dir="ltr">100</bdi> ק"מ עם <bdi dir="ltr">0.2dB/km</bdi>. כמה מגיע למקלט, ב-dBm וב-mW?</p>
+    </div>
+    <svg id="probSvg" viewBox="0 0 340 250" aria-label="אותו הספק בסקאלה לוגריתמית (קו ישר) ובסקאלה ליניארית (עקומה מעריכית)"></svg>
+  </div>
+
+  <h2 class="sec">איך לקרוא את המעבדה</h2>
+  <div class="read">
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="1" y="8" width="6" height="8" rx="1" fill="#2a3550" stroke="#6cb8ff"/><path d="M7 12h10" stroke="#9d8bff" stroke-width="2"/><rect x="17" y="8" width="6" height="8" rx="1" fill="#2a3550" stroke="#46e39a"/></svg></div><div><h3>פס עליון = הקו</h3><p>משדר (Tx) משמאל, הסיב, ומקלט (Rx) מימין, כמו בשרטוט של קו תקשורת.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 5L22 19" stroke="#ffd479" stroke-width="2.2"/></svg></div><div><h3>גרף עליון = dBm</h3><p>ההספק לאורך הקו בסקאלה לוגריתמית. כל קו אופקי הוא 10dB, כלומר פי 10.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 4C6 16 12 19 22 20" fill="none" stroke="#6cb8ff" stroke-width="2.2"/></svg></div><div><h3>גרף תחתון = mW</h3><p>אותו הספק בדיוק, בסקאלה ליניארית רגילה.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 2v20" stroke="#fff" stroke-width="1.8" stroke-dasharray="3 2"/><circle cx="12" cy="9" r="3.5" fill="#fff"/></svg></div><div><h3>קו לבן = הגשש</h3><p>גוררים אותו לכל מרחק. הוא מראה את ההספק באותה נקודה בשתי היחידות.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M4 6v12l16-6z" fill="#9d8bff"/></svg></div><div><h3>משולש סגול = מגבר</h3><p>(במצב המורחב) מעלה את ההספק במספר קבוע של dB.</p></div></div>
+  </div>
+
+  <h2 class="sec">התאוריה בקצרה</h2>
+  <div class="theory">
+    <div class="th"><div class="n">1</div><h3>דציבל = יחס</h3><p><bdi dir="ltr">10·log₁₀(P₁/P₂)</bdi>. פי 10 = 10dB, פי 100 = 20dB, פי 2 ≈ 3dB, חצי ≈ −3dB.</p></div>
+    <div class="th"><div class="n">2</div><h3>dBm = הספק</h3><p>הספק ביחס ל-<bdi dir="ltr">1mW</bdi>: <bdi dir="ltr">P[dBm] = 10·log₁₀(P/1mW)</bdi>. <bdi dir="ltr">0dBm = 1mW</bdi>, ו-<bdi dir="ltr">−30dBm = 1µW</bdi>. ערך שלילי הוא לא "אין הספק".</p></div>
+    <div class="th"><div class="n">3</div><h3>ניחות בסיב</h3><p><bdi dir="ltr">P(z) = P(0)·e<sup>−α<sub>lin</sub>z</sup></bdi>. ב-dB זה קו ישר: <bdi dir="ltr">P(z)[dBm] = P(0)[dBm] − α<sub>dB</sub>·z</bdi>.</p></div>
+    <div class="th"><div class="n">4</div><h3>מעבר בין המקדמים</h3><p><bdi dir="ltr">α<sub>dB</sub> = 4.34·α<sub>lin</sub></bdi>, ולהפך <bdi dir="ltr">α<sub>lin</sub> = 0.23·α<sub>dB</sub></bdi>.</p></div>
+    <div class="th"><div class="n">5</div><h3>מאזן הספק</h3><p>הספק בקליטה = הספק משדר (dBm) + כל ההגברים (dB) − כל ההפסדים (dB). רק חיבור וחיסור.</p></div>
+  </div>
+  <div class="law"><span class="eq">P<sub>rx</sub>[dBm] = P<sub>tx</sub>[dBm] − α<sub>dB</sub>·L + G[dB] − הפסדים[dB]</span><small>בסקאלה לוגריתמית, כל מכפלה של יחסי הספק הופכת לסכום</small></div>
+  <a class="cta" href="#lab">למעבדה ↓</a>
+</section>
+
+<!-- ===================== מעבדה ===================== -->
+<section class="lab" id="lab">
+  <div class="view" id="view" style="grid-template-rows:1.25fr 1fr">
+    <div class="plot"><canvas id="cvD"></canvas></div>
+    <div class="plot"><canvas id="cvL"></canvas></div>
+  </div>
+  <div class="pnl r">
+    <div class="c-row"><div class="c-lbl"><span>הספק המשדר</span><span class="c-val" id="ptxV"></span></div><input type="range" id="rPtx" data-k="ptx" min="0.1" max="20" step="0.1"></div>
+    <div class="c-row"><div class="c-lbl"><span>אורך הסיב <bdi dir="ltr">L</bdi></span><span class="c-val" id="LV"></span></div><input type="range" id="rL" data-k="L" min="5" max="200" step="1"></div>
+    <div class="c-row"><div class="c-lbl"><span>מקדם ניחות <bdi dir="ltr">α</bdi></span><span class="c-val" id="aV"></span></div><input type="range" id="rA" data-k="a" min="0.15" max="0.5" step="0.01"></div>
+    <div class="sep">
+      <div class="meter"><div class="ttl">הספק בקליטה</div><div class="bar"><i id="rxBar"></i></div>
+        <div class="row"><span id="rxMw"></span><span id="rxV"></span></div></div>
+      <div class="meter"><div class="ttl">הנחתה כוללת</div><div class="bar"><i id="lossBar"></i></div>
+        <div class="row"><span id="lossX"></span><span id="lossV"></span></div></div>
+      <span class="chip neu" id="status"></span>
+    </div>
+    <div class="sep adv-only">
+      <label class="chk"><label class="sw"><input type="checkbox" id="cAmp" data-k="amp"><span></span></label>מגבר אופטי בקו</label>
+      <div class="c-row"><div class="c-lbl"><span>מיקום המגבר</span><span class="c-val" id="ampZV"></span></div><input type="range" id="rAmpZ" data-k="ampZ" min="0" max="200" step="1"></div>
+      <div class="c-row"><div class="c-lbl"><span>הגבר המגבר <bdi dir="ltr">G</bdi></span><span class="c-val" id="ampGV"></span></div><input type="range" id="rAmpG" data-k="ampG" min="0" max="30" step="0.5"></div>
+      <div class="c-row"><div class="c-lbl"><span>הפסד לכל מחבר (2 מחברים)</span><span class="c-val" id="conV"></span></div><input type="range" id="rCon" data-k="con" min="0" max="1.5" step="0.1"></div>
+      <div class="c-row"><div class="c-lbl"><span>רגישות המקלט</span><span class="c-val" id="sensV"></span></div><input type="range" id="rSens" data-k="sens" min="-40" max="0" step="1"></div>
+      <div class="calc" id="calc"></div>
+    </div>
+  </div>
+  <button id="more" class="morebtn basic-only"><span class="ic">🔬</span>אני רוצה לחקור יותר</button>
+  <button id="less" class="lessbtn adv-only">→ לחזור למעבדה הבסיסית</button>
+</section>
+<!-- מסגרת ההסבר של ההדגמה האוטומטית (מופיעה מתחת למעבדה, לא מעליה) -->
+<section id="demoBox" aria-live="polite">
+  <div class="dh"><div class="dn" id="demoNum">1</div><div class="dt" id="demoTitle"></div>
+    <button class="db" id="demoStop">⏹ עצור</button><button class="db" id="demoAgain">↻ שוב</button><button class="db" id="demoClose">✕ סגור</button></div>
+  <div class="say" id="demoSay"></div>
+  <div class="dx" id="demoText"></div>
+</section>
+<div id="demoCursor"><svg viewBox="0 0 24 24"><path d="M4 2l15 11-6.5 1.2L16.5 22l-3 1.3-3.6-7.6L5 20z" fill="#fff" stroke="#0b1a12" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+
+<!-- ===================== ניסויים ===================== -->
+<section id="exps" class="wrap">
+  <h2 class="sec">ניסויים לנסות במעבדה</h2>
+  <ol class="exps">
+    <li class="exp"><div class="top"><div class="task">עם <bdi dir="ltr">α = 0.2dB/km</bdi>, גררו את הגשש ל-15 ק"מ. ירדנו בדיוק 3dB, וההספק ב-mW ירד בחצי. ב-30 ק"מ שוב חצי.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">ב-15 ק"מ הניחות הוא <bdi dir="ltr">0.2 × 15 = 3dB</bdi>, ו-<bdi dir="ltr">10<sup>−0.3</sup> ≈ 0.5</bdi>. כל 15 ק"מ ההספק נחצה, ולכן אחרי 30 ק"מ נשאר רבע (−6dB), ואחרי 45 שמינית (−9dB). בגרף העליון אלה צעדים שווים על קו ישר. בתחתון זו עקומה שהולכת ומשתטחת. "3dB = פי 2" הוא המספר הכי שימושי בתחום.</div></li>
+    <li class="exp"><div class="top"><div class="task">הדוגמה מתרגול 2: משדר של <bdi dir="ltr">5mW</bdi>, סיב של 100 ק"מ, <bdi dir="ltr">0.2dB/km</bdi>. בקליטה מגיעים <bdi dir="ltr">−13dBm</bdi>, שהם <bdi dir="ltr">50µW</bdi>.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">בסקאלה לוגריתמית: <bdi dir="ltr">5mW = 10·log₁₀5 ≈ 7dBm</bdi>. הסיב מנחית <bdi dir="ltr">0.2 × 100 = 20dB</bdi>. לכן <bdi dir="ltr">7 − 20 = −13dBm</bdi>. בדרך הליניארית צריך <bdi dir="ltr">5mW·e<sup>−0.046·100</sup> = 5mW·0.01 = 50µW</bdi>, ואז <bdi dir="ltr">10·log₁₀(0.05) = −13dBm</bdi>. אותה תוצאה, אבל בדציבלים זה חיסור אחד.</div></li>
+    <li class="exp"><div class="top"><div class="task">הכפילו את אורך הסיב ל-200 ק"מ. הניחות ב-dB הוכפל (מ-20 ל-40), אבל ההספק ב-mW לא ירד בחצי: הוא ירד <b>פי 100</b> נוספים.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">זה הבלבול הכי נפוץ. ניחות מצטבר <b>כפלית</b>: כל 100 ק"מ "כופלים" ב-0.01. לכן 200 ק"מ הם <bdi dir="ltr">0.01 × 0.01 = 10⁻⁴</bdi>, כלומר <bdi dir="ltr">0.5µW</bdi> בלבד (<bdi dir="ltr">−33dBm</bdi>). ב-dB הכפל הזה הפך לחיבור: <bdi dir="ltr">20 + 20 = 40dB</bdi>. בגרף התחתון אחרי 100 ק"מ נראה כאילו אין כלום, אבל העליון מראה שעדיין יש הרבה עשרות dB "לרדת".</div></li>
+    <li class="exp"><div class="top"><div class="task">הורידו את הספק המשדר ל-<bdi dir="ltr">1mW</bdi>: הוא <bdi dir="ltr">0dBm</bdi>. ב-<bdi dir="ltr">0.1mW</bdi> הוא <bdi dir="ltr">−10dBm</bdi>, ערך שלילי, אבל בהחלט יש הספק.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">dBm הוא לוגריתם של יחס ל-<bdi dir="ltr">1mW</bdi>. אפס dBm הוא בדיוק <bdi dir="ltr">1mW</bdi>, ערך שלילי הוא פחות ממיליוואט, ו"אפס הספק" הוא מינוס אינסוף. מקלטים טיפוסיים עובדים ב-<bdi dir="ltr">−20</bdi> עד <bdi dir="ltr">−30dBm</bdi> (10 עד 1 מיקרו-ואט). שימו לב שהשיפוע בגרף העליון לא השתנה: הוא תלוי רק בסיב, לא במשדר.</div></li>
+    <li class="exp"><div class="top"><div class="task">שנו את <bdi dir="ltr">α</bdi> מ-0.2 ל-0.35. הקו בגרף העליון נעשה תלול יותר, ובסוף 100 ק"מ חסרים עוד 15dB, כלומר פי 30 פחות הספק.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans"><bdi dir="ltr">0.2dB/km</bdi> אופייני לסיב סטנדרטי באורך גל של <bdi dir="ltr">1550nm</bdi>, ו-<bdi dir="ltr">0.35dB/km</bdi> ל-<bdi dir="ltr">1310nm</bdi>. ההפרש של <bdi dir="ltr">0.15dB/km</bdi> נראה זניח, אבל על פני 100 ק"מ הוא 15dB, פי 30 בהספק. לכן קווים ארוכים עובדים ב-1550.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>הדליקו מגבר של 10dB באמצע הקו. בגרף העליון זו מדרגה של 10dB למעלה. בגרף התחתון זו קפיצה פי 10.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">מגבר אופטי <b>כופל</b> את ההספק בקבוע (<bdi dir="ltr">G = 10dB</bdi> הוא פי 10). ב-dBm זה פשוט חיבור של 10, באותו גודל בכל מקום שבו שמים אותו, ולכן מאזן הספק של קו שלם הוא סכום של מדרגות. הזיזו את המגבר: ההספק <b>בקליטה</b> לא משתנה בכלל, כי חיבור הוא קומוטטיבי. (מה שכן משתנה הוא הרעש, וזה בסימולציה על שרשרת מגברים.)</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>הגדירו משדר של <bdi dir="ltr">2.5mW</bdi> ורגישות מקלט של <bdi dir="ltr">−10dBm</bdi>, והאריכו את הסיב עד שהמרווח מתאפס: בערך 70 ק"מ.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">זה החישוב מתרגול 10 (גלאים): <bdi dir="ltr">2.5mW ≈ 4dBm</bdi>, והמקלט צריך לפחות <bdi dir="ltr">−10dBm</bdi>. התקציב הוא <bdi dir="ltr">4 − (−10) = 14dB</bdi>, ובקצב של <bdi dir="ltr">0.2dB/km</bdi> זה <bdi dir="ltr">14/0.2 = 70</bdi> ק"מ. במציאות משאירים גם <b>מרווח</b> (margin) של כמה dB, להזדקנות של רכיבים ולתיקונים בכבל. הוסיפו הפסד מחברים וראו כמה ק"מ הוא "גונב".</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>בחישוב: <bdi dir="ltr">α<sub>dB</sub> = 0.2dB/km</bdi> שקול ל-<bdi dir="ltr">α<sub>lin</sub> = 0.046km⁻¹</bdi>, ו-<bdi dir="ltr">e<sup>−0.046·100</sup> = 0.01</bdi>, בדיוק 20dB.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">המשוואה הדיפרנציאלית היא <bdi dir="ltr">dP/dz = −α<sub>lin</sub>·P</bdi>, ולכן <bdi dir="ltr">P = P₀·e<sup>−α<sub>lin</sub>z</sup></bdi>. ב-dB: <bdi dir="ltr">−10·log₁₀(e<sup>−α<sub>lin</sub>z</sup>) = 10·log₁₀(e)·α<sub>lin</sub>·z = 4.34·α<sub>lin</sub>·z</bdi>. מכאן <bdi dir="ltr">α<sub>dB</sub> = 4.34·α<sub>lin</sub></bdi>. בנוסחאות "פיזיקליות" (מעריך) משתמשים ב-<bdi dir="ltr">α<sub>lin</sub></bdi>, ובמאזני הספק ב-<bdi dir="ltr">α<sub>dB</sub></bdi>.</div></li>
+  </ol>
+</section>
+
+<section id="quiz" class="wrap">
+  <h2 class="sec">בדוק את עצמך</h2>
+  <div class="qz">
+    <p>אות של <bdi dir="ltr">1mW</bdi> עובר בסיב שמנחית <bdi dir="ltr">13dB</bdi>, ואחריו במגבר של <bdi dir="ltr">10dB</bdi>. מה ההספק ביציאה?</p>
+    <div class="opts" id="qOpts"><button data-a="05">0.5 mW</button><button data-a="077">0.77 mW</button><button data-a="m3">3− mW</button><button data-a="013">0.13 mW</button></div>
+    <div class="fb" id="qFb"></div>
+    <button class="go" id="qGo" style="display:none">🔬 בדקו במעבדה</button>
+  </div>
+</section>
+
+<script>
+const START = {"ptx":5,"L":100,"a":0.2,"probe":15,"amp":false,"ampZ":50,"ampG":10,"con":0,"sens":-20};
+const ADV_DEF = {"amp":false,"ampZ":50,"ampG":10,"con":0,"sens":-20};
+"use strict";
+/* ======================================================================
+   שכבה משותפת לסימולציות תקשורת אופטית: מצב, פקדים, מצב מורחב, ציור, תלת-ממד
+   ====================================================================== */
+const $ = id => document.getElementById(id);
+let adv = false;
+const S = Object.assign({}, START);
+// מסנכרן את הפקדים (data-k) ואת כפתורי הבחירה (data-seg) לערכים שב-S
+function syncUI(){
+  document.querySelectorAll('[data-k]').forEach(el => { const k = el.dataset.k; if (!(k in S)) return; if (el.type === 'checkbox') el.checked = !!S[k]; else el.value = S[k]; });
+  document.querySelectorAll('[data-seg]').forEach(seg => { const k = seg.dataset.seg; seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === String(S[k]))); });
+}
+function bindAll(onChange){
+  document.querySelectorAll('input[data-k]').forEach(el => el.addEventListener(el.type === 'checkbox' ? 'change' : 'input', () => {
+    const k = el.dataset.k; S[k] = el.type === 'checkbox' ? el.checked : +el.value; onChange(k); }));
+  document.querySelectorAll('[data-seg]').forEach(seg => seg.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return; const k = seg.dataset.seg, v = b.dataset.v;
+    S[k] = v !== '' && !isNaN(+v) ? +v : v; syncUI(); onChange(k); }));
+}
+function setMode(on){
+  adv = on; document.body.classList.toggle('adv', on);
+  if (!on){ Object.assign(S, ADV_DEF); syncUI(); }
+  if (window.onModeChange) onModeChange(on);
+  $('lab').scrollIntoView({behavior:'smooth'});
+}
+$('more').addEventListener('click', () => setMode(true));
+$('less').addEventListener('click', () => setMode(false));
+document.querySelectorAll('.exp .xbtn').forEach(b => b.addEventListener('click', () => { const li = b.closest('.exp'); li.classList.toggle('open'); b.textContent = li.classList.contains('open') ? 'סגור' : 'הסבר'; }));
+const sgn = v => Math.abs(v) < 0.005 ? '0.00' : (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(2);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const deg = r => r*180/Math.PI, rad = d => d*Math.PI/180;
+function bar(id, frac, col){ const el = $(id); el.style.width = clamp(frac, 0, 1)*100 + '%'; if (col) el.style.background = col; }
+// קנבס בגודל התצוגה, חד גם במסכי רטינה
+function fitCanvas(cv){
+  const r = cv.getBoundingClientRect(), d = Math.min(2, window.devicePixelRatio || 1), w = Math.max(1, r.width), h = Math.max(1, r.height);
+  if (cv.width !== Math.round(w*d) || cv.height !== Math.round(h*d)){ cv.width = Math.round(w*d); cv.height = Math.round(h*d); }
+  const g = cv.getContext('2d'); g.setTransform(d, 0, 0, d, 0, 0); g.direction = 'ltr'; return {g, w, h};   // ltr: מספרים ויחידות בסדר הנכון
+}
+function arrow(g, x0, y0, x1, y1, col, wd, head){
+  const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy); if (L < 0.5) return;
+  const ux = dx/L, uy = dy/L, hs = head || Math.min(9, L*0.45);
+  g.strokeStyle = col; g.fillStyle = col; g.lineWidth = wd || 1.6;
+  g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1 - ux*hs*0.6, y1 - uy*hs*0.6); g.stroke();
+  g.beginPath(); g.moveTo(x1, y1); g.lineTo(x1 - ux*hs - uy*hs*0.5, y1 - uy*hs + ux*hs*0.5); g.lineTo(x1 - ux*hs + uy*hs*0.5, y1 - uy*hs - ux*hs*0.5); g.closePath(); g.fill();
+}
+const svgMarker = (id, col) => '<marker id="' + id + '" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="' + col + '"/></marker>';
+/* ---------- תלת-ממד: Three.js נטען רק כשפותחים את המבט ---------- */
+const V3 = {on:false, ready:false, loading:null};
+function loadScript(src){ return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+function load3D(){
+  if (!V3.loading) V3.loading = (window.THREE ? Promise.resolve() : loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'))
+    .then(() => THREE.OrbitControls ? 0 : loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js'));
+  return V3.loading;
+}
+function make3D(cv){
+  const R = new THREE.WebGLRenderer({canvas:cv, antialias:true}); R.setPixelRatio(Math.min(2, window.devicePixelRatio || 1)); R.setClearColor(0x080d18, 1);
+  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(38, 1, 0.05, 400);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.65)); const dl = new THREE.DirectionalLight(0xffffff, 0.7); dl.position.set(3, 8, 5); scene.add(dl);
+  const ctl = new THREE.OrbitControls(cam, cv); ctl.enableDamping = true; ctl.dampingFactor = 0.08; ctl.enablePan = false;
+  Object.assign(V3, {cv, R, scene, cam, ctl, ready:true});
+  return V3;
+}
+function size3D(w, h){ if (!V3.ready) return; V3.R.setSize(w, h, false); V3.cam.aspect = w/h; V3.cam.updateProjectionMatrix(); }
+// מעבר בין מבט שטוח לתלת-ממד (כפתורי #views)
+function setView(v){
+  S.view = v; syncUI(); V3.on = v === '3d'; document.querySelector('.lab .view').classList.toggle('v3', V3.on);
+  if (V3.on && !V3.ready){ $('v3load').style.display = '';
+    load3D().then(() => { if (!V3.ready){ make3D($('cv3d')); SIM3.build(); } $('v3load').style.display = 'none'; dirty = true; })
+      .catch(err => { console.error(err); $('v3load').textContent = 'לא הצלחתי לטעון את התלת-ממד. בדקו את החיבור לאינטרנט.'; }); }
+  dirty = true;
+}
+const SIM3 = {};
+/* ---------- לולאת אנימציה ---------- */
+let dirty = true, last = performance.now(), visible = true;
+new IntersectionObserver(e => { visible = e[0].isIntersecting; }).observe(document.querySelector('.lab .view'));
+new ResizeObserver(() => { dirty = true; }).observe(document.querySelector('.lab .view'));
+function loop(now){
+  requestAnimationFrame(loop);
+  const dt = clamp((now - last)/1000, 0, 0.05); last = now;
+  if (visible) tick(dt);
+}
+
+/* ======================================================================
+   חלק ייחודי לסימולציה הזו
+   ====================================================================== */
+
+/* ---------- מודל: הספק לאורך הקו ב-dBm ---------- */
+const dBm = mW => 10*Math.log10(mW), mWof = d => Math.pow(10, d/10);
+const conL = () => adv ? S.con : 0, useAmp = () => adv && S.amp && S.ampZ < S.L;
+function P(z){                                      // הספק ב-dBm במרחק z (אחרי המחבר בכניסה, לפני המחבר במקלט)
+  let p = dBm(S.ptx) - conL() - S.a*z;
+  if (useAmp() && z >= S.ampZ) p += S.ampG;
+  return p;
+}
+const Prx = () => P(S.L) - conL();
+const fmtP = mW => mW >= 1 ? mW.toFixed(mW >= 10 ? 1 : 2) + ' mW' : mW >= 1e-3 ? (mW*1000).toFixed(mW >= 0.1 ? 0 : mW >= 0.01 ? 1 : 2) + ' µW' : (mW*1e6).toFixed(1) + ' nW';
+const fmtX = r => r >= 1 ? 'פי ' + (r >= 100 ? Math.round(r).toLocaleString('en-US') : r.toFixed(r >= 10 ? 0 : 1)) + ' פחות' : 'פי ' + (1/r).toFixed(1) + ' יותר';
+function onChange(k){
+  if (k === 'L'){ S.probe = Math.min(S.probe, S.L); $('rAmpZ').max = S.L; if (S.ampZ > S.L) S.ampZ = Math.round(S.L/2); syncUI(); }
+  dirty = true; updPanel();
+}
+bindAll(onChange);
+window.onModeChange = () => { dirty = true; updPanel(); };
+function updPanel(){
+  $('ptxV').textContent = S.ptx.toFixed(1) + ' mW = ' + sgn(dBm(S.ptx)).replace('+', '') + ' dBm';
+  $('LV').textContent = S.L + ' km'; $('aV').textContent = S.a.toFixed(2) + ' dB/km';
+  const rx = Prx(), loss = dBm(S.ptx) - rx;
+  $('rxV').textContent = rx.toFixed(1) + ' dBm'; $('rxMw').innerHTML = '<bdi dir="ltr">= ' + fmtP(mWof(rx)) + '</bdi>';
+  bar('rxBar', (rx + 50)/70, rx > -20 ? '#46e39a' : rx > -35 ? '#ffd479' : '#ff4d5e');
+  $('lossV').textContent = loss.toFixed(1) + ' dB'; $('lossX').textContent = fmtX(Math.pow(10, loss/10));
+  bar('lossBar', loss/60, '#9d8bff');
+  const st = $('status');
+  if (adv){ const m = rx - S.sens; st.className = 'chip ' + (m >= 3 ? 'ok' : m >= 0 ? 'edge' : 'bad');
+    st.innerHTML = m >= 0 ? 'מרווח <bdi dir="ltr">' + m.toFixed(1) + ' dB</bdi> מעל רגישות המקלט' : 'חסרים <bdi dir="ltr">' + (-m).toFixed(1) + ' dB</bdi>: המקלט לא יקלוט'; }
+  else { st.className = 'chip neu'; st.innerHTML = 'כל ' + (3/S.a).toFixed(1) + ' ק"מ ההספק נחצה (<bdi dir="ltr">−3dB</bdi>)'; }
+  if (!adv) return;
+  $('ampZV').textContent = S.ampZ + ' km'; $('ampGV').textContent = S.ampG.toFixed(1) + ' dB (פי ' + mWof(S.ampG).toFixed(mWof(S.ampG) < 10 ? 1 : 0) + ')';
+  $('conV').textContent = S.con.toFixed(1) + ' dB'; $('sensV').textContent = S.sens + ' dBm';
+  const k = s => '<span class="k">' + s + '</span>', al = S.a/4.343, budget = dBm(S.ptx) - 2*S.con + (S.amp ? S.ampG : 0) - S.sens;
+  $('calc').innerHTML = k('Ptx') + '   = 10·log(' + S.ptx.toFixed(1) + ') = ' + dBm(S.ptx).toFixed(2) + ' dBm<br>' + k('α_lin') + ' = α_dB/4.34 = ' + al.toFixed(4) + ' /km<br>' +
+    k('e^(−α_lin·L)') + ' = ' + Math.exp(-al*S.L).toExponential(2) + '<br>' + k('Prx') + '   = ' + rx.toFixed(2) + ' dBm = ' + fmtP(mWof(rx)) + '<br>' +
+    k('L_max') + ' = (Ptx − 2·con' + (S.amp ? ' + G' : '') + ' − sens)/α = ' + Math.max(0, budget/S.a).toFixed(1) + ' km';
+}
+/* ---------- ציור ---------- */
+let geo = null;
+function frame(cv, top){
+  const {g, w, h} = fitCanvas(cv); g.clearRect(0, 0, w, h);
+  const padL = 64, padR = 26, y0 = top ? 74 : 18, y1 = h - 30, X = z => padL + z/S.L*(w - padL - padR);
+  return {g, w, h, padL, padR, y0, y1, X};
+}
+function curve(z0, z1, fn){ const pts = []; for (let i = 0; i <= 160; i++){ const z = z0 + (z1 - z0)*i/160; pts.push([z, fn(z)]); } return pts; }
+function drawDB(){
+  const F = frame($('cvD'), true), {g, w, h, padL, padR, y0, y1, X} = F;
+  // הקו: משדר, סיב, מגבר, מקלט
+  const ly = 34; g.strokeStyle = '#9d8bff'; g.lineWidth = 3; g.beginPath(); g.moveTo(X(0), ly); g.lineTo(X(S.L), ly); g.stroke();
+  const box = (x, col, t) => { g.fillStyle = '#1a2440'; g.strokeStyle = col; g.lineWidth = 1.6; g.beginPath(); g.rect(x - 22, ly - 14, 44, 28); g.fill(); g.stroke(); g.fillStyle = '#e3eaf6'; g.font = '12px Segoe UI,Arial'; g.textAlign = 'center'; g.fillText(t, x, ly + 4); };
+  box(X(0) - 6, '#6cb8ff', 'Tx'); box(X(S.L) + 6, '#46e39a', 'Rx');
+  if (useAmp()){ const ax = X(S.ampZ); g.fillStyle = '#9d8bff'; g.beginPath(); g.moveTo(ax - 11, ly - 13); g.lineTo(ax - 11, ly + 13); g.lineTo(ax + 13, ly); g.closePath(); g.fill(); }
+  // ציר dBm: טווח עגול בקפיצות של 10
+  const pts = curve(0, S.L, P), all = pts.map(p => p[1]).concat([dBm(S.ptx), Prx(), adv ? S.sens : Prx()]);
+  const hi = Math.ceil((Math.max(...all) + 2)/10)*10, lo = Math.floor((Math.min(...all) - 2)/10)*10, Y = d => y0 + (hi - d)/(hi - lo)*(y1 - y0);
+  g.font = '12px Consolas,monospace'; g.textAlign = 'right';
+  for (let d = lo; d <= hi; d += 10){ g.strokeStyle = d === 0 ? 'rgba(255,255,255,.35)' : 'rgba(147,163,191,.14)'; g.lineWidth = 1; g.beginPath(); g.moveTo(padL, Y(d)); g.lineTo(w - padR, Y(d)); g.stroke();
+    g.fillStyle = d === 0 ? '#e3eaf6' : '#7f8fab'; g.fillText(d + ' dBm', padL - 6, Y(d) + 4); }
+  if (adv){ g.strokeStyle = '#ff4d5e'; g.setLineDash([6, 4]); g.lineWidth = 1.4; g.beginPath(); g.moveTo(padL, Y(S.sens)); g.lineTo(w - padR, Y(S.sens)); g.stroke(); g.setLineDash([]);
+    g.fillStyle = '#ff8a96'; g.textAlign = 'left'; g.font = '12px Segoe UI,Arial'; g.fillText('רגישות המקלט', padL + 6, Y(S.sens) - 5); }
+  // ההספק (כולל מדרגות של מחברים ומגבר)
+  g.strokeStyle = '#ffd479'; g.lineWidth = 2.6; g.beginPath(); g.moveTo(X(0), Y(dBm(S.ptx)));
+  pts.forEach(([z, p], i) => { if (i && useAmp() && pts[i - 1][0] < S.ampZ && z >= S.ampZ) { g.lineTo(X(S.ampZ), Y(P(S.ampZ) - S.ampG)); g.lineTo(X(S.ampZ), Y(P(S.ampZ))); } g.lineTo(X(z), Y(p)); });
+  g.lineTo(X(S.L), Y(Prx())); g.stroke();
+  geo = {X, padL, padR, w};
+  probeLine(g, X, y0, y1, Y(P(S.probe)), P(S.probe).toFixed(1) + ' dBm');
+  axisKm(g, X, h);
+}
+function drawLin(){
+  const F = frame($('cvL'), false), {g, w, h, padL, padR, y0, y1, X} = F;
+  const pts = curve(0, S.L, z => mWof(P(z))), mx = Math.max(mWof(dBm(S.ptx)), ...pts.map(p => p[1]))*1.08, Y = v => y1 - v/mx*(y1 - y0);
+  g.font = '12px Consolas,monospace'; g.textAlign = 'right';
+  const step = Math.pow(10, Math.floor(Math.log10(mx))), st2 = mx/step > 5 ? step*2 : mx/step > 2 ? step : step/2;
+  for (let v = 0; v <= mx; v += st2){ g.strokeStyle = 'rgba(147,163,191,.14)'; g.beginPath(); g.moveTo(padL, Y(v)); g.lineTo(w - padR, Y(v)); g.stroke(); g.fillStyle = '#7f8fab'; g.fillText(+v.toPrecision(3) + ' mW', padL - 6, Y(v) + 4); }
+  g.strokeStyle = '#6cb8ff'; g.lineWidth = 2.6; g.beginPath(); g.moveTo(X(0), Y(S.ptx));
+  pts.forEach(([z, v], i) => { if (i && useAmp() && pts[i - 1][0] < S.ampZ && z >= S.ampZ) { g.lineTo(X(S.ampZ), Y(mWof(P(S.ampZ) - S.ampG))); g.lineTo(X(S.ampZ), Y(mWof(P(S.ampZ)))); } g.lineTo(X(z), Y(v)); });
+  g.lineTo(X(S.L), Y(mWof(Prx()))); g.stroke();
+  probeLine(g, X, y0, y1, Y(mWof(P(S.probe))), fmtP(mWof(P(S.probe))));
+  axisKm(g, X, h);
+}
+function probeLine(g, X, y0, y1, py, txt){
+  const px = X(S.probe); g.strokeStyle = 'rgba(255,255,255,.7)'; g.setLineDash([4, 4]); g.lineWidth = 1.3; g.beginPath(); g.moveTo(px, y0 - 6); g.lineTo(px, y1); g.stroke(); g.setLineDash([]);
+  g.fillStyle = '#fff'; g.beginPath(); g.arc(px, py, 5.5, 0, 7); g.fill();
+  g.font = '700 13px Consolas,monospace'; const tw = g.measureText(txt).width + 12, right = px + tw + 14 > geo.w - 10, bx = right ? px - tw - 10 : px + 10;
+  g.fillStyle = 'rgba(10,15,28,.9)'; g.fillRect(bx, py - 26, tw, 20); g.fillStyle = '#fff'; g.textAlign = 'left'; g.fillText(txt, bx + 6, py - 11);
+}
+function axisKm(g, X, h){
+  g.fillStyle = '#7f8fab'; g.font = '12px Consolas,monospace'; g.textAlign = 'center';
+  const st = S.L > 120 ? 25 : S.L > 50 ? 10 : 5;
+  for (let z = 0; z <= S.L + 1e-6; z += st) g.fillText(z, X(z), h - 10);
+  g.textAlign = 'right'; g.fillText('km', X(S.L) + 22, h - 10);
+  g.fillStyle = '#fff'; g.textAlign = 'center'; g.fillText(S.probe.toFixed(0), X(S.probe), h - 22);
+}
+/* גרירת הגשש בכל אחד מהגרפים */
+let dragP = false;
+const setProbe = e => { if (!geo) return; const r = e.currentTarget.getBoundingClientRect(), x = e.clientX - r.left;
+  S.probe = clamp(Math.round((x - geo.padL)/(geo.w - geo.padL - geo.padR)*S.L), 0, S.L); dirty = true; };
+['cvD', 'cvL'].forEach(id => { const cv = $(id); cv.style.cursor = 'ew-resize'; cv.style.touchAction = 'none';
+  cv.addEventListener('pointerdown', e => { dragP = true; cv.setPointerCapture(e.pointerId); setProbe(e); });
+  cv.addEventListener('pointermove', e => { if (dragP) setProbe(e); });
+  cv.addEventListener('pointerup', () => { dragP = false; }); });
+window.PROBEDB = {screen: z => { const r = $('cvD').getBoundingClientRect(); return [r.left + geo.X(z), r.top + r.height*0.55]; }, set: z => { S.probe = z; dirty = true; }};
+function tick(){ if (dirty){ drawDB(); drawLin(); dirty = false; } }
+updPanel();
+/* פתיח: 5mW, 100 ק"מ, 0.2dB/km. אותו מודל בשתי סקאלות */
+(function(){
+  const X = z => 52 + z*2.75, mk = (y0, y1, fn, lo, hi, col, lab, ticks) => {
+    let h = '', d = '';
+    ticks.forEach(([v, t]) => { const y = y1 - (v - lo)/(hi - lo)*(y1 - y0); h += '<line x1="52" y1="' + y + '" x2="327" y2="' + y + '" stroke="#16213a"/><text x="47" y="' + (y + 4) + '" fill="#7f8fab" font-size="10" text-anchor="end" direction="ltr">' + t + '</text>'; });
+    for (let z = 0; z <= 100; z += 1){ const v = fn(z), y = y1 - (v - lo)/(hi - lo)*(y1 - y0); d += (z ? 'L' : 'M') + X(z).toFixed(1) + ' ' + y.toFixed(1); }
+    return h + '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="2.4"/><text x="327" y="' + (y0 + 12) + '" fill="' + col + '" font-size="12" text-anchor="end" direction="ltr">' + lab + '</text>';
+  };
+  let h = mk(14, 110, z => 7 - 0.2*z, -15, 10, '#ffd479', 'dBm', [[10, '10'], [0, '0'], [-10, '−10']]);
+  h += mk(140, 228, z => 5*Math.exp(-0.046*z), 0, 5.2, '#6cb8ff', 'mW', [[0, '0'], [2.5, '2.5'], [5, '5']]);
+  h += '<text x="190" y="246" fill="#7f8fab" font-size="10" text-anchor="middle">0 → 100 km</text>';
+  $('probSvg').innerHTML = h;
+})();
+/* בדוק את עצמך */
+$('qOpts').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#qOpts button').forEach(x => x.classList.remove('right', 'wrong'));
+  const ok = b.dataset.a === '05'; b.classList.add(ok ? 'right' : 'wrong');
+  if (!ok) document.querySelector('#qOpts button[data-a="05"]').classList.add('right');
+  $('qFb').innerHTML = (ok ? '✓ נכון! ' : '✗ לא בדיוק. ') + "ב-dBm: <bdi dir=\"ltr\">0 − 13 + 10 = −3dBm</bdi>. <bdi dir=\"ltr\">−3dB</bdi> הוא חצי, ולכן <bdi dir=\"ltr\">0.5mW</bdi>. (<bdi dir=\"ltr\">0.77mW</bdi> מתקבל אם מחלקים 10 ב-13 כאילו dB הם יחסים ליניאריים. \"<bdi dir=\"ltr\">−3mW</bdi>\" מבלבל dBm עם mW.) במעבדה: משדר של <bdi dir=\"ltr\">1mW</bdi>, סיב של 65 ק\"מ ב-0.2, ומגבר של 10dB.";
+  $('qFb').classList.add('on'); $('qGo').style.display = '';
+});
+$('qGo').addEventListener('click', () => { if (!adv) setMode(true); Object.assign(S, {ptx:1, a:0.2, L:65, amp:true, ampZ:30, ampG:10, con:0, probe:65}); syncUI(); onChange('L'); $('lab').scrollIntoView({behavior:'smooth'}); });
+syncUI();
+if (location.hash === '#adv') setMode(true);
+requestAnimationFrame(loop);
+</script>
+<script>
+/* ======================================================================
+   הדגמה אוטומטית: כפתור "▶ הדגמה" ליד כל ניסוי. סמן "רפאים" מבצע את הניסוי במעבדה בזמן אמת,
+   וההסבר מוצג במסגרת מתחת למעבדה.
+   ====================================================================== */
+(function(){
+'use strict';
+  const sv = (k, v) => document.querySelector('[data-seg="' + k + '"] button[data-v="' + v + '"]');
+  async function orbitCam(degs, dur){ const c = V3.cam, t = V3.ctl.target, r0 = c.position.clone().sub(t), a0 = Math.atan2(r0.x, r0.z), rr = Math.hypot(r0.x, r0.z);
+    await anim(dur || 3000, k => { const a = a0 + degs*Math.PI/180*k; c.position.set(t.x + rr*Math.sin(a), c.position.y, t.z + rr*Math.cos(a)); c.lookAt(t); }); }
+  async function to3D(){ await ensureAdv(); if (S.view !== '3d') await click(viewBtn('3d')); await waitFor(() => V3.ready, 20000); await sleep(600); }
+  async function dragZ(z, dur){ const [x0] = PROBEDB.screen(S.probe), [, y] = PROBEDB.screen(0); await moveTo(x0, y); cur.classList.add('down'); const z0 = S.probe;
+      try { await anim(dur || 1500, k => { const zz = Math.round(z0 + (z - z0)*k); PROBEDB.set(zz); place(PROBEDB.screen(zz)[0], y); }); } finally { cur.classList.remove('down'); } await sleep(300); }
+  const S3 = [];
+  const SCRIPTS = [
+    async () => { await dragSlider(byId('rA'), 0.2, 800); await dragSlider(byId('rL'), 100, 800); say('גוררים את הגשש ל-15 ק"מ'); await dragZ(15, 2000);
+      say('−3dB: בגרף התחתון ההספק ירד בחצי'); await sleep(3000); await dragZ(30, 1800); say('30 ק"מ: −6dB, רבע'); await sleep(2500); await dragZ(45, 1500); say('45 ק"מ: −9dB, שמינית'); await sleep(2500); },
+    async () => { say('הדוגמה מתרגול 2'); await dragSlider(byId('rPtx'), 5, 1200); await dragSlider(byId('rL'), 100, 1200); await dragSlider(byId('rA'), 0.2, 800);
+      await dragZ(100, 2500); say('7dBm − 20dB = −13dBm, כלומר 50µW: פי 100 פחות'); await sleep(4000); },
+    async () => { await dragSlider(byId('rL'), 100, 900); await dragSlider(byId('rA'), 0.2, 600); await dragZ(100, 1200); say('100 ק"מ: −13dBm'); await sleep(2000);
+      say('מכפילים את האורך...'); await dragSlider(byId('rL'), 200, 3500); await dragZ(200, 1500); say('40dB = פי 10,000 (לא פי 2): 0.5µW'); await sleep(4000); },
+    async () => { say('מורידים את המשדר ל-1mW'); await dragSlider(byId('rPtx'), 1, 2500); say('1mW = 0dBm, ולא "אין הספק"'); await sleep(2500);
+      await dragSlider(byId('rPtx'), 0.1, 2500); say('0.1mW = −10dBm. השיפוע של הקו לא השתנה'); await sleep(3000); await dragSlider(byId('rPtx'), 5, 1200); },
+    async () => { await dragSlider(byId('rL'), 100, 800); await dragSlider(byId('rA'), 0.2, 800); await dragZ(100, 1200); say('α = 0.2dB/km (1550nm)'); await sleep(1500);
+      await dragSlider(byId('rA'), 0.35, 3500); say('α = 0.35dB/km (1310nm): עוד 15dB, פי 30 פחות'); await sleep(3500); await dragSlider(byId('rA'), 0.2, 1200); },
+    async () => { await ensureAdv(); await dragSlider(byId('rL'), 100, 600); await toggle(byId('cAmp'), true); await dragSlider(byId('rAmpG'), 10, 1200); await dragSlider(byId('rAmpZ'), 50, 1200);
+      say('מגבר של 10dB: מדרגה למעלה, ובגרף התחתון קפיצה פי 10'); await sleep(3500); say('מזיזים את המגבר: ההספק בקליטה לא משתנה'); await dragSlider(byId('rAmpZ'), 20, 3000); await dragSlider(byId('rAmpZ'), 80, 3500); await sleep(2000); },
+    async () => { await ensureAdv(); await toggle(byId('cAmp'), false); await dragSlider(byId('rCon'), 0, 600); say('משדר 2.5mW (4dBm), מקלט שצריך −10dBm'); await dragSlider(byId('rPtx'), 2.5, 1500); await dragSlider(byId('rSens'), -10, 1500);
+      await dragSlider(byId('rA'), 0.2, 600); await dragSlider(byId('rL'), 30, 1200); say('מאריכים את הסיב עד שהמרווח מתאפס...'); await dragSlider(byId('rL'), 70, 5000); say('70 ק"מ: 14dB של תקציב, ב-0.2dB/km'); await sleep(3500); },
+    async () => { await ensureAdv(); await dragSlider(byId('rA'), 0.2, 800); await dragSlider(byId('rL'), 100, 800); say('בחישוב: α_lin = 0.2/4.34 = 0.046 לק"מ'); await sleep(3000);
+      say('e^(−0.046·100) = 0.01, בדיוק 20dB'); await sleep(3500); }
+  ].map((fn, i) => S3.includes(i) ? fn : async () => { if (S.view === '3d') await click(viewBtn('2d')); return fn(); });
+  const byId = id => document.getElementById(id);
+  const LAB = document.querySelector('section.lab'), VIEW = LAB.querySelector('.view');
+  const cur = byId('demoCursor'), D = {alive:0, i:-1, x:0, y:0};
+  const sleep = ms => { const tok = D.alive; return new Promise(r => setTimeout(r, ms)).then(() => { if (D.alive !== tok) throw 'stop'; }); };
+  const ease = k => k*k*(3 - 2*k);
+  function anim(dur, fn){
+    const tok = D.alive;
+    return new Promise((res, rej) => { const t0 = performance.now();
+      (function step(now){ if (D.alive !== tok) return rej('stop'); const k = Math.min(1, (now - t0)/dur); fn(ease(k)); if (k < 1) requestAnimationFrame(step); else res(); })(t0); });
+  }
+  function place(x, y){ D.x = x; D.y = y; cur.style.transform = 'translate(' + (x - 3) + 'px,' + (y - 2) + 'px)'; }
+  function moveTo(x, y, dur){ const x0 = D.x, y0 = D.y; dur = dur || Math.min(1100, 350 + Math.hypot(x - x0, y - y0)*0.9); return anim(dur, k => place(x0 + (x - x0)*k, y0 + (y - y0)*k)); }
+  const center = el => { const r = el.getBoundingClientRect(); return [r.left + r.width/2, r.top + r.height/2]; };
+  function ripple(){ const r = document.createElement('div'); r.className = 'demoRipple'; r.style.left = D.x + 'px'; r.style.top = D.y + 'px'; document.body.appendChild(r); setTimeout(() => r.remove(), 600); }
+  async function press(){ cur.classList.add('down'); ripple(); await sleep(140); cur.classList.remove('down'); }
+  async function click(el){ if (!el) return; await moveTo(...center(el)); await press(); el.click(); await sleep(400); }
+  async function select(el, v){ if (el.value === v) return; await moveTo(...center(el)); await press(); el.value = v; el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(500); }
+  async function toggle(el, want){                   // מתג (checkbox מוסתר בתוך label)
+    if (el.checked === want) return;
+    await moveTo(...center(el.closest('label') || el)); await press(); el.click(); await sleep(400);
+  }
+  async function dragSlider(el, to, dur){            // גרירה אמיתית: אירועי input בזמן אמת ו-change בסוף
+    const r = el.getBoundingClientRect(), mn = +el.min, mx = +el.max, rtl = getComputedStyle(el).direction === 'rtl';
+    const xOf = v => { const f = (v - mn)/(mx - mn); return rtl ? r.right - 8 - f*(r.width - 16) : r.left + 8 + f*(r.width - 16); };
+    const from = +el.value, y = r.top + r.height/2;
+    await moveTo(xOf(from), y); cur.classList.add('down');
+    try { await anim(dur || 1500, k => { const v = from + (to - from)*k; el.value = v; el.dispatchEvent(new Event('input', {bubbles:true})); place(xOf(+el.value), y); }); }
+    finally { cur.classList.remove('down'); }
+    el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(300);
+  }
+  async function waitFor(fn, limit){ const t0 = performance.now(); while (!fn() && performance.now() - t0 < (limit || 30000)) await sleep(200); }
+  async function ensureAdv(){ if (!document.body.classList.contains('adv')){ say('פותחים את המצב המורחב'); await click(byId('more')); await sleep(900); } }
+  const say = t => { byId('demoSay').textContent = t; };
+  const seg = (id, attr, v) => document.querySelector('#' + id + ' button[data-' + attr + '="' + v + '"]');
+  const viewBtn = v => document.querySelector('#views button[data-view="' + v + '"]');
+
+  async function runDemo(i){
+    stopDemo(false);
+    const tok = D.alive; D.i = i;
+    const li = document.querySelectorAll('.exp')[i];
+    byId('demoNum').textContent = i + 1; byId('demoTitle').innerHTML = li.querySelector('.task').innerHTML;
+    byId('demoText').innerHTML = li.querySelector('.ans').innerHTML; say('עוברים למעבדה...');
+    byId('demoStop').style.display = '';
+    document.body.classList.add('demo');
+    LAB.scrollIntoView({behavior:'smooth', block:'start'});
+    try {
+      await sleep(850);
+      const r = VIEW.getBoundingClientRect(); place(r.left + r.width/2, r.top + r.height/2); cur.classList.add('on');
+      await SCRIPTS[i]();
+      if (D.alive === tok){ cur.classList.remove('on'); byId('demoStop').style.display = 'none'; }
+    } catch (e) { if (e !== 'stop') console.warn(e); }
+  }
+  function stopDemo(close){ D.alive++; cur.classList.remove('on', 'down'); if (close){ document.body.classList.remove('demo'); D.i = -1; } }
+  byId('demoStop').addEventListener('click', () => { stopDemo(false); say('ההדגמה נעצרה. אפשר להמשיך לשחק במעבדה בעצמכם.'); byId('demoStop').style.display = 'none'; });
+  byId('demoAgain').addEventListener('click', () => { if (D.i >= 0) runDemo(D.i); });
+  byId('demoClose').addEventListener('click', () => stopDemo(true));
+  document.querySelectorAll('.exp').forEach((li, i) => {
+    if (!SCRIPTS[i]) return;
+    const b = document.createElement('button'); b.className = 'pbtn'; b.type = 'button'; b.title = 'הדגמה אוטומטית במעבדה';
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>הדגמה';
+    li.querySelector('.top').insertBefore(b, li.querySelector('.xbtn'));
+    b.addEventListener('click', () => runDemo(i));
+  });
+  if (location.hash.startsWith('#demo')) setTimeout(() => runDemo(+location.hash.slice(5) || 0), 400);
+
+
+})();
+</script>
+</body>
+</html>

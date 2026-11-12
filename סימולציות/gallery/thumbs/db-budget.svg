@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.p{animation:mv 5s ease-in-out infinite}
+@keyframes mv{0%,100%{transform:translateX(0)}50%{transform:translateX(330px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="#14183a"/><stop offset="1" stop-color="#05070d"/></radialGradient></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<g stroke="#1f2b44"><line x1="60" y1="70" x2="600" y2="70"/><line x1="60" y1="120" x2="600" y2="120"/><line x1="60" y1="170" x2="600" y2="170"/></g>
+<path d="M60 62 L250 125 L250 70 L440 133 L440 80 L600 133" fill="none" stroke="#ffd479" stroke-width="5" stroke-linejoin="round"/>
+<path d="M60 215 C120 300 180 318 250 322 L250 262 C320 316 380 326 440 328 L440 270 C500 318 550 326 600 328" fill="none" stroke="#6cb8ff" stroke-width="4"/>
+<path d="M240 86 l20 -12 v24z M430 94 l20 -12 v24z" fill="#9d8bff"/>
+<g class="p"><line x1="150" y1="40" x2="150" y2="340" stroke="#fff" stroke-dasharray="6 5" stroke-width="2"/><circle cx="150" cy="95" r="7" fill="#fff"/></g>
+</svg>

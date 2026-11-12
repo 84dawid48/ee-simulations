@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.s{stroke-dasharray:16 12;animation:run 1.2s linear infinite}.g{stroke-dasharray:16 12;animation:run 1.2s linear infinite}
+@keyframes run{to{stroke-dashoffset:-56}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".5" r=".8"><stop offset="0" stop-color="#0f1a33"/><stop offset="1" stop-color="#05070d"/></radialGradient>
+<linearGradient id="gi" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#13203a"/><stop offset=".5" stop-color="#2d6ab8"/><stop offset="1" stop-color="#13203a"/></linearGradient></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<rect x="0" y="40" width="640" height="110" fill="#13203a"/><rect x="0" y="62" width="640" height="66" fill="#1b3f70"/>
+<line x1="0" y1="95" x2="640" y2="95" stroke="#5ee0ff" stroke-width="3" class="s"/>
+<path d="M0 95 L66 62 L198 128 L330 62 L462 128 L594 62 L640 85" fill="none" stroke="#9d8bff" stroke-width="3" class="s"/>
+<rect x="0" y="200" width="640" height="110" fill="url(#gi)"/>
+<line x1="0" y1="255" x2="640" y2="255" stroke="#5ee0ff" stroke-width="3" class="g"/>
+<path d="M0 255 C40 215 90 215 130 255 S220 295 260 255 S350 215 390 255 S480 295 520 255 S610 215 640 240" fill="none" stroke="#9d8bff" stroke-width="3" class="g"/>
+</svg>

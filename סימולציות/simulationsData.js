@@ -23,6 +23,28 @@
 
 window.SIMULATIONS = [
   {
+    id: "modal-dispersion",
+    title: "דיספרסיה מודאלית: step-index מול graded-index",
+    description: "מרוץ קרניים בשני סיבים: ב-step-index התלולות מאחרות והפולס נמרח, ב-graded-index כולן מגיעות יחד. פי 300 ב-B·L, כולל רכבת ביטים ותלת-ממד.",
+    category: "תקשורת אופטית",
+    tags: ["דיספרסיה מודאלית", "graded-index", "B·L", "סיב רב-אופני", "תלת-ממד"],
+    thumbnailUrl: "gallery/thumbs/modal-dispersion.svg",
+    simulationUrl: "תקשורת אופטית/דיספרסיה מודאלית.html",
+    accent: "#9d8bff",
+    added: "2026-11-12"
+  },
+  {
+    id: "db-power-budget",
+    title: "מאזן הספק בדציבלים",
+    description: "אותו הספק בשתי סקאלות: ב-mW דעיכה מעריכית, ב-dBm קו ישר. גוררים גשש לאורך הקו, מוסיפים מגבר ומחברים, ומחשבים טווח מול רגישות המקלט.",
+    category: "תקשורת אופטית",
+    tags: ["dB", "dBm", "ניחות", "מאזן הספק"],
+    thumbnailUrl: "gallery/thumbs/db-budget.svg",
+    simulationUrl: "תקשורת אופטית/מאזן הספק בדציבלים.html",
+    accent: "#ffd479",
+    added: "2026-11-12"
+  },
+  {
     id: "tir-na",
     title: "החזרה פנימית ומפתח נומרי",
     description: "למה האור לא בורח מהסיב? מכוונים לייזר, רואים מתי הקרן נלכדת ומתי היא דולפת, ומגלים את חרוט הקבלה. כולל מבט תלת-ממדי.",
