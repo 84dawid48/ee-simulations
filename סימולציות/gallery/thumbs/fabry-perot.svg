@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.r{stroke-dasharray:14 10;animation:run 1.2s linear infinite}
+.n{animation:blink 2.4s ease-in-out infinite}.n:nth-child(2){animation-delay:-.6s}.n:nth-child(3){animation-delay:-1.2s}.n:nth-child(4){animation-delay:-1.8s}
+@keyframes run{to{stroke-dashoffset:-24}}
+@keyframes blink{0%,100%{opacity:.35}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".5" r=".8"><stop offset="0" stop-color="#0b1a33"/><stop offset="1" stop-color="#05070d"/></radialGradient><pattern id="h" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0V8" stroke="#8cb4ff" stroke-width="2"/></pattern></defs>
+<rect width="640" height="360" fill="url(#b)"/><rect x="240" y="40" width="160" height="290" fill="rgba(140,180,255,.07)"/>
+<path d="M240 40V330" stroke="#9fd6ff" stroke-width="3"/><rect x="400" y="40" width="14" height="290" fill="url(#h)"/>
+<path class="r" d="M60 70L240 110" stroke="#3d8bff" stroke-width="4"/>
+<g stroke-width="3.5"><path class="r" d="M240 110L400 140" stroke="#3d8bff"/><path class="r" d="M400 140L240 170" stroke="#ff4d5e"/><path class="r" d="M240 170L400 200" stroke="#3d8bff" opacity=".8"/><path class="r" d="M400 200L240 230" stroke="#ff4d5e" opacity=".7"/><path class="r" d="M240 230L400 260" stroke="#3d8bff" opacity=".55"/><path class="r" d="M400 260L240 290" stroke="#ff4d5e" opacity=".45"/></g>
+<g stroke="#ff4d5e" stroke-width="3"><path class="r" d="M240 170L80 200"/><path class="r" d="M240 230L80 260" opacity=".7"/><path class="r" d="M240 290L80 320" opacity=".45"/></g>
+<g fill="#fff"><circle class="n" cx="400" cy="140" r="4"/><circle class="n" cx="240" cy="170" r="4"/><circle class="n" cx="400" cy="200" r="4"/><circle class="n" cx="240" cy="230" r="4"/></g></svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.pl{transform-box:view-box;transform-origin:325px 215px;animation:tilt 7s ease-in-out infinite}
+.p{animation:bob 3s ease-in-out infinite}
+.p:nth-child(2n){animation-delay:-1s}.p:nth-child(3n){animation-delay:-2s}
+@keyframes tilt{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+@keyframes bob{0%,100%{transform:translateY(-5px)}50%{transform:translateY(5px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="#0c2a1c"/><stop offset="1" stop-color="#05070d"/></radialGradient></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<g class="pl"><path d="M90 260L330 310L560 170L320 120Z" fill="rgba(61,255,138,.22)" stroke="#3dff8a" stroke-width="2"/>
+<g stroke="#3dff8a" stroke-opacity=".35"><path d="M150 248L380 141M210 236L440 133M270 223L500 150M120 225L380 280M180 190L440 245M240 160L500 210"/></g></g>
+<g>
+<g class="p"><path d="M180 170V228" stroke="#ff4d5e" stroke-width="2"/><circle cx="180" cy="170" r="6" fill="#8fd0ff"/></g>
+<g class="p"><path d="M260 270V246" stroke="#ff4d5e" stroke-width="2"/><circle cx="260" cy="270" r="6" fill="#8fd0ff"/></g>
+<g class="p"><path d="M330 150V188" stroke="#ff4d5e" stroke-width="2"/><circle cx="330" cy="150" r="6" fill="#8fd0ff"/></g>
+<g class="p"><path d="M400 260V214" stroke="#ff4d5e" stroke-width="2"/><circle cx="400" cy="260" r="6" fill="#8fd0ff"/></g>
+<g class="p"><path d="M450 120V178" stroke="#ff4d5e" stroke-width="2"/><circle cx="450" cy="120" r="6" fill="#8fd0ff"/></g>
+<g class="p"><path d="M500 230V196" stroke="#ff4d5e" stroke-width="2"/><circle cx="500" cy="230" r="6" fill="#8fd0ff"/></g>
+<g class="p"><path d="M230 180V214" stroke="#ff4d5e" stroke-width="2"/><circle cx="230" cy="180" r="6" fill="#8fd0ff"/></g>
+<g class="p"><path d="M380 160V196" stroke="#ff4d5e" stroke-width="2"/><circle cx="380" cy="160" r="6" fill="#8fd0ff"/></g>
+</g></svg>

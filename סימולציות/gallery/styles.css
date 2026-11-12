@@ -1,0 +1,63 @@
+/* תוספות קטנות ש-Tailwind (גרסת CDN) לא מכסה בנוחות */
+
+/* רשת רקע עדינה */
+.grid-bg {
+  background-image: linear-gradient(to right, rgba(148,163,184,.08) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(148,163,184,.08) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at top, #000 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at top, #000 30%, transparent 75%);
+}
+
+/* כרטיסייה: מסגרת זוהרת בצבע ההדגשה שלה (--accent נקבע מקובץ הנתונים) */
+.card {
+  --accent: #38bdf8;
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1), box-shadow .35s, border-color .35s;
+}
+.card.in { opacity: 1; transform: none; }
+.card.in:hover { transform: translateY(-6px); border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  box-shadow: 0 20px 50px -18px color-mix(in srgb, var(--accent) 55%, transparent); }
+.card::before {               /* הילה שעוקבת אחרי העכבר */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .3s;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 18%, transparent), transparent 45%);
+}
+.card:hover::before { opacity: 1; }
+.card .thumb img, .card .thumb .auto { transition: transform .7s cubic-bezier(.2,.7,.2,1); }
+.card:hover .thumb img, .card:hover .thumb .auto { transform: scale(1.06); }
+.card .play { transition: transform .25s, box-shadow .25s, background-color .25s; }
+.card .play:hover { transform: translateY(-2px); }
+
+/* כפתור עם ברק עובר */
+.btn-glow { position: relative; overflow: hidden; }
+.btn-glow::after { content: ""; position: absolute; inset: 0; transform: translateX(120%) skewX(-20deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent); transition: transform .8s; }
+.btn-glow:hover::after { transform: translateX(-120%) skewX(-20deg); }
+
+/* חלון צף */
+.modal-backdrop { animation: fade .25s ease both; }
+.modal-panel { animation: pop .35s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes fade { from { opacity: 0; } }
+@keyframes pop { from { opacity: 0; transform: translateY(18px) scale(.98); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .card, .card .thumb img, .modal-panel, .modal-backdrop { transition: none !important; animation: none !important; opacity: 1; transform: none; }
+}
+
+/* ההמחשה התלת-ממדית בדף הנחיתה: בלי מסגרת, הקצוות נמוגים לתוך הרקע */
+.hero-fade {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 9%, #000 80%, transparent 100%), linear-gradient(to right, transparent 0, #000 16%, #000 84%, transparent 100%);
+  -webkit-mask-composite: source-in;
+          mask-image: linear-gradient(to bottom, transparent 0, #000 9%, #000 80%, transparent 100%), linear-gradient(to right, transparent 0, #000 16%, #000 84%, transparent 100%);
+          mask-composite: intersect;
+}
+
+/* סליידר אורך גל בצבעי הספקטרום */
+input.spec { -webkit-appearance: none; appearance: none; height: 10px; border-radius: 6px; cursor: pointer;
+  background: linear-gradient(to left, #7a3cff, #3d5bff, #2fb5ff, #3ddc84, #e8f53d, #ffa52e, #ff3a2e); }
+input.spec::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 2px solid #05070d; box-shadow: 0 0 10px var(--laser, #fff); }
+input.spec::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 2px solid #05070d; }
+
+/* קווי סריקה אופקיים עדינים מעל ההמחשה (כמו מסך הולוגרפי) */
+.hero-scan { background: repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 1px, transparent 1px 3px); mix-blend-mode: multiply; }

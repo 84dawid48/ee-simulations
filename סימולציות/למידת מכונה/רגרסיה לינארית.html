@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>רגרסיה לינארית</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+:root{--bg:#05070d;--card:#0c1222;--line:#1f2b44;--txt:#e3eaf6;--mut:#93a3bf;--acc:#6cb8ff;--grn:#3dff8a;--red:#ff4d5e;--yel:#ffd479}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:"Segoe UI","Rubik",Arial,sans-serif;padding-top:30px}
+#topbar{position:fixed;top:0;left:0;right:0;height:30px;background:#060912;border-bottom:1px solid var(--line);z-index:100}
+#bsd{position:absolute;top:7px;right:12px;font-size:12px;color:#c9d6ea}
+#copyr{position:absolute;top:4px;left:8px;font-size:12px;color:#dce6f5;background:#10172a;border:1px solid var(--line);border-radius:6px;padding:2px 10px}
+bdi{unicode-bidi:isolate}
+
+/* ===== פתיח ===== */
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+#intro{padding-top:46px;padding-bottom:40px;line-height:1.75}
+#intro h1{font-size:34px;line-height:1.25;margin:0 0 8px;font-weight:700}
+#intro h1 span{background:linear-gradient(90deg,#6cb8ff,#3dff8a);-webkit-background-clip:text;background-clip:text;color:transparent}
+#intro .lead{font-size:18px;color:var(--mut);margin:0 0 30px}
+.prob{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.prob p{margin:0 0 10px;font-size:15.5px;color:#d0d9ea}
+.prob p:last-child{margin-bottom:0}
+.prob svg{width:100%;height:auto;display:block;background:#080d18;border:1px solid var(--line);border-radius:12px}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:14px}
+.rd{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.rd .ic{flex:0 0 38px;height:38px;border-radius:10px;background:#101a30;display:grid;place-items:center}
+.rd h3{margin:0 0 2px;font-size:15.5px}
+.rd p{margin:0;font-size:14.5px;color:#c3cfe3}
+@media (max-width:900px){.prob{grid-template-columns:1fr}}
+h2.sec{font-size:21px;margin:40px 0 14px;color:var(--acc)}
+.theory{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}
+.th{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px}
+.th .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;font-size:14px;margin-bottom:6px}
+.th h3{margin:0 0 4px;font-size:16.5px}
+.th p{margin:0;font-size:14.5px;color:#c3cfe3}
+.law{margin:18px 0 0;text-align:center;font-size:21px;background:linear-gradient(90deg,rgba(108,184,255,.08),rgba(61,255,138,.07));border:1px solid var(--line);border-radius:16px;padding:14px;font-family:"Cambria Math","Times New Roman",serif}
+.law .eq{direction:ltr;display:inline-block;margin:0 14px}
+.law small{display:block;font-family:"Segoe UI",Arial,sans-serif;font-size:14px;color:var(--mut);margin-top:4px}
+.cta{display:block;width:max-content;margin:34px auto 0;text-decoration:none;color:#fff;font:inherit;font-size:17px;font-weight:600;background:linear-gradient(180deg,#2167b8,#18508f);border:1px solid #3b86e0;border-radius:40px;padding:12px 30px;box-shadow:0 0 30px rgba(59,134,224,.35);cursor:pointer}
+.cta:hover{filter:brightness(1.15)}
+
+/* ===== מעבדה ===== */
+.lab{position:relative;height:calc(100vh - 30px);min-height:600px;border-top:1px solid var(--line)}
+.view{position:absolute;inset:0}
+.view canvas{display:block}
+.pnl{position:absolute;top:14px;background:rgba(10,15,28,.86);border:1px solid var(--line);border-radius:18px;padding:16px;backdrop-filter:blur(10px);z-index:10;max-height:calc(100% - 100px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2a3550 transparent}
+.pnl.r{right:14px;width:290px}
+.pnl.l{left:14px;width:290px}
+.c-row{margin-bottom:14px}
+.c-lbl{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px;color:#cdd8ea}
+.c-val{font-family:Consolas,monospace;font-size:13px;color:#fff;direction:ltr}
+input[type=range]{width:100%;accent-color:var(--acc);margin:0}
+input.g{accent-color:var(--grn)}
+.btn2{width:100%;background:#0a0f1c;border:1px solid var(--line);color:#cdd8ea;border-radius:10px;padding:8px;font:inherit;font-size:14px;cursor:pointer}
+.btn2:hover{border-color:var(--acc);color:#fff}
+.sep{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.ttl{font-size:13px;color:var(--mut);margin-bottom:8px}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:#cdd8ea;margin:8px 0;cursor:pointer}
+.sw{position:relative;display:inline-block;width:34px;height:19px;flex:0 0 auto}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:#2a3550;border-radius:20px;cursor:pointer;transition:.2s}
+.sw span::before{content:"";position:absolute;width:15px;height:15px;top:2px;right:2px;background:#c7d2e6;border-radius:50%;transition:.2s}
+.sw input:checked+span{background:#a8323f}
+.sw input:checked+span::before{right:17px;background:#fff}
+.sw.gr input:checked+span{background:#1f8a52}
+.thermo{height:16px;background:#141c30;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.thermo i{display:block;height:100%;border-radius:10px;transition:width .25s,background .25s,box-shadow .25s}
+.mse{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.mse b{font-family:Consolas,monospace;font-size:20px;direction:ltr}
+.mse span{font-size:14px;color:#cdd8ea}
+table.vs{width:100%;border-collapse:collapse;font-size:13.5px}
+table.vs th{color:var(--mut);font-weight:400;font-size:12.5px;padding:4px}
+table.vs td{padding:5px 4px;border-top:1px solid var(--line);text-align:center}
+table.vs td:first-child{text-align:right;color:#cdd8ea}
+table.vs td small{display:block;color:var(--mut);font-size:11px}
+table.vs .n{font-family:Consolas,monospace;direction:ltr}
+table.vs .t{color:#d9e4f5}
+table.vs .m{color:var(--grn)}
+canvas.plot{width:100%;height:120px;display:block;background:#080d18;border:1px solid var(--line);border-radius:10px}
+.leg{display:flex;gap:14px;justify-content:center;font-size:12px;color:var(--mut);margin-top:5px}
+.leg i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-left:5px}
+.calc{font-family:Consolas,"Cambria Math",monospace;font-size:12.5px;direction:ltr;text-align:center;color:#fff;background:#0a0f1c;border:1px solid var(--line);border-radius:8px;padding:7px;line-height:1.6}
+.views{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:4px;background:rgba(10,15,28,.86);border:1px solid var(--line);border-radius:30px;padding:4px;z-index:10}
+.views button{background:none;border:none;color:var(--mut);font:inherit;font-size:13px;padding:6px 16px;border-radius:30px;cursor:pointer;white-space:nowrap}
+.views button.on{background:#1a2b4a;color:#fff}
+body:not(.adv) .adv-only{display:none!important}
+body.adv .basic-only{display:none!important}
+body:not(.man) .man-only{display:none!important}
+.morebtn{position:absolute;bottom:14px;left:14px;z-index:12;display:flex;align-items:center;gap:10px;font:inherit;font-size:18px;font-weight:700;color:#fff;border:none;border-radius:40px;padding:15px 28px;cursor:pointer;background:linear-gradient(135deg,#7b2ff7,#e0218a);box-shadow:0 8px 30px rgba(123,47,247,.45);animation:pulse 2.2s infinite}
+.morebtn .ic{font-size:22px}
+.morebtn:hover{filter:brightness(1.15)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(224,33,138,.55),0 8px 30px rgba(123,47,247,.45)}70%{box-shadow:0 0 0 16px rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}100%{box-shadow:0 0 0 0 rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}}
+.lessbtn{position:absolute;bottom:14px;left:14px;z-index:12;font:inherit;font-size:14px;color:#cdd8ea;background:rgba(10,15,28,.88);border:1px solid #3a4a6e;border-radius:30px;padding:9px 18px;cursor:pointer}
+.lessbtn:hover{border-color:var(--acc);color:#fff}
+
+/* ===== ניסויים ===== */
+#exps{padding-top:10px;padding-bottom:60px;line-height:1.75}
+.exps{list-style:none;margin:0;padding:0;counter-reset:ex}
+.exp{counter-increment:ex;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.exp .top{display:flex;align-items:center;gap:14px}
+.exp .top::before{content:counter(ex);flex:0 0 30px;height:30px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;display:grid;place-items:center}
+.exp .task{flex:1;font-size:16px}
+.exp .tag{display:inline-block;font-size:12px;color:#e9b8ff;border:1px solid #5b2d7a;background:#1d0f2a;border-radius:10px;padding:0 8px;margin-left:6px}
+.xbtn{flex:0 0 auto;background:#1a1608;border:1px solid #6b5520;color:var(--yel);border-radius:20px;padding:5px 16px;font:inherit;font-size:14px;cursor:pointer}
+.xbtn:hover{filter:brightness(1.25)}
+.exp .ans{display:none;margin:12px 44px 2px 0;padding:10px 14px;border-right:3px solid var(--yel);background:rgba(255,212,121,.06);border-radius:8px;font-size:15px;color:#d6dcea;line-height:1.7}
+.exp.open .ans{display:block}
+.exp.open .xbtn{background:#2b230b}
+@media (max-width:900px){
+  #intro h1{font-size:26px}
+  .lab{height:auto;min-height:0}
+  .view{position:relative;height:62vh}
+  .pnl{position:static;width:auto!important;margin:12px;max-height:none}
+  .views{position:static;transform:none;width:max-content;max-width:calc(100% - 24px);flex-wrap:wrap;margin:0 auto 12px}
+  .morebtn,.lessbtn{position:static;margin:12px auto 18px;animation:none}
+}
+
+/* ===== הדגמה אוטומטית של ניסוי ===== */
+.pbtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:#0f2a1c;border:1px solid #2f7a52;color:#7dffb4;border-radius:20px;padding:5px 14px;font:inherit;font-size:14px;cursor:pointer}
+.pbtn:hover{filter:brightness(1.25)}
+.pbtn svg{width:12px;height:12px}
+#demoBox{display:none;position:relative;height:190px;border-top:1px solid var(--line);background:linear-gradient(180deg,#0a1322,#070b16);padding:14px 20px;overflow-y:auto;line-height:1.6}
+body.demo #demoBox{display:block}
+body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
+#demoBox .dh{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+#demoBox .dn{flex:0 0 28px;height:28px;border-radius:50%;background:#123a27;color:#7dffb4;font-weight:700;display:grid;place-items:center}
+#demoBox .dt{flex:1;font-size:15.5px;font-weight:600}
+#demoBox .say{font-size:14px;color:#7dffb4;min-height:22px;margin-bottom:6px}
+#demoBox .say::before{content:"▶ ";opacity:.7}
+#demoBox .dx{font-size:15px;color:#d6dcea;line-height:1.7;border-right:3px solid #ffd479;background:rgba(255,212,121,.06);border-radius:8px;padding:8px 12px}
+#demoBox .db{background:#0a0f1c;border:1px solid var(--line);color:#cdd8ea;border-radius:10px;padding:5px 12px;font:inherit;font-size:13.5px;cursor:pointer}
+#demoBox .db:hover{border-color:var(--acc);color:#fff}
+#demoCursor{position:fixed;left:0;top:0;z-index:300;pointer-events:none;opacity:0;transition:opacity .3s}
+#demoCursor.on{opacity:1}
+#demoCursor svg{width:30px;height:30px;filter:drop-shadow(0 0 6px rgba(125,255,180,.9)) drop-shadow(0 2px 3px rgba(0,0,0,.6));transition:transform .12s}
+#demoCursor.down svg{transform:scale(.82)}
+.demoRipple{position:fixed;z-index:299;pointer-events:none;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;border:2px solid #7dffb4;animation:demoRip .55s ease-out forwards}
+@keyframes demoRip{from{transform:scale(.4);opacity:1}to{transform:scale(3.4);opacity:0}}
+</style>
+</head>
+<body>
+<div id="topbar"><div id="bsd">בס״ד</div><div id="copyr">כל הזכויות שמורות לדוד יצחקי</div></div>
+
+<!-- ===================== פתיח ===================== -->
+<section id="intro" class="wrap">
+  <h1>איך מעבירים <span>קו אחד</span> דרך ענן של נתונים?</h1>
+  <p class="lead">רגרסיה לינארית מנסה לגלות "חוק" פשוט שמסתתר בתוך נתונים רועשים. במעבדה נראה את החוק כקו (ובמצב המורחב כמישור במרחב), את הטעויות כחוטים, ואת המודל מותח את עצמו כדי שהחוטים יהיו קצרים ככל האפשר.</p>
+
+  <h2 class="sec">הבעיה</h2>
+  <div class="prob">
+    <div>
+      <p>לכל דירה שנמכרה בעיר מדדנו שני מספרים: את <b>השטח</b> שלה (מ״ר) ואת <b>מחיר המכירה</b> (מיליוני ₪). בגרף כל נקודה היא דירה אחת: השטח בציר האופקי, והמחיר בציר האנכי.</p>
+      <p>ברור שדירה גדולה יקרה יותר, אבל הנקודות <b>לא יושבות על קו</b>. יש "רעש": מיקום, קומה, נוף, שיפוץ, מזל. אנחנו <b>לא יודעים</b> כמה כל מ״ר מוסיף למחיר.</p>
+      <p><b>המשימה:</b> למצוא מתוך הנתונים בלבד את <b>הקו הטוב ביותר</b>: מחיר בסיס, ושיפוע <bdi dir="ltr">β₁</bdi> שאומר כמה כל מ״ר מוסיף. כך נוכל לחזות מחיר של דירה חדשה, למשל זו שמסומנת ב-"?". במצב המורחב נוסיף מאפיין שני, <b>המרחק ממרכז העיר</b>, והקו יהפוך למישור במרחב תלת-ממדי.</p>
+    </div>
+    <svg id="probSvg" viewBox="0 0 340 250" aria-label="מחיר דירה מול שטח"></svg>
+  </div>
+
+  <h2 class="sec">איך לקרוא את המעבדה</h2>
+  <div class="read">
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#93a3bf" stroke-width="1.8"><path d="M3 12h17M16 8l4 4-4 4"/></svg></div><div><h3>ציר אופקי = שטח</h3><p>שטח הדירה במ״ר. במצב המורחב נוסף ציר עומק: המרחק ממרכז העיר.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#93a3bf" stroke-width="1.8"><path d="M12 21V4M8 8l4-4 4 4"/></svg></div><div><h3>גובה = מחיר</h3><p>ככל שהנקודה גבוהה יותר, הדירה נמכרה ביותר כסף.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" fill="#6cb8ff" opacity=".25"/><circle cx="12" cy="12" r="3.5" fill="#8fd0ff"/></svg></div><div><h3>נקודה כחולה = דירה אחת</h3><p>הנתונים האמיתיים, כולל הרעש.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 19L22 6" stroke="#3dff8a" stroke-width="2.4"/></svg></div><div><h3>קו ירוק = הניחוש של המודל</h3><p>המחיר שהמודל חוזה לכל שטח. השיפוע שלו הוא <bdi dir="ltr">β₁</bdi>. במצב המורחב הוא הופך למישור.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M3 17L21 13" stroke="#3dff8a" stroke-width="1.6"/><circle cx="9" cy="6" r="2.6" fill="#8fd0ff"/><path d="M9 8.5V15.6" stroke="#ff4d5e" stroke-width="1.8"/></svg></div><div><h3>חוט אדום = שגיאה</h3><p>המרחק האנכי מהדירה לקו: כמה המודל טעה במחיר שלה.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="6" rx="3" fill="#141c30" stroke="#3a4a6e"/><rect x="3" y="9" width="11" height="6" rx="3" fill="#ff8a3d"/></svg></div><div><h3>מד MSE = גודל הטעות</h3><p>הממוצע של ריבועי אורכי החוטים. ככל שהוא אדום ומלא יותר, הטעות גדולה יותר.</p></div></div>
+  </div>
+
+  <h2 class="sec">התאוריה בקצרה</h2>
+  <div class="theory">
+    <div class="th"><div class="n">1</div><h3>מודל לינארי</h3><p>מניחים שהמחיר הוא מחיר בסיס ועוד <b>β₁</b> לכל מ״ר: קו ישר. כשמוסיפים מאפיין שני (<b>β₂</b> לכל ק״מ), הקו הופך למישור במרחב.</p></div>
+    <div class="th"><div class="n">2</div><h3>שארית</h3><p>ההפרש בין המחיר האמיתי לבין מה שהקו חוזה. אי אפשר להגיע לאפס, כי חלק מהמחיר הוא רעש שהמודל לא רואה.</p></div>
+    <div class="th"><div class="n">3</div><h3>ריבועים פחותים (OLS)</h3><p>בוחרים את הקו (או המישור) שבו סכום <b>ריבועי</b> השאריות הוא הקטן ביותר. יש לזה נוסחה מדויקת, בלי ניחושים.</p></div>
+    <div class="th"><div class="n">4</div><h3>רעש ונפח מדגם</h3><p>כשיש הרבה רעש ומעט נקודות, ההערכה של β "קופצת". עם הרבה נקודות, הרעש מתקזז וההערכה מתקרבת לאמת.</p></div>
+    <div class="th"><div class="n">5</div><h3>רגולריזציה L2</h3><p>מוסיפים קנס על משקלים גדולים (<b>λ</b>). הקו מוותר על קצת דיוק ונהיה שטוח ו"זהיר" יותר.</p></div>
+  </div>
+  <div class="law"><span class="eq">β̂ = (XᵀX + λI)⁻¹ Xᵀy</span><span class="eq">MSE = (1/n) Σ (yᵢ − ŷᵢ)²</span><small>הנוסחה של הקו (או המישור) הטוב ביותר (עם λ = 0 זה OLS רגיל), ומדד הטעות שהוא ממזער</small></div>
+  <a class="cta" href="#lab">למעבדה ↓</a>
+</section>
+
+<!-- ===================== מעבדה ===================== -->
+<section class="lab" id="lab">
+  <div class="view" id="view"></div>
+  <div class="pnl r">
+    <div class="ttl">חוקי העולם (האמת הסודית)</div>
+    <div class="c-row"><div class="c-lbl"><span>השפעת השטח <bdi dir="ltr">β₁</bdi></span><span class="c-val" id="b1V"></span></div><input type="range" id="sB1" min="-20" max="50" step="1" value="25"></div>
+    <div class="c-row adv-only"><div class="c-lbl"><span>השפעת המרחק <bdi dir="ltr">β₂</bdi></span><span class="c-val" id="b2V"></span></div><input type="range" id="sB2" min="-150" max="50" step="1" value="-80"></div>
+    <div class="c-row"><div class="c-lbl"><span>רמת רעש <bdi dir="ltr">σ</bdi></span><span class="c-val" id="sigV"></span></div><input type="range" id="sSig" min="0" max="1.5" step="0.01" value="0.4"></div>
+    <div class="c-row"><div class="c-lbl"><span>נפח מדגם <bdi dir="ltr">n</bdi></span><span class="c-val" id="nV"></span></div><input type="range" id="sN" min="0" max="100" step="1" value="56"></div>
+    <label class="chk"><label class="sw"><input type="checkbox" id="errChk" checked><span></span></label>חוטי שגיאה</label>
+    <button class="btn2" id="resample">🎲 מדגם חדש</button>
+
+    <div class="sep adv-only">
+      <div class="c-row"><div class="c-lbl"><span>רגולריזציה L2 <bdi dir="ltr">λ</bdi></span><span class="c-val" id="lamV"></span></div><input type="range" id="sLam" class="g" min="0" max="10" step="0.05" value="0"></div>
+      <label class="chk"><label class="sw"><input type="checkbox" id="sqChk"><span></span></label>ריבועי השגיאה</label>
+      <label class="chk"><label class="sw gr"><input type="checkbox" id="trueChk"><span></span></label>הצג את מישור האמת</label>
+      <label class="chk"><label class="sw gr"><input type="checkbox" id="manChk"><span></span></label>אני מכוון את המישור</label>
+      <div class="man-only">
+        <div class="c-row"><div class="c-lbl"><span>שיפוע שטח שלי</span><span class="c-val" id="m1V"></span></div><input type="range" id="sM1" class="g" min="-20" max="50" step="0.5"></div>
+        <div class="c-row"><div class="c-lbl"><span>שיפוע מרחק שלי</span><span class="c-val" id="m2V"></span></div><input type="range" id="sM2" class="g" min="-150" max="50" step="1"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pnl l">
+    <div class="mse"><span>טעות ממוצעת (MSE)</span><b id="mseV"></b></div>
+    <div class="thermo"><i id="mseBar"></i></div>
+    <div class="sep">
+      <table class="vs">
+        <tr><th></th><th>אמת</th><th>המודל</th></tr>
+        <tr><td><bdi dir="ltr">β₁</bdi> שטח<small>אלף ₪ למ״ר</small></td><td class="n t" id="t1"></td><td class="n m" id="e1"></td></tr>
+        <tr class="adv-only"><td><bdi dir="ltr">β₂</bdi> מרחק<small>אלף ₪ לק״מ</small></td><td class="n t" id="t2"></td><td class="n m" id="e2"></td></tr>
+        <tr class="adv-only"><td><bdi dir="ltr">β₀</bdi> מחיר במרכז<small>מיליון ₪ (100 מ״ר, 10 ק״מ)</small></td><td class="n t" id="t0"></td><td class="n m" id="e0"></td></tr>
+      </table>
+    </div>
+    <div class="sep adv-only man-only"><div class="mse"><span>MSE של OLS</span><b id="mseOls" style="font-size:16px;color:var(--grn)"></b></div></div>
+    <div class="sep adv-only">
+      <div class="ttl">המשקלים מול λ (השפעה של סטיית תקן אחת)</div>
+      <canvas class="plot" id="pathPlot"></canvas>
+      <div class="leg"><span><i style="background:#ffb347"></i>שטח</span><span><i style="background:#c48bff"></i>מרחק</span></div>
+    </div>
+    <div class="sep adv-only">
+      <div class="ttl">התפלגות השגיאות</div>
+      <canvas class="plot" id="histPlot" style="height:90px"></canvas>
+    </div>
+    <div class="sep adv-only"><div class="calc" id="calc"></div></div>
+  </div>
+
+  <div class="views adv-only" id="views"><button data-view="3d" class="on">תלת-ממד</button><button data-view="front">שטח מול מחיר</button><button data-view="side">מרחק מול מחיר</button><button data-view="top" class="adv-only">מלמעלה</button></div>
+  <button id="more" class="morebtn basic-only"><span class="ic">🔬</span>אני רוצה לחקור יותר</button>
+  <button id="less" class="lessbtn adv-only">→ לחזור למעבדה הבסיסית</button>
+</section>
+<!-- מסגרת ההסבר של ההדגמה האוטומטית (מופיעה מתחת למעבדה, לא מעליה) -->
+<section id="demoBox" aria-live="polite">
+  <div class="dh"><div class="dn" id="demoNum">1</div><div class="dt" id="demoTitle"></div>
+    <button class="db" id="demoStop">⏹ עצור</button><button class="db" id="demoAgain">↻ שוב</button><button class="db" id="demoClose">✕ סגור</button></div>
+  <div class="say" id="demoSay"></div>
+  <div class="dx" id="demoText"></div>
+</section>
+<div id="demoCursor"><svg viewBox="0 0 24 24"><path d="M4 2l15 11-6.5 1.2L16.5 22l-3 1.3-3.6-7.6L5 20z" fill="#fff" stroke="#0b1a12" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+
+<!-- ===================== ניסויים ===================== -->
+<section id="exps" class="wrap">
+  <h2 class="sec">ניסויים לנסות במעבדה</h2>
+  <ol class="exps">
+    <li class="exp"><div class="top"><div class="task">הזיזו את סליידר <bdi dir="ltr">β₁</bdi>. כל ענן הנקודות מתהפך לשיפוע חדש, והקו הירוק רודף אחריו ונצמד אליו.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">הסליידרים קובעים את "חוק הטבע" שממנו נוצרו המחירים. בכל שינוי, המודל מחשב מחדש את הקו הטוב ביותר מתוך הנקודות בלבד. הוא לא רואה את הסליידרים. לרגרסיה לינארית יש פתרון מדויק בנוסחה אחת, <bdi dir="ltr">β̂ = (XᵀX)⁻¹Xᵀy</bdi>, ולכן הקו מוצא את מקומו מיד ולא צריך "לחפש".</div></li>
+    <li class="exp"><div class="top"><div class="task">הורידו את הרעש σ לאפס. החוטים נעלמים, MSE יורד לאפס, והמודל מוצא בדיוק את האמת.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">בלי רעש, כל הנקודות יושבות בדיוק על קו האמת. יש רק קו אחד שעובר דרך כולן, והמודל מוצא אותו. השגיאות שרואים בדרך כלל לא נובעות מכך שהמודל "טיפש", אלא מכך שהמחיר תלוי גם בדברים שלא מדדנו.</div></li>
+    <li class="exp"><div class="top"><div class="task">הקטינו את n לכ-20 והעלו את הרעש עד הסוף. החוטים מתארכים, מד ה-MSE מאדים, וההערכות בטבלה מתרחקות מהאמת.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">MSE הוא ממוצע ריבועי החוטים, ולכן הוא בערך <bdi dir="ltr">σ²</bdi>: כשהרעש גדל פי 2, הטעות גדלה בערך פי 4. עם מעט נקודות, כמה דירות "חריגות" מושכות את הקו אליהן ומטות את השיפוע. לכן ההערכה של β מתרחקת מהאמת.</div></li>
+    <li class="exp"><div class="top"><div class="task">עכשיו, עם אותו רעש גבוה, הגדילו את n ל-2,000. MSE נשאר גבוה, אבל ההערכות בטבלה חוזרות קרוב מאוד לאמת.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">שני דברים שונים: <b>MSE</b> מודד כמה הנקודות מפוזרות סביב הקו, וזה הרעש עצמו, שלא נעלם עם עוד נתונים. <b>הדיוק של β̂</b> משתפר עם n, כי השגיאות למעלה ולמטה מתקזזות. סטיית התקן של ההערכה קטנה בערך כמו <bdi dir="ltr">σ/√n</bdi>.</div></li>
+    <li class="exp"><div class="top"><div class="task">עם n = 5 לחצו כמה פעמים על "🎲 מדגם חדש". הקו קופץ בכל פעם לזווית אחרת.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">כל מדגם הוא קבוצה אקראית אחרת של דירות, עם רעש אחר. כשיש רק 5 נקודות, כל אחת מהן משפיעה מאוד על הקו, ולכן ההערכה "רועדת" ממדגם למדגם. זו <b>השונות</b> של המודל. עם 2,000 נקודות, אותו ניסוי כמעט לא מזיז את הקו.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>הדליקו "אני מכוון את המישור" ונסו לנצח את OLS: להגיע ל-MSE נמוך יותר מזה של המודל.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">אי אפשר. OLS הוא בדיוק המישור שבו סכום ריבועי השאריות הוא המינימלי. כל שינוי בשיפוע מקצר כמה חוטים ומאריך אחרים, ובסך הכול הריבועים גדלים. הדליקו את "ריבועי השגיאה" כדי לראות את מה שממזערים: את <b>השטח</b> של הריבועים, לא את אורך החוטים. לכן חוט ארוך אחד "כואב" למודל הרבה יותר מכמה קצרים.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>גררו את λ ימינה. המישור משתטח לכיוון אופקי, MSE עולה, ובגרף שני המשקלים מתכווצים לכיוון אפס.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">רגולריזציה L2 (Ridge) ממזערת את <bdi dir="ltr">MSE + λ·Σβⱼ²</bdi>. ככל ש-λ גדל, משתלם למודל לוותר על קצת דיוק כדי להקטין את המשקלים, ולכן השיפועים נחלשים. את מחיר הבסיס (β₀) לא קונסים, ולכן המישור לא יורד לאפס: הוא משתטח סביב המחיר הממוצע. בגלל זה MSE עולה כשמגדילים את λ.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>עם n קטן ורעש גבוה, שימו λ קטן (בערך 0.5) ולחצו שוב ושוב על "מדגם חדש". המישור קופץ פחות.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">זו פשרת <b>הטיה-שונות</b>. λ מושך את המשקלים קצת לכיוון אפס, ולכן הם מוטים מעט ביחס לאמת. בתמורה הם יציבים הרבה יותר ממדגם למדגם. כשהנתונים מעטים ורועשים, הפשרה הזו יכולה לשפר את החיזוי לדירות חדשות. איך בוחרים את λ? בדיוק כמו כל היפר-פרמטר: באימות מוצלב.</div></li>
+  </ol>
+</section>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+
+/* ======================================================================
+   נתונים ומודל — שטח A (40–160 מ"ר), מרחק D (0–20 ק"מ), מחיר P (מיליון ₪)
+   P = 4 + β1·(A−100) + β2·(D−10) + σ·ε      β1,β2 במיליון ₪ ליחידה
+   ====================================================================== */
+const NMAX = 2000, P0 = 4;
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0)/4294967296; }; }
+let rnd = mulberry32(5), seed = 5;
+const randn = () => { let u = 0, v = 0; while (!u) u = rnd(); v = rnd(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); };
+const DA = new Float32Array(NMAX), DD = new Float32Array(NMAX), EPS = new Float32Array(NMAX), Y = new Float32Array(NMAX);
+function sample(s){ rnd = mulberry32(s); for (let i = 0; i < NMAX; i++){ DA[i] = 40 + 120*rnd(); DD[i] = 20*rnd(); EPS[i] = randn(); } }
+const S = {b1:0.025, b2:-0.08, sig:0.4, nS:56, lam:0, err:true, sq:false, tru:false, man:false, m1:0.025, m2:-0.08, view:'3d'};
+const ADV_DEF = {lam:0, sq:false, tru:false, man:false};
+let adv = false;
+const nOf = s => Math.round(5*Math.pow(400, s/100));
+const truth = (A, D) => P0 + S.b1*(A - 100) + (adv ? S.b2*(D - 10) : 0);   // במצב הבסיסי המחיר תלוי רק בשטח
+function genY(){ for (let i = 0; i < NMAX; i++) Y[i] = truth(DA[i], DD[i]) + S.sig*EPS[i]; }
+
+// רגרסיה עם קנס L2 על המשקלים המתוקננים (בלי קנס על החותך)
+function fit(lam, n){
+  let mA = 0, mD = 0, mY = 0;
+  for (let i = 0; i < n; i++){ mA += DA[i]; mD += DD[i]; mY += Y[i]; } mA /= n; mD /= n; mY /= n;
+  let sA = 0, sD = 0; for (let i = 0; i < n; i++){ sA += (DA[i] - mA)**2; sD += (DD[i] - mD)**2; }
+  sA = Math.sqrt(sA/n) || 1; sD = Math.sqrt(sD/n) || 1;
+  let aa = 0, ad = 0, dd = 0, ay = 0, dy = 0;
+  for (let i = 0; i < n; i++){ const a = (DA[i] - mA)/sA, d = (DD[i] - mD)/sD, y = Y[i] - mY; aa += a*a; ad += a*d; dd += d*d; ay += a*y; dy += d*y; }
+  aa += n*lam; dd += n*lam;
+  let g1, g2;
+  if (adv){ const det = aa*dd - ad*ad || 1e-12; g1 = (dd*ay - ad*dy)/det; g2 = (aa*dy - ad*ay)/det; }
+  else { g1 = ay/(aa || 1e-12); g2 = 0; }        // מצב בסיסי: רגרסיה על השטח בלבד (קו)
+  const b1 = g1/sA, b2 = g2/sD;
+  return {b0: mY + b1*(100 - mA) + b2*(10 - mD), b1, b2, g1, g2, sA, sD, mA, mD, mY};
+}
+function interceptFor(b1, b2, n){ let s = 0; for (let i = 0; i < n; i++) s += Y[i] - b1*(DA[i] - 100) - b2*(DD[i] - 10); return s/n; }
+function mseOf(b0, b1, b2, n){ let s = 0; for (let i = 0; i < n; i++){ const r = Y[i] - (b0 + b1*(DA[i] - 100) + b2*(DD[i] - 10)); s += r*r; } return s/n; }
+
+let model = null, ols = null, tgt = {b0:P0, b1:0, b2:0};
+function recompute(){
+  const n = nOf(S.nS);
+  ols = fit(0, n); model = fit(S.lam, n);
+  if (S.man) tgt = {b0: interceptFor(S.m1, S.m2, n), b1:S.m1, b2:S.m2};
+  else tgt = {b0:model.b0, b1:model.b1, b2:model.b2};
+  tgt.mse = mseOf(tgt.b0, tgt.b1, tgt.b2, n); ols.mse = mseOf(ols.b0, ols.b1, ols.b2, n);
+  let sst = 0; for (let i = 0; i < n; i++) sst += (Y[i] - ols.mY)**2; tgt.r2 = 1 - tgt.mse*n/(sst || 1e-12);
+  updPanels();
+}
+
+/* ======================================================================
+   סצנה — x: שטח, z: מרחק, y: מחיר
+   ====================================================================== */
+const sx = A => (A - 100)/12, sz = D => (D - 10)/2, sy = P => (P - P0)*0.8;
+const view = $('view');
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+view.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#05070d');
+const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 400);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+let camGoal = null; controls.addEventListener('start', () => camGoal = null);
+
+function textSprite(txt, o){
+  o = Object.assign({size:0.45, color:'#aebbd3'}, o);
+  const c = document.createElement('canvas'), ctx = c.getContext('2d'), fs = 56, font = '500 ' + fs + 'px "Segoe UI",Arial,sans-serif';
+  ctx.font = font; const w = Math.ceil(ctx.measureText(txt).width) + 20, h = Math.ceil(fs*1.4);
+  c.width = w; c.height = h; ctx.font = font; ctx.direction = 'rtl'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = o.color; ctx.fillText(txt, w/2, h/2 + 2);
+  const t = new THREE.CanvasTexture(c); t.minFilter = THREE.LinearFilter;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({map:t, transparent:true, depthWrite:false})); s.scale.set(o.size*w/h, o.size, 1); return s;
+}
+const FLOOR = sy(0);
+const ax3 = new THREE.Group(), ax2 = new THREE.Group(); scene.add(ax3, ax2);
+const grid = new THREE.GridHelper(10, 10, 0x1d2a45, 0x121a2e); grid.position.y = FLOOR; ax3.add(grid);
+function line(a, b, col){ return new THREE.Line(new THREE.BufferGeometry().setFromPoints([a, b]), new THREE.LineBasicMaterial({color:col})); }
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+ax3.add(line(V(-5, FLOOR, 5), V(5.8, FLOOR, 5), 0x5b6f96), line(V(-5, FLOOR, 5), V(-5, FLOOR, -5.8), 0x5b6f96), line(V(-5, FLOOR, -5), V(-5, sy(9), -5), 0x5b6f96));
+const lbl = (t, p, o, g = ax3) => { const s = textSprite(t, o); s.position.copy(p); g.add(s); return s; };
+lbl('שטח (מ״ר)', V(0, FLOOR - 0.9, 6.4), {size:0.55, color:'#cdd8ea'});
+lbl('מרחק מהמרכז (ק״מ)', V(-7.6, FLOOR - 0.6, -1), {size:0.55, color:'#cdd8ea'});
+lbl('מחיר (מיליון ₪)', V(-5, sy(9) + 0.7, -5), {size:0.55, color:'#cdd8ea'});
+[40, 70, 100, 130, 160].forEach(a => lbl(String(a), V(sx(a), FLOOR - 0.35, 5.5), {size:0.34, color:'#7f8fab'}));
+[0, 5, 10, 15, 20].forEach(d => lbl(String(d), V(-5.6, FLOOR - 0.35, sz(d)), {size:0.34, color:'#7f8fab'}));
+[0, 2, 4, 6, 8].forEach(p => lbl(String(p), V(-5.5, sy(p), -5.3), {size:0.34, color:'#7f8fab'}));
+// דו-ממד: שטח (אופקי) ומחיר (אנכי) בלבד, במישור z = 0
+{ const g2 = new THREE.GridHelper(10, 10, 0x1d2a45, 0x121a2e); g2.rotation.x = Math.PI/2; g2.scale.z = (sy(9) - FLOOR)/10; g2.position.set(0, (sy(9) + FLOOR)/2, -0.05); ax2.add(g2); }
+ax2.add(line(V(-5, FLOOR, 0), V(5.8, FLOOR, 0), 0x5b6f96), line(V(-5, FLOOR, 0), V(-5, sy(9) + 0.3, 0), 0x5b6f96));
+lbl('שטח (מ״ר)', V(0, FLOOR - 1.05, 0), {size:0.55, color:'#cdd8ea'}, ax2);
+lbl('מחיר (מיליון ₪)', V(-5, sy(9) + 0.85, 0), {size:0.55, color:'#cdd8ea'}, ax2);
+[40, 70, 100, 130, 160].forEach(a => lbl(String(a), V(sx(a), FLOOR - 0.4, 0), {size:0.34, color:'#7f8fab'}, ax2));
+[0, 2, 4, 6, 8].forEach(p => lbl(String(p), V(-5.45, sy(p), 0), {size:0.34, color:'#7f8fab'}, ax2));
+
+/* נקודות */
+const PP = new Float32Array(NMAX*3), YC = new Float32Array(NMAX);
+const pgeo = new THREE.BufferGeometry(); pgeo.setAttribute('position', new THREE.BufferAttribute(PP, 3));
+const pmat = new THREE.ShaderMaterial({
+  uniforms:{uScale:{value:600}, uSize:{value:0.22}}, transparent:true, depthWrite:false,
+  vertexShader:`uniform float uScale; uniform float uSize; void main(){ vec4 mv = modelViewMatrix*vec4(position, 1.0); gl_PointSize = uSize*uScale/(-mv.z); gl_Position = projectionMatrix*mv; }`,
+  fragmentShader:`void main(){ float r = length(gl_PointCoord - 0.5)*2.0; if (r > 1.0) discard; float core = smoothstep(0.6, 0.4, r); float glow = pow(1.0 - r, 2.0)*0.55;
+    gl_FragColor = vec4(vec3(0.42, 0.75, 1.0)*(core + glow) + vec3(core*0.25), clamp(core + glow, 0.0, 1.0)); }`
+});
+const ptsObj = new THREE.Points(pgeo, pmat); ptsObj.frustumCulled = false; scene.add(ptsObj);
+
+/* מישורים */
+function makePlane(mat){ const g = new THREE.PlaneGeometry(10, 10, 12, 12); g.rotateX(-Math.PI/2); const m = new THREE.Mesh(g, mat); scene.add(m); return m; }
+const plane = makePlane(new THREE.MeshBasicMaterial({color:'#3dff8a', transparent:true, opacity:0.22, side:THREE.DoubleSide, depthWrite:false}));
+const planeW = new THREE.Mesh(plane.geometry, new THREE.MeshBasicMaterial({color:'#3dff8a', wireframe:true, transparent:true, opacity:0.35})); scene.add(planeW);
+const truePl = makePlane(new THREE.MeshBasicMaterial({color:'#ffffff', wireframe:true, transparent:true, opacity:0.22}));
+function setPlane(mesh, b0, b1, b2){
+  const p = mesh.geometry.attributes.position;
+  for (let i = 0; i < p.count; i++){ const A = p.getX(i)*12 + 100, D = p.getZ(i)*2 + 10; p.setY(i, sy(b0 + b1*(A - 100) + b2*(D - 10))); }
+  p.needsUpdate = true; mesh.geometry.computeBoundingSphere();
+}
+let cur = {b0:P0, b1:0, b2:0}, zf = 0;          // zf: 0 = דו-ממד, 1 = תלת-ממד (מעבר חלק)
+const lcG = new THREE.CylinderGeometry(1, 1, 1, 12, 1, true); lcG.translate(0, 0.5, 0);
+const fitLine = new THREE.Group(); scene.add(fitLine);
+const lineCore = new THREE.Mesh(lcG, new THREE.MeshBasicMaterial({color:'#3dff8a'}));
+const lineHalo = new THREE.Mesh(lcG, new THREE.MeshBasicMaterial({color:'#3dff8a', transparent:true, opacity:0.18, blending:THREE.AdditiveBlending, depthWrite:false}));
+fitLine.add(lineCore, lineHalo);
+function setLine(b0, b1){
+  const a = V(sx(40), sy(b0 - 60*b1), 0), b = V(sx(160), sy(b0 + 60*b1), 0), d = b.clone().sub(a), L = d.length(); d.normalize();
+  [lineCore, lineHalo].forEach((m, j) => { m.position.copy(a); m.quaternion.setFromUnitVectors(V(0, 1, 0), d); const r = j ? 0.17 : 0.05; m.scale.set(r, L, r); });
+}
+
+/* חוטים וריבועים */
+const thrGeo = new THREE.BufferGeometry(); thrGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(NMAX*6), 3));
+const threads = new THREE.LineSegments(thrGeo, new THREE.LineBasicMaterial({color:'#ff4d5e', transparent:true, opacity:0.75, depthWrite:false}));
+threads.frustumCulled = false; scene.add(threads);
+const sqMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({color:'#ff4d5e', transparent:true, opacity:0.13, side:THREE.DoubleSide, depthWrite:false}), NMAX);
+sqMesh.frustumCulled = false; scene.add(sqMesh);
+const M4 = new THREE.Matrix4(), Q0 = new THREE.Quaternion(), SV = new THREE.Vector3(), PV = new THREE.Vector3();
+
+/* ======================================================================
+   ממשק
+   ====================================================================== */
+const kf = v => (v*1000).toFixed(1);       // מיליון ₪ ליחידה → אלף ₪ ליחידה
+function updPanels(){
+  const n = nOf(S.nS);
+  $('b1V').textContent = Math.round(S.b1*1000) + 'k ₪/m²'; $('b2V').textContent = Math.round(S.b2*1000) + 'k ₪/km';
+  $('sigV').textContent = S.sig.toFixed(2) + 'M ₪'; $('nV').textContent = n; $('lamV').textContent = S.lam.toFixed(2);
+  $('m1V').textContent = (S.m1*1000).toFixed(1) + 'k'; $('m2V').textContent = Math.round(S.m2*1000) + 'k';
+  const mse = tgt.mse, f = Math.min(1, Math.sqrt(mse)/1.5);
+  $('mseV').textContent = mse.toFixed(3);
+  const col = `hsl(${(1 - f)*130}, 90%, ${50 + f*8}%)`;
+  const bar = $('mseBar'); bar.style.width = Math.max(2, f*100) + '%'; bar.style.background = col; bar.style.boxShadow = `0 0 ${6 + f*22}px ${col}`;
+  $('mseV').style.color = col;
+  $('t1').textContent = kf(S.b1); $('t2').textContent = kf(S.b2); $('t0').textContent = P0.toFixed(2);
+  $('e1').textContent = kf(tgt.b1); $('e2').textContent = kf(tgt.b2); $('e0').textContent = tgt.b0.toFixed(2);
+  $('mseOls').textContent = ols.mse.toFixed(3);
+  if (adv){
+    $('calc').innerHTML = `MSE = Σr²/n = ${(tgt.mse*n).toFixed(1)} / ${n} = ${tgt.mse.toFixed(3)}<br>R² = ${tgt.r2.toFixed(3)}`;
+    drawPath(); drawHist();
+  }
+}
+function prepCanvas(c){ const dpr = window.devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight; c.width = w*dpr; c.height = h*dpr; const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); return [g, w, h]; }
+function drawPath(){
+  const c = $('pathPlot'); if (!c.clientWidth) return; const [g, w, h] = prepCanvas(c);
+  const n = nOf(S.nS), L = [], N = 50;
+  for (let k = 0; k <= N; k++){ const f = fit(10*k/N, n); L.push([f.g1, f.g2]); }
+  const all = L.flat().concat([0]); let lo = Math.min(...all), hi = Math.max(...all); const pad = (hi - lo)*0.1 || 0.1; lo -= pad; hi += pad;
+  const X = l => 30 + l/10*(w - 40), Yp = v => 8 + (hi - v)/(hi - lo)*(h - 26);
+  g.font = '10px Consolas,monospace'; g.fillStyle = '#7f8fab'; g.textAlign = 'center';
+  [0, 2.5, 5, 7.5, 10].forEach(l => g.fillText(l, X(l), h - 5));
+  g.strokeStyle = '#2a3550'; g.beginPath(); g.moveTo(30, Yp(0)); g.lineTo(w - 10, Yp(0)); g.stroke();
+  g.textAlign = 'right'; g.fillText('0', 26, Yp(0) + 3);
+  g.strokeStyle = 'rgba(255,255,255,.35)'; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(X(S.lam), 4); g.lineTo(X(S.lam), h - 16); g.stroke(); g.setLineDash([]);
+  [['#ffb347', 0], ['#c48bff', 1]].forEach(([col, j]) => {
+    g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); L.forEach((v, k) => { const x = X(10*k/N), y = Yp(v[j]); k ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke();
+    const f = fit(S.lam, n); g.fillStyle = col; g.beginPath(); g.arc(X(S.lam), Yp(j ? f.g2 : f.g1), 3.5, 0, 7); g.fill();
+  });
+}
+function drawHist(){
+  const c = $('histPlot'); if (!c.clientWidth) return; const [g, w, h] = prepCanvas(c);
+  const n = nOf(S.nS), B = 31, R = 4.5, bins = new Array(B).fill(0);
+  for (let i = 0; i < n; i++){ const r = Y[i] - (tgt.b0 + tgt.b1*(DA[i] - 100) + tgt.b2*(DD[i] - 10)); const k = Math.floor((r + R)/(2*R)*B); if (k >= 0 && k < B) bins[k]++; }
+  const mx = Math.max(1, ...bins), bw = (w - 12)/B;
+  g.fillStyle = '#ff4d5e'; bins.forEach((v, k) => { const bh = v/mx*(h - 22); g.fillRect(6 + k*bw + 1, h - 16 - bh, bw - 2, bh); });
+  g.fillStyle = '#7f8fab'; g.font = '10px Consolas,monospace'; g.textAlign = 'center';
+  [-4, -2, 0, 2, 4].forEach(v => g.fillText(v, 6 + (v + R)/(2*R)*(w - 12), h - 4));
+}
+
+function setB(){ genY(); recompute(); }
+$('sB1').addEventListener('input', e => { S.b1 = e.target.value/1000; setB(); });
+$('sB2').addEventListener('input', e => { S.b2 = e.target.value/1000; setB(); });
+$('sSig').addEventListener('input', e => { S.sig = +e.target.value; setB(); });
+$('sN').addEventListener('input', e => { S.nS = +e.target.value; recompute(); });
+$('sLam').addEventListener('input', e => { S.lam = +e.target.value; recompute(); });
+$('sM1').addEventListener('input', e => { S.m1 = e.target.value/1000; recompute(); });
+$('sM2').addEventListener('input', e => { S.m2 = e.target.value/1000; recompute(); });
+$('errChk').addEventListener('change', e => S.err = e.target.checked);
+$('sqChk').addEventListener('change', e => S.sq = e.target.checked);
+$('trueChk').addEventListener('change', e => S.tru = e.target.checked);
+$('manChk').addEventListener('change', e => setManual(e.target.checked));
+function setManual(on){
+  S.man = on; document.body.classList.toggle('man', on); $('manChk').checked = on;
+  if (on){ S.m1 = Math.round(ols.b1*2000)/2000; S.m2 = Math.round(ols.b2*1000)/1000; $('sM1').value = S.m1*1000; $('sM2').value = S.m2*1000; }
+  recompute();
+}
+$('resample').addEventListener('click', () => { seed++; sample(seed); genY(); for (let i = 0; i < NMAX; i++) YC[i] = Y[i]; recompute(); });
+
+function setView(v){
+  S.view = v; document.querySelectorAll('#views button').forEach(b => b.classList.toggle('on', b.dataset.view === v));
+  const t = V(0, 0, 0);
+  if (v === '2d'){ camGoal = {p:V(0, 0.6, 21), t:V(0, 0.6, 0)}; return; }
+  const p = v === 'front' ? V(0, 0.5, 24) : v === 'side' ? V(-24, 0.5, 0) : v === 'top' ? V(0, 24, 0.01) : V(14, 7.5, 14.5);
+  camGoal = {p, t};
+}
+document.querySelectorAll('#views button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+function setMode(on){
+  adv = on; document.body.classList.toggle('adv', on);
+  if (!on){
+    S.lam = ADV_DEF.lam; $('sLam').value = 0; S.sq = $('sqChk').checked = ADV_DEF.sq; S.tru = $('trueChk').checked = ADV_DEF.tru;
+    if (S.man) setManual(false);
+  }
+  controls.enableRotate = on; setView(on ? '3d' : '2d');
+  genY(); recompute(); requestAnimationFrame(updPanels);
+  $('lab').scrollIntoView({behavior:'smooth'});
+}
+$('more').addEventListener('click', () => setMode(true));
+$('less').addEventListener('click', () => setMode(false));
+
+/* ======================================================================
+   לולאה
+   ====================================================================== */
+function resize(){
+  const w = view.clientWidth, h = view.clientHeight; if (!w || !h) return;
+  renderer.setSize(w, h, false); renderer.domElement.style.width = w + 'px'; renderer.domElement.style.height = h + 'px';
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+  pmat.uniforms.uScale.value = h*renderer.getPixelRatio()/(2*Math.tan(camera.fov*Math.PI/360));
+  if (adv) updPanels();
+}
+new ResizeObserver(resize).observe(view);
+let visible = true; new IntersectionObserver(e => { visible = e[0].isIntersecting; }).observe(view);
+let last = performance.now();
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt = Math.max(0, Math.min(0.05, (now - last)/1000)); last = now;
+  if (!visible) return;
+  const k = 1 - Math.exp(-dt*7), n = nOf(S.nS);
+  for (let i = 0; i < NMAX; i++) YC[i] += (Y[i] - YC[i])*k;
+  ['b0', 'b1', 'b2'].forEach(c => cur[c] += (tgt[c] - cur[c])*k);
+  zf += ((adv ? 1 : 0) - zf)*(1 - Math.exp(-dt*4)); if (Math.abs(zf - (adv ? 1 : 0)) < 1e-3) zf = adv ? 1 : 0;
+  const flat = zf < 0.5;
+  ax3.visible = !flat; ax2.visible = flat; fitLine.visible = flat; plane.visible = planeW.visible = !flat;
+  if (flat) setLine(cur.b0, cur.b1); else setPlane(plane, cur.b0, cur.b1, cur.b2);
+  truePl.visible = S.tru; if (S.tru) setPlane(truePl, P0, S.b1, S.b2);
+  pmat.uniforms.uSize.value = n > 600 ? 0.15 : n > 150 ? 0.2 : 0.28;
+  const ta = thrGeo.attributes.position.array;
+  for (let i = 0; i < n; i++){
+    const x = sx(DA[i]), z = sz(DD[i])*zf, y = sy(YC[i]), yp = sy(cur.b0 + cur.b1*(DA[i] - 100) + cur.b2*(DD[i] - 10));
+    PP[3*i] = x; PP[3*i + 1] = y; PP[3*i + 2] = z;
+    ta[6*i] = x; ta[6*i + 1] = y; ta[6*i + 2] = z; ta[6*i + 3] = x; ta[6*i + 4] = yp; ta[6*i + 5] = z;
+    if (S.sq){ const r = Math.abs(y - yp); PV.set(x + (DA[i] > 100 ? -r/2 : r/2), (y + yp)/2, z); SV.set(Math.max(r, 1e-4), Math.max(r, 1e-4), 1); M4.compose(PV, Q0, SV); sqMesh.setMatrixAt(i, M4); }
+  }
+  pgeo.setDrawRange(0, n); pgeo.attributes.position.needsUpdate = true;
+  thrGeo.setDrawRange(0, n*2); thrGeo.attributes.position.needsUpdate = true; threads.visible = S.err;
+  threads.material.opacity = n > 600 ? 0.45 : 0.75;
+  sqMesh.visible = S.sq; if (S.sq){ sqMesh.count = n; sqMesh.instanceMatrix.needsUpdate = true; }
+  if (camGoal){
+    const kc = 1 - Math.exp(-dt*3.5); camera.position.lerp(camGoal.p, kc); controls.target.lerp(camGoal.t, kc);
+    if (camera.position.distanceTo(camGoal.p) < 0.03) camGoal = null;
+  }
+  controls.update(); renderer.render(scene, camera);
+}
+
+/* ======================================================================
+   אתחול
+   ====================================================================== */
+sample(seed); genY(); YC.set(Y); recompute(); cur = {b0:tgt.b0, b1:tgt.b1, b2:tgt.b2};
+resize(); controls.enableRotate = false; setView('2d'); camera.position.copy(camGoal.p); controls.target.copy(camGoal.t); camGoal = null;
+(function drawProblem(){                 // מחיר מול שטח, הצבע לפי מרחק — מאותם נתונים
+  const svg = $('probSvg'), X0 = 46, X1 = 326, Y0 = 210, Y1 = 14;
+  const px = A => X0 + (A - 40)/120*(X1 - X0), py = P => Y0 - P/8*(Y0 - Y1);
+  let h = '';
+  [40, 70, 100, 130, 160].forEach(a => h += `<line x1="${px(a)}" y1="${Y1}" x2="${px(a)}" y2="${Y0}" stroke="#16213a"/><text x="${px(a)}" y="${Y0 + 14}" fill="#7f8fab" font-size="10" text-anchor="middle">${a}</text>`);
+  [0, 2, 4, 6, 8].forEach(p => h += `<line x1="${X0}" y1="${py(p)}" x2="${X1}" y2="${py(p)}" stroke="#16213a"/><text x="${X0 - 6}" y="${py(p) + 3}" fill="#7f8fab" font-size="10" text-anchor="end">${p}</text>`);
+  h += `<line x1="${X0}" y1="${Y0}" x2="${X1}" y2="${Y0}" stroke="#4a5d84"/><line x1="${X0}" y1="${Y0}" x2="${X0}" y2="${Y1}" stroke="#4a5d84"/>`;
+  for (let i = 0; i < 200; i++) h += `<circle cx="${px(DA[i]).toFixed(1)}" cy="${py(Y[i]).toFixed(1)}" r="2.2" fill="#8fd0ff" opacity=".85"/>`;
+  const qa = 120;
+  h += `<line x1="${px(qa)}" y1="${Y1}" x2="${px(qa)}" y2="${Y0}" stroke="#ffd479" stroke-dasharray="4 4" opacity=".7"/><circle cx="${px(qa)}" cy="${py(4.4)}" r="7" fill="none" stroke="#ffd479" stroke-width="2"/><text x="${px(qa) + 11}" y="${py(4.4) - 8}" fill="#ffd479" font-size="14" font-weight="700">?</text>`;
+  h += `<text x="${(X0 + X1)/2}" y="244" fill="#b9c6dc" font-size="12" text-anchor="middle">שטח (מ״ר)</text>`;
+  h += `<text x="12" y="${(Y0 + Y1)/2}" fill="#b9c6dc" font-size="12" text-anchor="middle" transform="rotate(-90 12 ${(Y0 + Y1)/2})">מחיר (מיליון ₪)</text>`;
+  svg.innerHTML = h;
+})();
+
+/* פרמטרים בכתובת (לבדיקות): #adv&sig=1.5&n=20&lam=3&sq&true&man&front&side&top&noerr */
+(function(){
+  const h = location.hash.slice(1).split('&'), has = x => h.includes(x);
+  const kv = x => { const e = h.find(s => s.startsWith(x + '=')); return e ? +e.split('=')[1] : null; };
+  if (has('adv')) setMode(true);
+  if (kv('sig') != null){ S.sig = kv('sig'); $('sSig').value = S.sig; genY(); }
+  if (kv('n') != null){ S.nS = kv('n'); $('sN').value = S.nS; }
+  if (kv('lam') != null){ S.lam = kv('lam'); $('sLam').value = S.lam; }
+  if (has('sq')){ S.sq = $('sqChk').checked = true; }
+  if (has('true')){ S.tru = $('trueChk').checked = true; }
+  if (has('noerr')){ S.err = $('errChk').checked = false; }
+  recompute();
+  if (has('man')) setManual(true);
+  ['front', 'side', 'top'].forEach(v => { if (has(v)) setView(v); });
+})();
+requestAnimationFrame(frame);
+
+document.querySelectorAll('.exp .xbtn').forEach(b => b.addEventListener('click', () => {
+  const li = b.closest('.exp'); li.classList.toggle('open'); b.textContent = li.classList.contains('open') ? 'סגור' : 'הסבר';
+}));
+</script>
+
+<script>
+/* ======================================================================
+   הדגמה אוטומטית: כפתור "▶ הדגמה" ליד כל ניסוי. סמן "רפאים" מבצע את הניסוי במעבדה
+   בזמן אמת, וההסבר מוצג במסגרת מתחת למעבדה.
+   ====================================================================== */
+(function(){
+'use strict';
+
+  const SCRIPTS = [
+    async () => { say('מזיזים את השפעת השטח β₁...'); await dragSlider(byId('sB1'), -10, 3000); await dragSlider(byId('sB1'), 45, 3500);
+      say('הקו הירוק רודף אחרי הנקודות'); await dragSlider(byId('sB1'), 25, 2000); await sleep(1500); },
+    async () => { say('מורידים את הרעש σ לאפס'); await dragSlider(byId('sSig'), 0, 3000); say('החוטים נעלמו, MSE = 0, והמודל מוצא את האמת'); await sleep(3500);
+      await dragSlider(byId('sSig'), 0.4, 1500); },
+    async () => { say('מקטינים את n לכ-20'); await dragSlider(byId('sN'), 23, 2500); say('ומעלים את הרעש עד הסוף'); await dragSlider(byId('sSig'), 1.5, 3000);
+      say('החוטים התארכו, MSE האדים, וההערכות התרחקו מהאמת'); await sleep(3500); },
+    async () => { if (+byId('sSig').value < 1.4){ say('רעש גבוה'); await dragSlider(byId('sSig'), 1.5, 2000); }
+      say('מגדילים את n ל-2,000'); await dragSlider(byId('sN'), 100, 4000); say('MSE עדיין גבוה, אבל ההערכות חזרו קרוב לאמת'); await sleep(3500); },
+    async () => { say('מקטינים את n ל-5'); await dragSlider(byId('sN'), 0, 2500);
+      for (let k = 0; k < 4; k++){ say('מדגם חדש (' + (k + 1) + ')'); await click(byId('resample')); await sleep(1100); }
+      say('הקו קופץ ממדגם למדגם: זו השונות'); await sleep(1500); },
+    async () => { await ensureAdv(); say('מדליקים את ריבועי השגיאה'); await toggle(byId('sqChk'), true);
+      say('ו"אני מכוון את המישור"'); await toggle(byId('manChk'), true);
+      const m1 = byId('sM1'), m2 = byId('sM2'), a = +m1.value, b = +m2.value;
+      say('מנסים להטות את המישור... ה-MSE שלנו רק עולה'); await dragSlider(m1, a + 15, 2500); await dragSlider(m1, a, 2000);
+      await dragSlider(m2, b - 40, 2500); await dragSlider(m2, b, 2000); say('אי אפשר לנצח את OLS'); await sleep(2500); },
+    async () => { await ensureAdv(); await toggle(byId('manChk'), false); say('גוררים את λ ימינה...'); await dragSlider(byId('sLam'), 10, 6000);
+      say('המישור משתטח, MSE עולה, והמשקלים בגרף מתכווצים'); await sleep(3000); },
+    async () => { await ensureAdv(); await toggle(byId('manChk'), false); await dragSlider(byId('sN'), 23, 2000); await dragSlider(byId('sSig'), 1.2, 2000);
+      say('λ קטן, בערך 0.5'); await dragSlider(byId('sLam'), 0.5, 2000);
+      for (let k = 0; k < 4; k++){ say('מדגם חדש (' + (k + 1) + ')'); await click(byId('resample')); await sleep(1100); }
+      say('המישור קופץ פחות: מעט הטיה בתמורה להרבה יציבות'); await sleep(1500); }
+  ];
+
+  const byId = id => document.getElementById(id);
+  const LAB = document.querySelector('section.lab'), VIEW = LAB.querySelector('.view');
+  const cur = byId('demoCursor'), D = {alive:0, i:-1, x:0, y:0};
+  const sleep = ms => { const tok = D.alive; return new Promise(r => setTimeout(r, ms)).then(() => { if (D.alive !== tok) throw 'stop'; }); };
+  const ease = k => k*k*(3 - 2*k);
+  function anim(dur, fn){
+    const tok = D.alive;
+    return new Promise((res, rej) => { const t0 = performance.now();
+      (function step(now){ if (D.alive !== tok) return rej('stop'); const k = Math.min(1, (now - t0)/dur); fn(ease(k)); if (k < 1) requestAnimationFrame(step); else res(); })(t0); });
+  }
+  function place(x, y){ D.x = x; D.y = y; cur.style.transform = 'translate(' + (x - 3) + 'px,' + (y - 2) + 'px)'; }
+  function moveTo(x, y, dur){ const x0 = D.x, y0 = D.y; dur = dur || Math.min(1100, 350 + Math.hypot(x - x0, y - y0)*0.9); return anim(dur, k => place(x0 + (x - x0)*k, y0 + (y - y0)*k)); }
+  const center = el => { const r = el.getBoundingClientRect(); return [r.left + r.width/2, r.top + r.height/2]; };
+  function ripple(){ const r = document.createElement('div'); r.className = 'demoRipple'; r.style.left = D.x + 'px'; r.style.top = D.y + 'px'; document.body.appendChild(r); setTimeout(() => r.remove(), 600); }
+  async function press(){ cur.classList.add('down'); ripple(); await sleep(140); cur.classList.remove('down'); }
+  async function click(el){ if (!el) return; await moveTo(...center(el)); await press(); el.click(); await sleep(400); }
+  async function select(el, v){ if (el.value === v) return; await moveTo(...center(el)); await press(); el.value = v; el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(500); }
+  async function toggle(el, want){                   // מתג (checkbox מוסתר בתוך label)
+    if (el.checked === want) return;
+    await moveTo(...center(el.closest('label') || el)); await press(); el.click(); await sleep(400);
+  }
+  async function dragSlider(el, to, dur){            // גרירה אמיתית: אירועי input בזמן אמת ו-change בסוף
+    const r = el.getBoundingClientRect(), mn = +el.min, mx = +el.max, rtl = getComputedStyle(el).direction === 'rtl';
+    const xOf = v => { const f = (v - mn)/(mx - mn); return rtl ? r.right - 8 - f*(r.width - 16) : r.left + 8 + f*(r.width - 16); };
+    const from = +el.value, y = r.top + r.height/2;
+    await moveTo(xOf(from), y); cur.classList.add('down');
+    try { await anim(dur || 1500, k => { const v = from + (to - from)*k; el.value = v; el.dispatchEvent(new Event('input', {bubbles:true})); place(xOf(+el.value), y); }); }
+    finally { cur.classList.remove('down'); }
+    el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(300);
+  }
+  async function waitFor(fn, limit){ const t0 = performance.now(); while (!fn() && performance.now() - t0 < (limit || 30000)) await sleep(200); }
+  async function ensureAdv(){ if (!document.body.classList.contains('adv')){ say('פותחים את המצב המורחב'); await click(byId('more')); await sleep(900); } }
+  const say = t => { byId('demoSay').textContent = t; };
+  const seg = (id, attr, v) => document.querySelector('#' + id + ' button[data-' + attr + '="' + v + '"]');
+  const viewBtn = v => document.querySelector('#views button[data-view="' + v + '"]');
+
+  async function runDemo(i){
+    stopDemo(false);
+    const tok = D.alive; D.i = i;
+    const li = document.querySelectorAll('.exp')[i];
+    byId('demoNum').textContent = i + 1; byId('demoTitle').textContent = li.querySelector('.task').textContent;
+    byId('demoText').innerHTML = li.querySelector('.ans').innerHTML; say('עוברים למעבדה...');
+    byId('demoStop').style.display = '';
+    document.body.classList.add('demo');
+    LAB.scrollIntoView({behavior:'smooth', block:'start'});
+    try {
+      await sleep(850);
+      const r = VIEW.getBoundingClientRect(); place(r.left + r.width/2, r.top + r.height/2); cur.classList.add('on');
+      await SCRIPTS[i]();
+      if (D.alive === tok){ cur.classList.remove('on'); byId('demoStop').style.display = 'none'; }
+    } catch (e) { if (e !== 'stop') console.warn(e); }
+  }
+  function stopDemo(close){ D.alive++; cur.classList.remove('on', 'down'); if (close){ document.body.classList.remove('demo'); D.i = -1; } }
+  byId('demoStop').addEventListener('click', () => { stopDemo(false); say('ההדגמה נעצרה. אפשר להמשיך לשחק במעבדה בעצמכם.'); byId('demoStop').style.display = 'none'; });
+  byId('demoAgain').addEventListener('click', () => { if (D.i >= 0) runDemo(D.i); });
+  byId('demoClose').addEventListener('click', () => stopDemo(true));
+  document.querySelectorAll('.exp').forEach((li, i) => {
+    if (!SCRIPTS[i]) return;
+    const b = document.createElement('button'); b.className = 'pbtn'; b.type = 'button'; b.title = 'הדגמה אוטומטית במעבדה';
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>הדגמה';
+    li.querySelector('.top').insertBefore(b, li.querySelector('.xbtn'));
+    b.addEventListener('click', () => runDemo(i));
+  });
+  if (location.hash.startsWith('#demo')) setTimeout(() => runDemo(+location.hash.slice(5) || 0), 400);
+
+})();
+</script>
+</body>
+</html>

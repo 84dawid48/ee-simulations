@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.w{animation:flow 2s linear infinite}
+.ax2{transform-box:view-box;transform-origin:470px 180px;animation:turn 6s ease-in-out infinite}
+@keyframes flow{from{transform:translateX(-60px)}to{transform:translateX(0)}}
+@keyframes turn{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(32deg)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".5" r=".8"><stop offset="0" stop-color="#2a2208"/><stop offset="1" stop-color="#05070d"/></radialGradient>
+<clipPath id="c1"><rect x="0" y="0" width="200" height="360"/></clipPath><clipPath id="c2"><rect x="240" y="0" width="210" height="360"/></clipPath><clipPath id="c3"><rect x="490" y="0" width="150" height="360"/></clipPath></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<g clip-path="url(#c1)"><path class="w" d="M-40 180 Q-10 90 20 180 T80 180 T140 180 T200 180 T260 180" fill="none" stroke="#ffd23d" stroke-width="3"/></g>
+<g clip-path="url(#c2)"><path class="w" d="M200 180 Q230 120 260 180 T320 180 T380 180 T440 180 T500 180" fill="none" stroke="#ffd23d" stroke-width="3" opacity=".8"/></g>
+<g clip-path="url(#c3)"><path class="w" d="M440 180 Q470 155 500 180 T560 180 T620 180 T680 180" fill="none" stroke="#ffd23d" stroke-width="3" opacity=".55"/></g>
+<g fill="rgba(140,180,255,.12)" stroke="#8cb4ff" stroke-width="2.5"><ellipse cx="220" cy="180" rx="24" ry="92"/><ellipse cx="470" cy="180" rx="24" ry="92"/></g>
+<g stroke="#cfe0ff" stroke-width="3" stroke-linecap="round"><path d="M220 110V250"/><path class="ax2" d="M470 115V245"/></g>
+<path d="M0 180H640" stroke="#fff" stroke-opacity=".15"/></svg>

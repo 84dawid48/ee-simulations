@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מעבדת השכנים</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+:root{--bg:#05070d;--card:#0c1222;--line:#1f2b44;--txt:#e3eaf6;--mut:#93a3bf;--acc:#6cb8ff;--grn:#46e39a;--yel:#ffd479;--amb:#ffb347}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:"Segoe UI","Rubik",Arial,sans-serif;padding-top:30px}
+#topbar{position:fixed;top:0;left:0;right:0;height:30px;background:#060912;border-bottom:1px solid var(--line);z-index:100}
+#bsd{position:absolute;top:7px;right:12px;font-size:12px;color:#c9d6ea}
+#copyr{position:absolute;top:4px;left:8px;font-size:12px;color:#dce6f5;background:#10172a;border:1px solid var(--line);border-radius:6px;padding:2px 10px}
+bdi{unicode-bidi:isolate}
+
+/* ===== פתיח ===== */
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+#intro{padding-top:46px;padding-bottom:40px;line-height:1.75}
+#intro h1{font-size:34px;line-height:1.25;margin:0 0 8px;font-weight:700}
+#intro h1 span{background:linear-gradient(90deg,#ff4d5e,#3ddc84,#3d8bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+#intro .lead{font-size:18px;color:var(--mut);margin:0 0 30px}
+.prob{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.prob p{margin:0 0 10px;font-size:15.5px;color:#d0d9ea}
+.prob p:last-child{margin-bottom:0}
+.prob svg{width:100%;height:auto;display:block;background:#080d18;border:1px solid var(--line);border-radius:12px}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:14px}
+.rd{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.rd .ic{flex:0 0 38px;height:38px;border-radius:10px;background:#101a30;display:grid;place-items:center}
+.rd h3{margin:0 0 2px;font-size:15.5px}
+.rd p{margin:0;font-size:14.5px;color:#c3cfe3}
+@media (max-width:900px){.prob{grid-template-columns:1fr}}
+h2.sec{font-size:21px;margin:40px 0 14px;color:var(--acc)}
+.theory{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}
+.th{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px}
+.th .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;font-size:14px;margin-bottom:6px}
+.th h3{margin:0 0 4px;font-size:16.5px}
+.th p{margin:0;font-size:14.5px;color:#c3cfe3}
+.law{margin:18px 0 0;text-align:center;font-size:21px;background:linear-gradient(90deg,rgba(108,184,255,.08),rgba(255,179,71,.07));border:1px solid var(--line);border-radius:16px;padding:14px;font-family:"Cambria Math","Times New Roman",serif}
+.law .eq{direction:ltr;display:inline-block;margin:0 14px}
+.law .eq.e{color:#9fd0ff}.law .eq.c{color:#ffd08a}
+.law small{display:block;font-family:"Segoe UI",Arial,sans-serif;font-size:14px;color:var(--mut);margin-top:4px}
+.cta{display:block;width:max-content;margin:34px auto 0;text-decoration:none;color:#fff;font:inherit;font-size:17px;font-weight:600;background:linear-gradient(180deg,#2167b8,#18508f);border:1px solid #3b86e0;border-radius:40px;padding:12px 30px;box-shadow:0 0 30px rgba(59,134,224,.35);cursor:pointer}
+.cta:hover{filter:brightness(1.15)}
+
+/* ===== מעבדה ===== */
+.lab{position:relative;height:calc(100vh - 30px);min-height:600px;border-top:1px solid var(--line)}
+.view{position:absolute;inset:0}
+.view canvas{display:block}
+.pnl{position:absolute;top:14px;background:rgba(10,15,28,.86);border:1px solid var(--line);border-radius:18px;padding:16px;backdrop-filter:blur(10px);z-index:10;max-height:calc(100% - 100px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2a3550 transparent}
+.pnl.r{right:14px;width:296px}
+.pnl.l{left:14px;width:300px}
+.c-row{margin-bottom:14px}
+.c-lbl{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px;color:#cdd8ea}
+.c-val{font-family:Consolas,monospace;font-size:13.5px;color:#fff;direction:ltr}
+input[type=range]{width:100%;accent-color:var(--acc);margin:0}
+.seg{display:flex;gap:4px}
+.seg button{flex:1;background:#0a0f1c;border:1px solid var(--line);color:var(--mut);border-radius:9px;padding:7px 0;font:inherit;font-size:14px;cursor:pointer}
+.seg button.on{border-color:var(--acc);color:#fff;background:#16243f}
+.seg.big button{font-size:15px;padding:9px 0}
+.metric{display:flex;gap:6px}
+.metric button{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;background:#0a0f1c;border:1px solid var(--line);color:var(--mut);border-radius:12px;padding:9px 0 8px;font:inherit;font-size:14.5px;cursor:pointer;transition:.2s}
+.metric button.on[data-v=euc]{border-color:#6cb8ff;color:#fff;background:#10223d;box-shadow:0 0 16px rgba(108,184,255,.25)}
+.metric button.on[data-v=cos]{border-color:#ffb347;color:#fff;background:#2a1e0c;box-shadow:0 0 16px rgba(255,179,71,.25)}
+.embtn{width:100%;font:inherit;font-size:16px;font-weight:700;color:#fff;border:none;border-radius:12px;padding:11px;cursor:pointer;background:linear-gradient(135deg,#1c8a5c,#1f6fd0);box-shadow:0 6px 22px rgba(31,111,208,.35)}
+.embtn:hover{filter:brightness(1.12)}
+.embtn:disabled{opacity:.5;cursor:default;filter:none}
+.winbtn{background:linear-gradient(135deg,#b8860b,#d9541e);box-shadow:0 6px 22px rgba(217,84,30,.35)}
+.btn2{width:100%;background:#0a0f1c;border:1px solid var(--line);color:#cdd8ea;border-radius:10px;padding:8px;font:inherit;font-size:14px;cursor:pointer}
+.btn2:hover{border-color:var(--acc);color:#fff}
+.sep{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.ttl{font-size:13px;color:var(--mut);margin-bottom:8px}
+.car{font-family:Consolas,monospace;font-size:13px;color:#fff;direction:ltr;text-align:center;background:#0a0f1c;border:1px solid var(--line);border-radius:8px;padding:5px;margin-bottom:10px}
+.vote{display:grid;grid-template-columns:12px 92px 1fr 34px;gap:8px;align-items:center;font-size:13.5px;margin:6px 0}
+.dot{width:12px;height:12px;border-radius:50%;box-shadow:0 0 8px currentColor}
+.vote .nm{color:#cdd8ea}
+.bar{height:9px;background:#141c30;border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px;transition:width .35s}
+.vote .pc,.mt .pc{font-family:Consolas,monospace;color:#fff;direction:ltr;text-align:left;font-size:13px}
+.verdict{margin-top:10px;text-align:center;font-size:15px;padding:8px;border-radius:10px;background:#0a0f1c;border:1px solid var(--line)}
+.verdict b{font-size:16.5px}
+.mt{display:grid;grid-template-columns:70px 1fr 48px;gap:8px;align-items:center;font-size:13.5px;margin:7px 0;color:#cdd8ea}
+.cvst{font-size:13.5px;color:var(--mut);text-align:center;min-height:20px;margin:8px 0 4px}
+.chk{display:flex;align-items:center;gap:8px;font-size:13.5px;color:#cdd8ea;margin:8px 0}
+canvas.plot{width:100%;height:130px;display:block;background:#080d18;border:1px solid var(--line);border-radius:10px}
+.leg{display:flex;gap:14px;justify-content:center;font-size:12px;color:var(--mut);margin-top:5px}
+.leg i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-left:5px}
+.fbars{display:flex;gap:3px;align-items:flex-end;height:64px;direction:ltr;background:#080d18;border:1px solid var(--line);border-radius:10px;padding:6px 6px 0}
+.fbars div{flex:1;background:#2c4a7a;border-radius:4px 4px 0 0;position:relative;min-width:0}
+.fbars div.cur{background:#cfd6e4}
+.fbars span{position:absolute;top:-15px;left:0;right:0;text-align:center;font-size:10px;color:#cdd8ea;font-family:Consolas,monospace}
+.calc{font-family:Consolas,"Cambria Math",monospace;font-size:13px;direction:ltr;text-align:center;color:#fff;background:#0a0f1c;border:1px solid var(--line);border-radius:8px;padding:7px}
+.views{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:4px;background:rgba(10,15,28,.86);border:1px solid var(--line);border-radius:30px;padding:4px;z-index:10}
+.views button{background:none;border:none;color:var(--mut);font:inherit;font-size:13px;padding:6px 16px;border-radius:30px;cursor:pointer;white-space:nowrap}
+.views button.on{background:#1a2b4a;color:#fff}
+body:not(.adv) .adv-only{display:none!important}
+body.adv .basic-only{display:none!important}
+body.cv .pred-only{display:none!important}
+body:not(.cv) .cv-only{display:none!important}
+.morebtn{position:absolute;bottom:14px;left:14px;z-index:12;display:flex;align-items:center;gap:10px;font:inherit;font-size:18px;font-weight:700;color:#fff;border:none;border-radius:40px;padding:15px 28px;cursor:pointer;background:linear-gradient(135deg,#7b2ff7,#e0218a);box-shadow:0 8px 30px rgba(123,47,247,.45);animation:pulse 2.2s infinite}
+.morebtn .ic{font-size:22px}
+.morebtn:hover{filter:brightness(1.15)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(224,33,138,.55),0 8px 30px rgba(123,47,247,.45)}70%{box-shadow:0 0 0 16px rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}100%{box-shadow:0 0 0 0 rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}}
+.lessbtn{position:absolute;bottom:14px;left:14px;z-index:12;font:inherit;font-size:14px;color:#cdd8ea;background:rgba(10,15,28,.88);border:1px solid #3a4a6e;border-radius:30px;padding:9px 18px;cursor:pointer}
+.lessbtn:hover{border-color:var(--acc);color:#fff}
+
+/* ===== ניסויים ===== */
+#exps{padding-top:10px;padding-bottom:60px;line-height:1.75}
+.exps{list-style:none;margin:0;padding:0;counter-reset:ex}
+.exp{counter-increment:ex;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.exp .top{display:flex;align-items:center;gap:14px}
+.exp .top::before{content:counter(ex);flex:0 0 30px;height:30px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;display:grid;place-items:center}
+.exp .task{flex:1;font-size:16px}
+.exp .tag{display:inline-block;font-size:12px;color:#e9b8ff;border:1px solid #5b2d7a;background:#1d0f2a;border-radius:10px;padding:0 8px;margin-left:6px}
+.xbtn{flex:0 0 auto;background:#1a1608;border:1px solid #6b5520;color:var(--yel);border-radius:20px;padding:5px 16px;font:inherit;font-size:14px;cursor:pointer}
+.xbtn:hover{filter:brightness(1.25)}
+.exp .ans{display:none;margin:12px 44px 2px 0;padding:10px 14px;border-right:3px solid var(--yel);background:rgba(255,212,121,.06);border-radius:8px;font-size:15px;color:#d6dcea;line-height:1.7}
+.exp.open .ans{display:block}
+.exp.open .xbtn{background:#2b230b}
+@media (max-width:900px){
+  #intro h1{font-size:26px}
+  .lab{height:auto;min-height:0}
+  .view{position:relative;height:62vh}
+  .pnl{position:static;width:auto!important;margin:12px;max-height:none}
+  .views{position:static;transform:none;width:max-content;max-width:calc(100% - 24px);flex-wrap:wrap;margin:0 auto 12px}
+  .morebtn,.lessbtn{position:static;margin:12px auto 18px;animation:none}
+}
+
+/* ===== הדגמה אוטומטית של ניסוי ===== */
+.pbtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:#0f2a1c;border:1px solid #2f7a52;color:#7dffb4;border-radius:20px;padding:5px 14px;font:inherit;font-size:14px;cursor:pointer}
+.pbtn:hover{filter:brightness(1.25)}
+.pbtn svg{width:12px;height:12px}
+#demoBox{display:none;position:relative;height:190px;border-top:1px solid var(--line);background:linear-gradient(180deg,#0a1322,#070b16);padding:14px 20px;overflow-y:auto;line-height:1.6}
+body.demo #demoBox{display:block}
+body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
+#demoBox .dh{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+#demoBox .dn{flex:0 0 28px;height:28px;border-radius:50%;background:#123a27;color:#7dffb4;font-weight:700;display:grid;place-items:center}
+#demoBox .dt{flex:1;font-size:15.5px;font-weight:600}
+#demoBox .say{font-size:14px;color:#7dffb4;min-height:22px;margin-bottom:6px}
+#demoBox .say::before{content:"▶ ";opacity:.7}
+#demoBox .dx{font-size:15px;color:#d6dcea;line-height:1.7;border-right:3px solid #ffd479;background:rgba(255,212,121,.06);border-radius:8px;padding:8px 12px}
+#demoBox .db{background:#0a0f1c;border:1px solid var(--line);color:#cdd8ea;border-radius:10px;padding:5px 12px;font:inherit;font-size:13.5px;cursor:pointer}
+#demoBox .db:hover{border-color:var(--acc);color:#fff}
+#demoCursor{position:fixed;left:0;top:0;z-index:300;pointer-events:none;opacity:0;transition:opacity .3s}
+#demoCursor.on{opacity:1}
+#demoCursor svg{width:30px;height:30px;filter:drop-shadow(0 0 6px rgba(125,255,180,.9)) drop-shadow(0 2px 3px rgba(0,0,0,.6));transition:transform .12s}
+#demoCursor.down svg{transform:scale(.82)}
+.demoRipple{position:fixed;z-index:299;pointer-events:none;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;border:2px solid #7dffb4;animation:demoRip .55s ease-out forwards}
+@keyframes demoRip{from{transform:scale(.4);opacity:1}to{transform:scale(3.4);opacity:0}}
+</style>
+</head>
+<body>
+<div id="topbar"><div id="bsd">בס״ד</div><div id="copyr">כל הזכויות שמורות לדוד יצחקי</div></div>
+
+<!-- ===================== פתיח ===================== -->
+<section id="intro" class="wrap">
+  <h1>איך מחליטים מה זה רכב חדש לפי <span>השכנים שלו</span>?</h1>
+  <p class="lead">יש לנו מאות רכבים מוכרים, ומגיע רכב שאף אחד לא סיווג. נשאל את השכנים הקרובים אליו, ונגלה שגם השאלה "מי קרוב?" היא החלטה שצריך לבדוק בהגינות.</p>
+
+  <h2 class="sec">הבעיה</h2>
+  <div class="prob">
+    <div>
+      <p>לכל רכב יש שלושה מספרים: <b>משקל</b> (טון), <b>שנת ייצור</b> ו<b>מהירות מרבית</b> (קמ״ש). מאות רכבים כבר מסווגים: <b style="color:#ff4d5e">אדום = רכב ספורט</b>, <b style="color:#3d8bff">כחול = משאית</b>, <b style="color:#3ddc84">ירוק = רכב משפחתי</b>. בגרף רואים שניים מהשלושה: משקל מול מהירות.</p>
+      <p>מגיע <b>רכב חדש</b> (הנקודה האפורה עם "?"), ואנחנו לא יודעים מה הוא. הרעיון של KNN פשוט: למצוא את <b>K</b> הרכבים המוכרים הכי "קרובים" אליו ולתת להם להצביע. אבל מה זה "קרוב"? אפשר למדוד מרחק בסרגל, ואפשר להשוות את <b>היחס</b> בין המאפיינים. כל שיטה בוחרת שכנים אחרים, ולפעמים גם נותנת תשובה אחרת.</p>
+      <p><b>המשימה:</b> לבחור את K ואת שיטת המרחק בצורה הוגנת, בלי "להציץ" בנתוני המבחן. בודקים כל בחירה ב<b>אימות מוצלב</b>: מחלקים את נתוני האימון לחלקים, ובכל סבב חלק אחר משמש לבדיקה.</p>
+    </div>
+    <svg id="probSvg" viewBox="0 0 340 250" aria-label="רכבים מוכרים: משקל מול מהירות, ורכב חדש לא ידוע"></svg>
+  </div>
+
+  <h2 class="sec">איך לקרוא את המעבדה</h2>
+  <div class="read">
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#93a3bf" stroke-width="1.6"><path d="M4 20V5M4 20h15M4 20l9-6"/><path d="M4 5l-2 3M4 5l2 3M19 20l-3-2M19 20l-3 2"/></svg></div><div><h3>הקובייה = מרחב הרכבים</h3><p>משקל לרוחב, מהירות לגובה, שנת ייצור לעומק. כל מאפיין מכווץ לטווח 0 עד 1.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="6" cy="14" r="3.5" fill="#ff4d5e"/><circle cx="13" cy="8" r="3.5" fill="#3d8bff"/><circle cx="18" cy="16" r="3.5" fill="#3ddc84"/></svg></div><div><h3>נקודה צבעונית = רכב מוכר</h3><p>אדום ספורט, כחול משאית, ירוק משפחתי. הצבע הוא הסוג האמיתי שלו.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="#8a93a6" opacity=".25"/><circle cx="12" cy="12" r="4" fill="#d9dee8"/></svg></div><div><h3>נקודה אפורה זוהרת = רכב חדש</h3><p>זה הרכב שצריך לסווג. השכנים שלו מצביעים, והרוב קובע.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="rgba(108,184,255,.12)" stroke="#9fd0ff" stroke-width="1.4"/><circle cx="12" cy="12" r="2.2" fill="#d9dee8"/></svg></div><div><h3>בועה שקופה = מרחק אוקלידי</h3><p>היא מתנפחת עד שהיא בולעת K שכנים. כל מה שבתוכה קרוב "בסרגל".</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M3 21L21 5L21 11Z" fill="rgba(255,179,71,.18)"/><path d="M3 21L21 8" stroke="#ffd08a" stroke-width="1.8"/><circle cx="3" cy="21" r="2" fill="#ffb347"/></svg></div><div><h3>קרן לייזר מהראשית = קוסינוס</h3><p>הקרן יוצאת מהפינה (0,0,0) דרך הרכב החדש. השכנים הם מה שנמצא בתוך הקונוס, בזווית קרובה.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="1.5"><rect x="2" y="9" width="6" height="6" stroke="#4f7fc4"/><rect x="9" y="4" width="6" height="6" stroke="#4f7fc4"/><rect x="16" y="13" width="6" height="6" stroke="#e6ebf5"/><circle cx="19" cy="16" r="1.6" fill="none" stroke="#fff"/></svg></div><div><h3>קוביות קטנות = קפלים</h3><p>באימות מוצלב: קוביות זוהרות לאימון, קובייה אפורה בצד לאימות. טבעת לבנה מסמנת טעות.</p></div></div>
+  </div>
+
+  <h2 class="sec">התאוריה בקצרה</h2>
+  <div class="theory">
+    <div class="th"><div class="n">1</div><h3>השכנים מצביעים</h3><p>KNN לא "לומד" נוסחה. כדי לסווג רכב חדש הוא מחפש את K הרכבים המוכרים הקרובים ביותר, והסוג הנפוץ ביניהם מנצח.</p></div>
+    <div class="th"><div class="n">2</div><h3>מרחק אוקלידי</h3><p>המרחק בקו ישר, כמו בסרגל. כל הכיוונים שווים, ולכן "קרוב" נראה כמו כדור סביב הרכב.</p></div>
+    <div class="th"><div class="n">3</div><h3>דמיון קוסינוס</h3><p>משווה את <b>הכיוון</b> של החיצים מהראשית, לא את האורך. שני רכבים עם אותו יחס בין המאפיינים הם "זהים", גם אם אחד רחוק מאוד.</p></div>
+    <div class="th"><div class="n">4</div><h3>היפר-פרמטרים</h3><p>K ופונקציית המרחק הם כפתורי הגדרה שאנחנו בוחרים מראש. המודל לא לומד אותם לבד, ובחירה גרועה פוגעת בדיוק.</p></div>
+    <div class="th"><div class="n">5</div><h3>אימות מוצלב</h3><p>מחלקים את נתוני האימון ל-F קפלים. כל קפל בתורו נבחן על ידי השאר, ומקבלים ציון ממוצע. נתוני המבחן נשארים נעולים עד הסוף.</p></div>
+  </div>
+  <div class="law"><span class="eq e">d(x,y) = √Σ(x<sub>i</sub> − y<sub>i</sub>)²</span><span class="eq c">cos θ = x·y / (‖x‖‖y‖)</span><small>שתי דרכים למדוד "קרבה": מרחק בקו ישר, או הזווית בין שני חיצים מהראשית</small></div>
+  <a class="cta" href="#lab">למעבדה ↓</a>
+</section>
+
+<!-- ===================== מעבדה ===================== -->
+<section class="lab" id="lab">
+  <div class="view" id="view"></div>
+  <div class="pnl r">
+    <div class="c-row"><div class="seg big" id="modeSeg"><button data-m="pred" class="on">🔮 חיזוי</button><button data-m="cv">🧊 אימות מוצלב</button></div></div>
+    <div class="c-row"><div class="c-lbl"><span>מספר שכנים K</span><span class="c-val" id="kV">5</span></div><input type="range" id="sK" min="1" max="20" step="1" value="5"></div>
+    <div class="c-row"><div class="c-lbl">פונקציית מרחק</div>
+      <div class="metric" id="metric">
+        <button data-v="euc" class="on"><svg width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="10" fill="rgba(108,184,255,.15)" stroke="#9fd0ff" stroke-width="1.5"/><circle cx="13" cy="13" r="2.5" fill="#e6ebf5"/></svg>אוקלידי</button>
+        <button data-v="cos"><svg width="26" height="26" viewBox="0 0 26 26"><path d="M3 23L24 5L24 12Z" fill="rgba(255,179,71,.2)"/><path d="M3 23L24 8.5" stroke="#ffd08a" stroke-width="2"/><circle cx="3.5" cy="22.5" r="2.4" fill="#ffb347"/></svg>קוסינוס</button>
+      </div></div>
+
+    <div class="pred-only">
+      <button class="btn2" id="newCar">🎲 רכב חדש</button>
+      <div class="sep">
+        <div class="car" id="carLbl"></div>
+        <div id="votes"></div>
+        <div class="verdict" id="verdict"></div>
+      </div>
+    </div>
+
+    <div class="cv-only">
+      <div class="c-row"><div class="c-lbl"><span>מספר קפלים</span><span class="c-val" id="fV">5</span></div><input type="range" id="sF" min="2" max="10" step="1" value="5"></div>
+      <button class="embtn" id="runCV">▶ הרץ אימות מוצלב</button>
+      <div class="cvst" id="cvSt"></div>
+      <div class="mt"><span>קפל נוכחי</span><div class="bar"><i id="foldBar" style="background:#cfd6e4;width:0"></i></div><span class="pc" id="foldPc">–</span></div>
+      <div class="mt"><span>ממוצע</span><div class="bar"><i id="meanBar" style="background:var(--grn);width:0"></i></div><span class="pc" id="meanPc">–</span></div>
+    </div>
+
+    <div class="sep adv-only">
+      <div class="c-row"><div class="c-lbl">נתונים</div><div class="seg" id="dataSeg"><button data-d="clusters" class="on">אשכולות</button><button data-d="rays">קרניים</button></div></div>
+      <div class="pred-only">
+        <div class="c-row"><div class="c-lbl"><span>משקל</span><span class="c-val" id="qwV"></span></div><input type="range" id="sQw" min="0.6" max="8.4" step="0.05"></div>
+        <div class="c-row"><div class="c-lbl"><span>שנת ייצור</span><span class="c-val" id="qyV"></span></div><input type="range" id="sQy" min="1991" max="2024" step="1"></div>
+        <div class="c-row"><div class="c-lbl"><span>מהירות מרבית</span><span class="c-val" id="qsV"></span></div><input type="range" id="sQs" min="85" max="315" step="1"></div>
+      </div>
+      <div class="c-row"><div class="c-lbl"><span>מהירות אנימציה</span><span class="c-val" id="spV">×1.0</span></div><input type="range" id="sSp" min="0.3" max="4" step="0.1" value="1"></div>
+      <button class="embtn winbtn" id="winBtn">🏆 מצא את ההיפר-פרמטר המנצח</button>
+    </div>
+  </div>
+
+  <div class="pnl l adv-only">
+    <div class="ttl">דיוק באימות מוצלב מול K</div>
+    <canvas class="plot" id="kPlot"></canvas>
+    <div class="leg"><span><i style="background:#6cb8ff"></i>אוקלידי</span><span><i style="background:#ffb347"></i>קוסינוס</span></div>
+    <div class="sep cv-only" id="foldSec"><div class="ttl">דיוק בכל קפל</div><div class="fbars" id="fbars"></div></div>
+    <div class="sep" id="winSec" style="display:none"><div class="ttl">🏆 התחרות</div><div id="winBars"></div></div>
+    <div class="sep"><div class="calc" id="calc"></div></div>
+  </div>
+
+  <div class="views" id="views"><button data-view="3d" class="on">תלת-ממד</button><button data-view="front">חזית</button><button data-view="origin" class="adv-only pred-only">מהראשית</button></div>
+  <button id="more" class="morebtn basic-only"><span class="ic">🔬</span>אני רוצה לחקור יותר</button>
+  <button id="less" class="lessbtn adv-only">→ לחזור למעבדה הבסיסית</button>
+</section>
+<!-- מסגרת ההסבר של ההדגמה האוטומטית (מופיעה מתחת למעבדה, לא מעליה) -->
+<section id="demoBox" aria-live="polite">
+  <div class="dh"><div class="dn" id="demoNum">1</div><div class="dt" id="demoTitle"></div>
+    <button class="db" id="demoStop">⏹ עצור</button><button class="db" id="demoAgain">↻ שוב</button><button class="db" id="demoClose">✕ סגור</button></div>
+  <div class="say" id="demoSay"></div>
+  <div class="dx" id="demoText"></div>
+</section>
+<div id="demoCursor"><svg viewBox="0 0 24 24"><path d="M4 2l15 11-6.5 1.2L16.5 22l-3 1.3-3.6-7.6L5 20z" fill="#fff" stroke="#0b1a12" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+
+<!-- ===================== ניסויים ===================== -->
+<section id="exps" class="wrap">
+  <h2 class="sec">ניסויים לנסות במעבדה</h2>
+  <ol class="exps">
+    <li class="exp"><div class="top"><div class="task">במצב "חיזוי", עם מרחק אוקלידי, הזיזו את K מ-1 עד 20. הבועה מתנפחת, בולעת עוד שכנים, ולפעמים החיזוי מתהפך.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">KNN מוצא את K הרכבים הקרובים ביותר, וכל אחד מהם מצביע בעד הסוג שלו. רדיוס הבועה הוא בדיוק המרחק עד השכן ה-K. עם K קטן, שכן אחד "חריג" יכול להכריע לבד. עם K גדול, הבועה גדלה ומתחילה לבלוע רכבים מקבוצות אחרות שנמצאות רחוק יותר. הרכב שמופיע בפתיחה יושב על הגבול בין רכבי ספורט לרכבים משפחתיים, ולכן ההצבעה אצלו צמודה.</div></li>
+    <li class="exp"><div class="top"><div class="task">החליפו ל"קוסינוס". הבועה נעלמת, וקרן לייזר יוצאת מהראשית דרך הרכב החדש. חלק מהשכנים שנדלקים רחוקים ממנו מאוד, לאורך הקרן.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">דמיון קוסינוס בודק רק את הזווית בין החץ מהראשית לרכב החדש לבין החץ מהראשית לכל רכב מוכר. רכב שכל המאפיינים שלו כפולים נמצא על אותה קרן, ולכן הוא "זהה" לגמרי, אף שבסרגל הוא רחוק. הקונוס מראה את כל הכיוונים שקרובים יותר מהשכן ה-K. שימו לב שהראשית כאן היא פינת הקובייה, כלומר הערכים הנמוכים ביותר (<bdi dir="ltr">0.5 t, 1990, 80 km/h</bdi>). אם מזיזים את הראשית, הזוויות משתנות. מרחק אוקלידי לא תלוי בזה.</div></li>
+    <li class="exp"><div class="top"><div class="task">על הרכב שמופיע בפתיחה, עם <bdi dir="ltr">K = 5</bdi>, השוו בין השיטות. האוקלידית אומרת "רכב משפחתי", והקוסינוס אומר "רכב ספורט".</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">אותם נתונים, אותו K, ושתי תשובות שונות. ההבדל היחיד הוא ההגדרה של "קרוב". לכן פונקציית המרחק היא <b>היפר-פרמטר</b>: בחירה שאנחנו עושים לפני האימון, והיא משפיעה על כל החיזויים. כדי לבחור בין שתי האפשרויות צריך מבחן הוגן, וזה בדיוק מה שאימות מוצלב עושה.</div></li>
+    <li class="exp"><div class="top"><div class="task">עברו ל"אימות מוצלב" עם 2 קפלים, ואחר כך עם 10. הנתונים מתפצלים לקוביות, ובכל סבב קובייה אחרת נשלפת הצידה כ"אימות".</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">מחלקים את הנתונים ל-F חלקים שווים. בכל סבב, F−1 קוביות (הזוהרות) משמשות כרכבים מוכרים, והקובייה האפורה נבחנת: כל רכב בה מסווג לפי השכנים שלו מהקוביות האחרות, ואז משווים לסוג האמיתי. אחרי F סבבים, כל רכב נבחן פעם אחת בדיוק. עם יותר קפלים, בכל סבב יש יותר נתונים לאימון, אבל צריך יותר סבבים.</div></li>
+    <li class="exp"><div class="top"><div class="task">במהלך ההרצה, הסתכלו על הדיוק בכל קפל. הוא שונה קצת מקפל לקפל, והממוצע מתייצב.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">כל קפל הוא מדגם אקראי. בקפל אחד נפלו יותר רכבים "קשים" מהגבול, ובאחר פחות. אם היינו בודקים על חלוקה אחת בלבד, הציון היה תלוי במזל. הממוצע על כל הקפלים מבוסס על כל הנתונים ולכן יציב הרבה יותר, וזו הסיבה שמשתמשים באימות מוצלב ולא בחלוקה אחת.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>הזיזו את סליידר הקפלים עד הסוף, ל-LOO. בכל רגע רק נקודה אחת אפורה, וכל השאר זוהרות.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">Leave-One-Out הוא המקרה הקיצוני: מספר הקפלים שווה למספר הנקודות. כל רכב נבחן לבד, מול כל שאר הרכבים. כך כמעט כל הנתונים משמשים לאימון בכל סבב, אבל צריך להריץ את המודל N פעמים. ב-KNN זה זול, אבל במודלים כבדים ועם הרבה נתונים זה יקר מאוד.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>לחצו "🏆 מצא את ההיפר-פרמטר המנצח" על נתוני "אשכולות". אחר כך החליפו ל"קרניים" ולחצו שוב. המנצח מתחלף.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">באשכולות כל סוג הוא "גוש" במקום מסוים במרחב. קוסינוס מתבלבל בין רכבים שנמצאים באותו כיוון מהראשית אבל במרחק שונה (למשל רכב ספורט ורכב משפחתי, שנבדלים בעיקר במהירות), ולכן האוקלידי מנצח. בקרניים כל סוג נפרש לאורך קרן מהראשית: מה שקובע את הסוג הוא <b>היחס</b> בין המאפיינים, ולא הגודל. ליד הראשית ובקצוות הקרניים, הבועה האוקלידית בולעת שכנים מקרניים אחרות, וקוסינוס מנצח. אין פונקציית מרחק שהיא תמיד הטובה ביותר, ולכן בודקים על הנתונים עצמם.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>אחרי שהמנצח נבחר, קוביית ה"מבחן 🔒" נפתחת, פעם אחת בלבד. בגרף "דיוק מול K", חפשו איפה הדיוק הכי גבוה.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">נתוני המבחן לא השתתפו באף החלטה, לא בבחירת K ולא בבחירת המרחק. לכן הציון שלהם הוא הערכה הוגנת לרכבים חדשים באמת. אם היינו בוחרים את ההיפר-פרמטרים לפי ציון המבחן, היינו "מכווננים" את המודל בדיוק למבחן הזה, והציון היה אופטימי מדי. בגרף: K קטן מאוד רגיש לרעש של שכן בודד, ו-K גדול מאוד מטשטש את הגבולות. לרוב, הטוב ביותר נמצא באמצע.</div></li>
+  </ol>
+</section>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+
+/* ======================================================================
+   נתונים ומודל — קואורדינטות מנורמלות [0,1]^3 : p = [משקל, שנה, מהירות]
+   ====================================================================== */
+const RANGE = {w0:0.5, w1:8.5, y0:1990, y1:2025, s0:80, s1:320};
+const toReal = p => [RANGE.w0 + p[0]*(RANGE.w1 - RANGE.w0), RANGE.y0 + p[1]*(RANGE.y1 - RANGE.y0), RANGE.s0 + p[2]*(RANGE.s1 - RANGE.s0)];
+const toNorm = r => [(r[0] - RANGE.w0)/(RANGE.w1 - RANGE.w0), (r[1] - RANGE.y0)/(RANGE.y1 - RANGE.y0), (r[2] - RANGE.s0)/(RANGE.s1 - RANGE.s0)];
+const CLS = [{name:'רכב ספורט', col:'#ff4d5e'}, {name:'משאית', col:'#3d8bff'}, {name:'רכב משפחתי', col:'#3ddc84'}];
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0)/4294967296; }; }
+let rnd = mulberry32(3);
+const randn = () => { let u = 0, v = 0; while (!u) u = rnd(); v = rnd(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); };
+const clip = x => Math.min(0.99, Math.max(0.01, x));
+// אשכולות: [n, משקל μ,σ (טון), שנה μ,σ, מהירות μ,σ (קמ"ש)]
+const CLUST = [[130, 1.4, 0.2, 2012, 8, 245, 24], [120, 4.8, 1.4, 2008, 8, 125, 18], [150, 1.7, 0.35, 2010, 8, 195, 20]];
+// קרניים: [n, כיוון מהראשית]
+const RAYS = [[60, [0.30, 0.50, 0.81]], [60, [0.62, 0.50, 0.60]], [60, [0.45, 0.55, 0.70]]];
+function sampleCar(kind, c){
+  if (kind === 'clusters'){ const T = CLUST[c]; return toNorm([T[1] + T[2]*randn(), T[3] + T[4]*randn(), T[5] + T[6]*randn()]).map(clip); }
+  const d = RAYS[c][1], L = Math.hypot(...d); let qq;
+  do { const r = 0.05 + 1.0*Math.pow(rnd(), 0.8); qq = d.map(x => (x/L + 0.025*randn())*r); } while (qq.some(x => x < 0.01 || x > 0.99));
+  return qq;
+}
+let pts = [];          // {p:[u,v,w], c, test}
+function genData(kind, seed){
+  rnd = mulberry32(seed); pts = [];
+  (kind === 'clusters' ? CLUST : RAYS).forEach((T, c) => { for (let i = 0; i < T[0]; i++) pts.push({p:sampleCar(kind, c), c}); });
+  for (let i = pts.length - 1; i > 0; i--){ const j = Math.floor(rnd()*(i + 1)); [pts[i], pts[j]] = [pts[j], pts[i]]; }
+  pts.forEach((o, i) => o.test = i % 5 === 4);      // 20% נשמרים למבחן (במצב המורחב)
+  rnd = mulberry32(seed*31 + 1);
+}
+function dist(a, b, metric){
+  if (metric === 'euc') return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+  return 1 - (a[0]*b[0] + a[1]*b[1] + a[2]*b[2])/(Math.hypot(...a)*Math.hypot(...b));
+}
+function knn(q, train, K, metric, skip){
+  const ds = [];
+  for (const i of train) if (i !== skip) ds.push([dist(q, pts[i].p, metric), i]);
+  ds.sort((a, b) => a[0] - b[0]);
+  const nb = ds.slice(0, K), votes = [0, 0, 0];
+  nb.forEach(([, i]) => votes[pts[i].c]++);
+  const mx = Math.max(...votes);
+  let pred = -1;
+  for (const [, i] of nb) if (votes[pts[i].c] === mx){ pred = pts[i].c; break; }   // שוויון: הקבוצה של השכן הקרוב ביותר
+  return {pred, votes, nb: nb.map(x => x[1]), dK: nb.length ? nb[nb.length - 1][0] : 0};
+}
+function makeFolds(pool, F){ const folds = []; for (let f = 0; f < F; f++) folds.push([]); pool.forEach((i, j) => folds[j % F].push(i)); return folds; }
+function crossVal(pool, F, K, metric){
+  const res = makeFolds(pool, F).map(val => {
+    const vs = new Set(val), train = pool.filter(i => !vs.has(i));
+    let ok = 0; const pred = val.map(i => { const r = knn(pts[i].p, train, K, metric).pred; if (r === pts[i].c) ok++; return r; });
+    return {val, pred, ok, n: val.length};
+  });
+  const ok = res.reduce((s, r) => s + r.ok, 0), n = res.reduce((s, r) => s + r.n, 0);
+  return {folds: res, ok, n, acc: ok/n};
+}
+const kCache = {};
+function cvAllK(pool, F, metric){          // דיוק לכל K=1..20 בבת אחת
+  const key = [S.data, pool.length, F, metric].join('|'); if (kCache[key]) return kCache[key];
+  const ok = new Array(21).fill(0);
+  for (const val of makeFolds(pool, F)){
+    const vs = new Set(val), train = pool.filter(i => !vs.has(i));
+    for (const i of val){
+      const ds = train.map(j => [dist(pts[i].p, pts[j].p, metric), pts[j].c]).sort((a, b) => a[0] - b[0]).slice(0, 20);
+      const votes = [0, 0, 0];
+      for (let K = 1; K <= 20; K++){
+        votes[ds[K - 1][1]]++; const mx = Math.max(...votes);
+        let pred = -1; for (let m = 0; m < K; m++) if (votes[ds[m][1]] === mx){ pred = ds[m][1]; break; }
+        if (pred === pts[i].c) ok[K]++;
+      }
+    }
+  }
+  return kCache[key] = ok.map(v => v/pool.length);
+}
+
+/* ======================================================================
+   מצב
+   ====================================================================== */
+const S = {mode:'pred', K:5, metric:'euc', F:5, data:'clusters', speed:1, view:'3d'};
+const ADV_DEF = {data:'clusters', speed:1};
+const DEF_Q = {clusters:[1.5, 2016, 202], rays:[5.5, 2016, 244]};
+let adv = false, q = toNorm(DEF_Q.clusters), pred = null, cv = null, win = null;
+const allIdx = () => pts.map((_, i) => i);
+const poolIdx = () => adv ? allIdx().filter(i => !pts[i].test) : allIdx();
+const testIdx = () => adv ? allIdx().filter(i => pts[i].test) : [];
+const pct = v => (v*100).toFixed(1) + '%';
+
+/* ======================================================================
+   סצנה
+   ====================================================================== */
+const SZ = 10, C3 = new THREE.Vector3(5, 5, 5);
+const sc = p => new THREE.Vector3(p[0]*SZ, p[2]*SZ, p[1]*SZ);     // משקל→x, מהירות→y, שנה→z
+const view = $('view');
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+view.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#05070d');
+const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 400);
+camera.position.set(24, 13, 23);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08; controls.target.set(5, 4.5, 5);
+let camGoal = null; controls.addEventListener('start', () => camGoal = null);
+
+function glowTex(){ const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(.22, 'rgba(255,255,255,.5)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); }
+const GLOW = glowTex();
+function glowSprite(col, s, op){ const sp = new THREE.Sprite(new THREE.SpriteMaterial({map:GLOW, color:col, transparent:true, opacity:op, depthWrite:false, blending:THREE.AdditiveBlending})); sp.scale.set(s, s, 1); return sp; }
+function textSprite(txt, o){
+  o = Object.assign({size:0.45, color:'#aebbd3', bold:false}, o);
+  const c = document.createElement('canvas'), spr = new THREE.Sprite(new THREE.SpriteMaterial({transparent:true, depthWrite:false}));
+  spr.userData = {c, ctx:c.getContext('2d'), o}; setText(spr, txt); return spr;
+}
+function setText(spr, txt, color){
+  const u = spr.userData; if (u.txt === txt && (!color || color === u.o.color)) return; u.txt = txt; if (color) u.o.color = color;
+  const fs = 56, font = (u.o.bold ? '700 ' : '500 ') + fs + 'px "Segoe UI",Arial,sans-serif', ctx = u.ctx;
+  ctx.font = font; const w = Math.ceil(ctx.measureText(txt).width) + 20, h = Math.ceil(fs*1.4);
+  u.c.width = w; u.c.height = h; ctx.font = font; ctx.direction = 'rtl'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = u.o.color; ctx.fillText(txt, w/2, h/2 + 2);
+  if (spr.material.map) spr.material.map.dispose();
+  const t = new THREE.CanvasTexture(u.c); t.minFilter = THREE.LinearFilter; spr.material.map = t; spr.material.needsUpdate = true;
+  spr.scale.set(u.o.size*w/h, u.o.size, 1);
+}
+
+/* מרחב: רצפה, קופסה, צירים */
+const space = new THREE.Group(), spaceSprites = []; scene.add(space);
+const grid = new THREE.GridHelper(10, 10, 0x1d2a45, 0x121a2e); grid.position.set(5, 0, 5); space.add(grid);
+const boxE = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(10, 10, 10)), new THREE.LineBasicMaterial({color:0x1c2740})); boxE.position.copy(C3); space.add(boxE);
+function axis(dir, label, ticks){
+  const end = dir.clone().multiplyScalar(11.4);
+  space.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), end]), new THREE.LineBasicMaterial({color:0x5b6f96})));
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.5, 14), new THREE.MeshBasicMaterial({color:0x5b6f96}));
+  cone.position.copy(end); cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir); space.add(cone);
+  const l = textSprite(label, {size:0.55, color:'#cdd8ea'}); l.position.copy(dir.clone().multiplyScalar(12.5)); space.add(l); spaceSprites.push(l);
+  ticks.forEach(([t, x]) => { const s = textSprite(t, {size:0.36, color:'#7f8fab'}); s.position.copy(dir.clone().multiplyScalar(x)).add(dir.y ? new THREE.Vector3(-0.55, 0, -0.55) : new THREE.Vector3(dir.z ? -0.6 : 0, -0.45, dir.x ? -0.6 : 0)); space.add(s); spaceSprites.push(s); });
+}
+axis(new THREE.Vector3(1, 0, 0), 'משקל (טון)', [2, 4, 6, 8].map(t => [String(t), (t - RANGE.w0)/(RANGE.w1 - RANGE.w0)*SZ]));
+axis(new THREE.Vector3(0, 1, 0), 'מהירות (קמ״ש)', [100, 150, 200, 250, 300].map(t => [String(t), (t - RANGE.s0)/(RANGE.s1 - RANGE.s0)*SZ]));
+axis(new THREE.Vector3(0, 0, 1), 'שנת ייצור', [1995, 2005, 2015, 2025].map(t => [String(t), (t - RANGE.y0)/(RANGE.y1 - RANGE.y0)*SZ]));
+const originGlow = glowSprite('#ffb347', 1.1, 0.0); scene.add(originGlow);
+const originLbl = textSprite('ראשית', {size:0.36, color:'#ffd08a'}); originLbl.position.set(-0.7, -0.5, -0.7); space.add(originLbl); spaceSprites.push(originLbl);
+
+/* נקודות */
+const NMAX = 400;
+const A = {pos:new Float32Array(NMAX*3), col:new Float32Array(NMAX*3), size:new Float32Array(NMAX), alpha:new Float32Array(NMAX), ring:new Float32Array(NMAX)};
+const T = {pos:new Float32Array(NMAX*3), col:new Float32Array(NMAX*3), size:new Float32Array(NMAX), alpha:new Float32Array(NMAX)};
+const pgeo = new THREE.BufferGeometry();
+pgeo.setAttribute('position', new THREE.BufferAttribute(A.pos, 3));
+pgeo.setAttribute('color', new THREE.BufferAttribute(A.col, 3));
+pgeo.setAttribute('size', new THREE.BufferAttribute(A.size, 1));
+pgeo.setAttribute('alpha', new THREE.BufferAttribute(A.alpha, 1));
+pgeo.setAttribute('ring', new THREE.BufferAttribute(A.ring, 1));
+const pmat = new THREE.ShaderMaterial({
+  uniforms:{uScale:{value:600}}, transparent:true, depthWrite:false,
+  vertexShader:`attribute vec3 color; attribute float size; attribute float alpha; attribute float ring; uniform float uScale;
+    varying vec3 vC; varying float vA; varying float vR;
+    void main(){ vC = color; vA = alpha; vR = ring; vec4 mv = modelViewMatrix*vec4(position, 1.0);
+      gl_PointSize = size*(1.0 + 0.9*ring)*uScale/(-mv.z); gl_Position = projectionMatrix*mv; }`,
+  fragmentShader:`varying vec3 vC; varying float vA; varying float vR;
+    void main(){ vec2 d = gl_PointCoord - 0.5; float r = length(d)*2.0; if (r > 1.0) discard;
+      float k = 1.0 + 0.9*vR; float rr = r*k;
+      float core = smoothstep(0.62, 0.42, rr); float glow = pow(max(0.0, 1.0 - rr), 2.0)*0.55;
+      vec3 c = vC*(core + glow) + vec3(core*0.18); float a = clamp(core + glow, 0.0, 1.0)*vA;
+      if (vR > 0.5){ float g = smoothstep(0.09, 0.0, abs(r - 0.86)); c = mix(c, vec3(1.0), g); a = max(a, g*max(vA, 0.8)); }
+      gl_FragColor = vec4(c, a); }`
+});
+const ptsObj = new THREE.Points(pgeo, pmat); ptsObj.frustumCulled = false; scene.add(ptsObj);
+const RGB = CLS.map(c => new THREE.Color(c.col)), GREY = new THREE.Color('#8790a4');
+function setT(i, v, col, size, alpha){ T.pos[3*i] = v.x; T.pos[3*i + 1] = v.y; T.pos[3*i + 2] = v.z; T.col[3*i] = col.r; T.col[3*i + 1] = col.g; T.col[3*i + 2] = col.b; T.size[i] = size; T.alpha[i] = alpha; }
+function snapPoints(){ A.pos.set(T.pos); A.col.set(T.col); A.size.set(T.size); A.alpha.set(T.alpha); }
+
+/* רכב התעלומה, בועה, לייזר, קווי שכנות */
+const mys = new THREE.Group(); scene.add(mys);
+mys.add(new THREE.Mesh(new THREE.SphereGeometry(0.2, 24, 16), new THREE.MeshBasicMaterial({color:'#dfe4ee'})));
+const mysGlow = glowSprite('#c9d2e6', 1.15, 0.9); mys.add(mysGlow);
+const mysLbl = textSprite('?', {size:0.75, color:'#ffffff', bold:true}); mysLbl.position.y = 0.8; mys.add(mysLbl);
+let mysDrop = 1;
+const bubble = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 32), new THREE.ShaderMaterial({
+  transparent:true, depthWrite:false, side:THREE.DoubleSide, uniforms:{uOp:{value:1}},
+  vertexShader:`varying vec3 vN; varying vec3 vV; void main(){ vec4 mv = modelViewMatrix*vec4(position, 1.0); vN = normalize(normalMatrix*normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix*mv; }`,
+  fragmentShader:`uniform float uOp; varying vec3 vN; varying vec3 vV; void main(){ float f = pow(1.0 - abs(dot(vN, vV)), 2.2); gl_FragColor = vec4(0.62, 0.84, 1.0, (0.07 + 0.75*f)*uOp); }`
+}));
+scene.add(bubble); let bubbleR = 0;
+const laser = new THREE.Group(); scene.add(laser);
+const cylG = new THREE.CylinderGeometry(1, 1, 1, 12, 1, true); cylG.translate(0, 0.5, 0);
+const laserCore = new THREE.Mesh(cylG, new THREE.MeshBasicMaterial({color:'#fff1c9', transparent:true, opacity:0.95}));
+const laserHalo = new THREE.Mesh(cylG, new THREE.MeshBasicMaterial({color:'#ffb347', transparent:true, opacity:0.22, blending:THREE.AdditiveBlending, depthWrite:false}));
+laser.add(laserCore, laserHalo);
+const coneG = new THREE.ConeGeometry(1, 1, 48, 1, true); coneG.translate(0, -0.5, 0); coneG.rotateX(Math.PI);
+const coneM = new THREE.Mesh(coneG, new THREE.MeshBasicMaterial({color:'#ffb347', transparent:true, opacity:0.08, side:THREE.DoubleSide, depthWrite:false}));
+laser.add(coneM);
+let laserT = 0;
+const nbGeo = new THREE.BufferGeometry(); nbGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(20*6), 3));
+const nbLines = new THREE.LineSegments(nbGeo, new THREE.LineBasicMaterial({color:'#ffffff', transparent:true, opacity:0.4, depthWrite:false}));
+nbLines.frustumCulled = false; scene.add(nbLines);
+
+/* קוביות הקפלים + קוביית המבחן */
+const boxGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1));
+const folds3d = [];
+for (let f = 0; f < 10; f++){
+  const b = new THREE.LineSegments(boxGeo, new THREE.LineBasicMaterial({color:0x2c4a7a, transparent:true, opacity:0.9}));
+  const l = textSprite('אימון', {size:0.5}); scene.add(b, l); b.visible = l.visible = false; folds3d.push({b, l});
+}
+const testBox = new THREE.LineSegments(boxGeo, new THREE.LineBasicMaterial({color:0x6b5520}));
+const testLbl = textSprite('מבחן 🔒', {size:0.7, color:'#ffd479'}); scene.add(testBox, testLbl); testBox.visible = testLbl.visible = false;
+
+/* ======================================================================
+   חיזוי
+   ====================================================================== */
+function recomputePred(){ pred = knn(q, allIdx(), S.K, S.metric); updPredUI(); updCalc(); }
+function predTargets(){
+  const nb = new Set(landed() ? pred.nb : []);
+  pts.forEach((o, i) => {
+    const isNb = nb.has(i);
+    setT(i, sc(o.p), RGB[o.c], isNb ? 0.45 : 0.3, nb.size ? (isNb ? 1 : (S.metric === 'cos' ? 0.32 : 0.5)) : 0.9);
+    A.ring[i] = 0;
+  });
+}
+const landed = () => mysDrop >= 1;
+function dropCar(){ mysDrop = 0; bubbleR = 0; laserT = 0; }
+function newCar(){
+  const c = Math.floor(rnd()*3); q = sampleCar(S.data, c);
+  syncQSliders(); recomputePred(); dropCar(); if (S.view === 'origin') setView('origin');
+}
+function laserDir(){ const d = sc(q); return d.lengthSq() > 1e-6 ? d.normalize() : new THREE.Vector3(1, 1, 1).normalize(); }
+function laserLen(d){ let t = 1e9; ['x', 'y', 'z'].forEach(a => { if (d[a] > 1e-6) t = Math.min(t, SZ/d[a]); }); return Math.min(t, 18); }
+
+/* ======================================================================
+   אימות מוצלב
+   ====================================================================== */
+const D = {grey:0.6, split:1.3, rotate:1.0, predict:1.0, hold:0.8, test:1.4};
+function startCV(onDone, fast){
+  const pool = poolIdx(), loo = S.F >= 11, F = loo ? pool.length : S.F;
+  const res = crossVal(pool, F, S.K, S.metric);
+  const s = loo ? 1 : (F <= 2 ? 0.42 : F <= 3 ? 0.37 : F <= 5 ? 0.3 : F <= 7 ? 0.25 : 0.21);
+  const R = loo ? 0 : Math.max(6.5, F*(10*s + 1.8)/(2*Math.PI));
+  const foldOf = new Int16Array(pts.length).fill(-1), idxIn = new Int16Array(pts.length), predOf = new Int8Array(pts.length).fill(-1);
+  res.folds.forEach((fd, f) => fd.val.forEach((i, j) => { foldOf[i] = f; idxIn[i] = j; predOf[i] = fd.pred[j]; }));
+  cv = {res, F, loo, s, R, foldOf, idxIn, predOf, pool, i:0, phase:'grey', t:0, phi:0, phiT:0, push:new Float32Array(loo ? 1 : F),
+        okSum:0, nSum:0, onDone, fast:!!fast, done:false, test:null, looNb:null, looI:-1, cur:-1, errs:new Set()};
+  if (!fast) win = null;
+  setView(S.view === 'origin' ? '3d' : S.view);
+  updCVUI(); updWinUI(); updFoldBars(); updCalc();
+}
+function stopCV(){ cv = null; folds3d.forEach(o => o.b.visible = o.l.visible = false); testBox.visible = testLbl.visible = false; }
+function cvCenter(){ return new THREE.Vector3(5, 3, 5 - (adv ? 2.5 : 0)); }
+function cubeCenter(f){
+  const a = cv.phi + 2*Math.PI*f/cv.F, r = cv.R + cv.push[f]*4.2, c = cvCenter();
+  return new THREE.Vector3(5 + r*Math.sin(a), c.y + cv.push[f]*1.2, 5 + r*Math.cos(a));
+}
+function testCenter(){ return new THREE.Vector3(5, 3 + 10*cv.s*0.6, 5 - cv.R - 10*cv.s - 3); }
+function cvFrame(dt){
+  const sp = S.speed*(cv.fast ? 2.6 : 1);
+  cv.t += dt*sp;
+  if (cv.loo) return looFrame();
+  const ph = cv.phase, dur = D[ph] || 0;
+  if (ph !== 'done' && cv.t >= dur){
+    cv.t -= dur;
+    if (ph === 'grey') cv.phase = 'split';
+    else if (ph === 'split' || ph === 'rotate') cv.phase = 'predict';
+    else if (ph === 'predict'){ cv.phase = 'hold'; const fd = cv.res.folds[cv.i]; cv.okSum += fd.ok; cv.nSum += fd.n; updFoldBars(); }
+    else if (ph === 'hold'){
+      if (cv.i < cv.F - 1){ cv.i++; cv.phase = 'rotate'; cv.phiT = -2*Math.PI*cv.i/cv.F; }
+      else finishCV();
+    }
+    else if (ph === 'test'){ cv.phase = 'done'; updWinUI(); }
+    updCVUI();
+  }
+  const k = 1 - Math.exp(-dt*sp*5);
+  cv.phi += (cv.phiT - cv.phi)*k;
+  for (let f = 0; f < cv.F; f++) cv.push[f] += ((f === cv.i && cv.phase !== 'done' && cv.phase !== 'test' ? 1 : 0) - cv.push[f])*k;
+  // מיקומים וצבעים
+  const grey = cv.phase === 'grey', s = cv.s, ps = 0.11 + 0.3*s;
+  const rev = cv.phase === 'predict' ? Math.floor(cv.res.folds[cv.i].n*Math.min(1, cv.t/(D.predict*0.85))) : (cv.phase === 'hold' ? 1e9 : 0);
+  const showAll = cv.phase === 'done' || cv.phase === 'test';
+  const centers = []; for (let f = 0; f < cv.F; f++) centers.push(cubeCenter(f));
+  const tc = adv ? testCenter() : null;
+  const testRev = cv.test ? (cv.phase === 'test' ? cv.t/D.test : 1) : -1;
+  pts.forEach((o, i) => {
+    const f = cv.foldOf[i]; A.ring[i] = 0;
+    if (f < 0){        // נתוני מבחן
+      const v = grey ? sc(o.p) : tc.clone().add(sc(o.p).sub(C3).multiplyScalar(s));
+      const j = cv.test ? cv.test.order.get(i) : -1;
+      if (cv.test && j < testRev*cv.test.n){ const pr = cv.test.pred.get(i); setT(i, v, RGB[pr], ps, 1); A.ring[i] = pr !== o.c ? 1 : 0; }
+      else setT(i, v, GREY, ps, grey ? 0.5 : 0.28);
+      return;
+    }
+    const v = grey ? sc(o.p) : centers[f].clone().add(sc(o.p).sub(C3).multiplyScalar(s));
+    if (grey){ setT(i, v, GREY, 0.25, 0.7); return; }
+    if (showAll){ const pr = cv.predOf[i]; setT(i, v, RGB[pr], ps, 1); A.ring[i] = pr !== o.c ? 1 : 0; return; }
+    if (f === cv.i){
+      if (cv.idxIn[i] < rev){ const pr = cv.predOf[i]; setT(i, v, RGB[pr], ps*1.1, 1); A.ring[i] = pr !== o.c ? 1 : 0; }
+      else setT(i, v, GREY, ps*1.1, 0.85);
+    } else setT(i, v, RGB[o.c], ps, 0.95);
+  });
+  // קופסאות ותוויות
+  for (let f = 0; f < 10; f++){
+    const o = folds3d[f], on = !grey && f < cv.F;
+    o.b.visible = o.l.visible = on; if (!on) continue;
+    const c = centers[f], isVal = f === cv.i && !showAll;
+    o.b.position.copy(c); o.b.scale.setScalar(10*s);
+    o.b.material.color.set(isVal ? 0xdfe5f0 : 0x2c4a7a);
+    o.l.position.copy(c).add(new THREE.Vector3(0, 5*s + 0.55, 0));
+    const fd = cv.res.folds[f], acc = Math.round(fd.ok/fd.n*100) + '%';
+    if (showAll) setText(o.l, acc, '#aebbd3');
+    else if (isVal) setText(o.l, cv.phase === 'hold' ? 'אימות · ' + acc : 'אימות', '#ffffff');
+    else setText(o.l, 'אימון', '#7fa6e0');
+  }
+  testBox.visible = testLbl.visible = !!tc && !grey;
+  if (tc){
+    testBox.position.copy(tc); testBox.scale.setScalar(10*s);
+    testLbl.position.copy(tc).add(new THREE.Vector3(0, 5*s + 0.6, 0));
+    if (cv.test && cv.phase === 'done') setText(testLbl, 'מבחן · ' + pct(cv.test.ok/cv.test.n), '#ffd479');
+    else setText(testLbl, cv.test ? 'מבחן 🔓' : 'מבחן 🔒', '#ffd479');
+    testBox.material.color.set(cv.test ? 0xffd479 : 0x6b5520);
+  }
+  space.visible = grey;
+}
+function looFrame(){
+  const n = cv.pool.length, step = Math.min(0.16, 16/n);
+  if (cv.phase === 'grey'){
+    if (cv.t >= D.grey){ cv.t = 0; cv.phase = 'loo'; }
+  } else if (cv.phase === 'loo'){
+    const i = Math.min(n, Math.floor(cv.t/step));
+    while (cv.looI < i - 1){       // הנקודות שכבר נבדקו
+      cv.looI++; const pi = cv.pool[cv.looI];
+      cv.okSum += cv.predOf[pi] === pts[pi].c ? 1 : 0; cv.nSum++; if (cv.predOf[pi] !== pts[pi].c) cv.errs.add(pi);
+    }
+    if (i >= n){ finishCV(); }
+    else if (cv.cur !== i){ cv.cur = i; const pi = cv.pool[i]; cv.looNb = knn(pts[pi].p, cv.pool, S.K, S.metric, pi).nb; }
+    updCVUI();
+  }
+  const cur = cv.phase === 'loo' ? cv.pool[cv.cur] : -1, nb = new Set(cv.phase === 'loo' && cv.looNb ? cv.looNb : []);
+  const inPool = new Set(cv.pool);
+  pts.forEach((o, i) => {
+    A.ring[i] = 0;
+    if (cv.phase === 'grey'){ setT(i, sc(o.p), GREY, 0.25, 0.7); return; }
+    if (!inPool.has(i)){ setT(i, sc(o.p), GREY, 0.2, 0.15); return; }
+    if (i === cur){ setT(i, sc(o.p), GREY, 0.55, 1); return; }
+    if (cv.errs.has(i)){ setT(i, sc(o.p), RGB[cv.predOf[i]], 0.3, 1); A.ring[i] = 1; return; }
+    setT(i, sc(o.p), RGB[o.c], nb.has(i) ? 0.38 : 0.24, nb.has(i) ? 1 : 0.75);
+  });
+  folds3d.forEach(o => o.b.visible = o.l.visible = false); testBox.visible = testLbl.visible = false;
+  space.visible = true;
+}
+function finishCV(){
+  cv.phase = 'done'; cv.done = true; cv.okSum = cv.res.ok; cv.nSum = cv.res.n; cv.cur = -1;
+  updCVUI(); updFoldBars(); updCalc();
+  if (cv.onDone){ const f = cv.onDone; cv.onDone = null; f(cv.res); }
+}
+
+/* תחרות: אוקלידי מול קוסינוס, ואז פתיחת המבחן */
+function runWinner(){
+  setAppMode('cv', true);
+  win = {euc:null, cos:null, best:null, test:null, running:true};
+  setMetric('euc', true);
+  startCV(r1 => {
+    win.euc = r1.acc; updWinUI(); setMetric('cos', true);
+    startCV(r2 => {
+      win.cos = r2.acc; win.best = win.euc >= win.cos ? 'euc' : 'cos';
+      if (win.best !== S.metric){       // מציגים את התוצאות של המנצח, בלי להריץ שוב את האנימציה
+        setMetric(win.best, true); const ph = cv.phi; startCV(null, true);
+        Object.assign(cv, {phase:'done', done:true, i:cv.F - 1, okSum:cv.res.ok, nSum:cv.res.n, phi:ph, phiT:ph});
+        updFoldBars(); updCalc();
+      }
+      const pool = poolIdx(), test = testIdx(), order = new Map(), pm = new Map(); let ok = 0;
+      test.forEach((i, j) => { const pr = knn(pts[i].p, pool, S.K, win.best).pred; pm.set(i, pr); order.set(i, j); if (pr === pts[i].c) ok++; });
+      win.test = {ok, n:test.length}; win.running = false;
+      if (test.length){ cv.test = {pred:pm, order, ok, n:test.length}; cv.phase = 'test'; cv.t = 0; }
+      updWinUI();
+    }, true);
+  }, true);
+}
+
+/* ======================================================================
+   ממשק
+   ====================================================================== */
+function updPredUI(){
+  const r = toReal(q);
+  $('carLbl').textContent = r[0].toFixed(2) + ' t · ' + Math.round(r[1]) + ' · ' + Math.round(r[2]) + ' km/h';
+  $('votes').innerHTML = CLS.map((c, k) => `<div class="vote"><span class="dot" style="background:${c.col};color:${c.col}"></span><span class="nm">${c.name}</span><div class="bar"><i style="width:${pred.votes[k]/S.K*100}%;background:${c.col}"></i></div><span class="pc">${pred.votes[k]}/${S.K}</span></div>`).join('');
+  $('verdict').innerHTML = `החיזוי: <b style="color:${CLS[pred.pred].col}">${CLS[pred.pred].name}</b>`;
+}
+function updCVUI(){
+  if (!cv){ $('cvSt').textContent = ''; return; }
+  const bar = (id, pid, v) => { $(id).style.width = (v == null ? 0 : v*100) + '%'; $(pid).textContent = v == null ? '–' : pct(v); };
+  let st = '', cur = null;
+  if (cv.phase === 'grey') st = 'מערבבים ומחלקים...';
+  else if (cv.loo){
+    st = cv.done ? `הושלם: ${cv.pool.length} סבבים` : `נקודה ${cv.cur + 1} מתוך ${cv.pool.length}`;
+    cur = cv.nSum ? cv.okSum/cv.nSum : null;
+  } else if (cv.done){ st = `הושלם: ${cv.F} קפלים`; }
+  else { st = `קפל ${cv.i + 1} מתוך ${cv.F}`; if (cv.phase === 'hold'){ const fd = cv.res.folds[cv.i]; cur = fd.ok/fd.n; } }
+  if (win && win.running) st = (S.metric === 'euc' ? 'אוקלידי · ' : 'קוסינוס · ') + st;
+  $('cvSt').textContent = st;
+  if (cv.loo) bar('foldBar', 'foldPc', null); else bar('foldBar', 'foldPc', cur);
+  bar('meanBar', 'meanPc', cv.nSum ? cv.okSum/cv.nSum : null);
+  $('runCV').textContent = cv.done ? '↻ הרץ שוב' : '▶ הרץ אימות מוצלב';
+}
+function updFoldBars(){
+  const el = $('fbars'); if (!adv) return;
+  if (!cv || cv.loo){ el.innerHTML = '<div style="background:none;align-self:center;text-align:center;color:#7f8fab;font-size:12px">' + (cv && cv.loo ? 'LOO: ' + cv.pool.length + ' קפלים של נקודה אחת' : '') + '</div>'; return; }
+  const doneN = cv.done ? cv.F : cv.i + (cv.phase === 'hold' ? 1 : 0);
+  el.innerHTML = cv.res.folds.map((fd, f) => { const a = fd.ok/fd.n; return f < doneN ? `<div class="${f === cv.i && !cv.done ? 'cur' : ''}" style="height:${Math.max(4, (a - 0.5)/0.5*56)}px"><span>${Math.round(a*100)}</span></div>` : '<div style="height:2px;background:#1a2236"></div>'; }).join('');
+}
+function updWinUI(){
+  const sec = $('winSec'); if (!win){ sec.style.display = 'none'; return; }
+  sec.style.display = '';
+  const row = (m, nm, col) => { const v = win[m]; return `<div class="mt"><span>${win.best === m ? '🏆 ' : ''}${nm}</span><div class="bar"><i style="width:${v == null ? 0 : v*100}%;background:${col}"></i></div><span class="pc">${v == null ? '…' : pct(v)}</span></div>`; };
+  $('winBars').innerHTML = row('euc', 'אוקלידי', '#6cb8ff') + row('cos', 'קוסינוס', '#ffb347') +
+    (win.test && cv && cv.phase === 'done' ? `<div class="mt"><span>🔓 מבחן</span><div class="bar"><i style="width:${win.test.ok/win.test.n*100}%;background:var(--yel)"></i></div><span class="pc">${pct(win.test.ok/win.test.n)}</span></div>` : '');
+}
+function updCalc(){
+  if (!adv) return;
+  let h = '';
+  if (S.mode === 'pred' && pred){
+    if (S.metric === 'euc') h = `d<sub>K</sub> = ${pred.dK.toFixed(3)} &nbsp;→&nbsp; bubble r`;
+    else h = `cos θ<sub>K</sub> = ${(1 - pred.dK).toFixed(4)} &nbsp;→&nbsp; θ = ${(Math.acos(Math.min(1, 1 - pred.dK))*180/Math.PI).toFixed(1)}°`;
+  } else if (cv && cv.nSum) h = `acc = ${cv.okSum} / ${cv.nSum} = ${pct(cv.okSum/cv.nSum)}`;
+  else h = 'acc = correct / total';
+  $('calc').innerHTML = h;
+}
+function drawKPlot(){
+  const cvs = $('kPlot'); if (!adv || !cvs.clientWidth) return;
+  const dpr = window.devicePixelRatio || 1, w = cvs.clientWidth, h = cvs.clientHeight;
+  cvs.width = w*dpr; cvs.height = h*dpr; const g = cvs.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  const pool = poolIdx(), F = S.F >= 11 ? pool.length : S.F;
+  const E = cvAllK(pool, F, 'euc'), Cc = cvAllK(pool, F, 'cos');
+  const all = E.slice(1).concat(Cc.slice(1)); let lo = Math.min(...all), hi = Math.max(...all);
+  lo = Math.floor(lo*50 - 0.5)/50; hi = Math.min(1, Math.ceil(hi*50 + 0.5)/50);
+  const X = K => 30 + (K - 1)/19*(w - 40), Y = v => 8 + (hi - v)/(hi - lo)*(h - 28);
+  g.font = '10px Consolas,monospace'; g.fillStyle = '#7f8fab'; g.strokeStyle = '#16213a'; g.lineWidth = 1;
+  for (let t = 0; t <= 2; t++){ const v = lo + (hi - lo)*t/2, y = Y(v); g.beginPath(); g.moveTo(30, y); g.lineTo(w - 10, y); g.stroke(); g.textAlign = 'right'; g.fillText(Math.round(v*100) + '%', 27, y + 3); }
+  g.textAlign = 'center'; [1, 5, 10, 15, 20].forEach(K => g.fillText(K, X(K), h - 6));
+  g.strokeStyle = 'rgba(255,255,255,.35)'; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(X(S.K), 6); g.lineTo(X(S.K), h - 18); g.stroke(); g.setLineDash([]);
+  [[E, '#6cb8ff'], [Cc, '#ffb347']].forEach(([arr, col]) => {
+    g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); for (let K = 1; K <= 20; K++){ const x = X(K), y = Y(arr[K]); K === 1 ? g.moveTo(x, y) : g.lineTo(x, y); } g.stroke();
+    g.fillStyle = col; g.beginPath(); g.arc(X(S.K), Y(arr[S.K]), 3.5, 0, 7); g.fill();
+  });
+}
+function syncQSliders(){
+  const r = toReal(q);
+  $('sQw').value = r[0]; $('sQy').value = Math.round(r[1]); $('sQs').value = Math.round(r[2]);
+  $('qwV').textContent = r[0].toFixed(2) + ' t'; $('qyV').textContent = Math.round(r[1]); $('qsV').textContent = Math.round(r[2]) + ' km/h';
+}
+function fLabel(){ $('fV').textContent = S.F >= 11 ? 'LOO' : S.F; }
+function setMetric(m, silent){
+  S.metric = m; document.querySelectorAll('#metric button').forEach(b => b.classList.toggle('on', b.dataset.v === m));
+  if (silent) { if (pred) recomputePred(); return; }
+  recomputePred(); laserT = 0; bubbleR = 0;
+  if (S.mode === 'cv') startCV();
+}
+function setAppMode(m, noStart){
+  S.mode = m; document.body.classList.toggle('cv', m === 'cv');
+  document.querySelectorAll('#modeSeg button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  if (m === 'cv'){ if (!noStart) startCV(); }
+  else { stopCV(); win = null; updWinUI(); dropCar(); setView(S.view); }
+  updCalc(); requestAnimationFrame(() => { drawKPlot(); updFoldBars(); });
+}
+function regen(kind){
+  S.data = kind; genData(kind, 3); q = toNorm(DEF_Q[kind]);
+  document.querySelectorAll('#dataSeg button').forEach(b => b.classList.toggle('on', b.dataset.d === kind));
+  pgeo.setDrawRange(0, pts.length); syncQSliders(); recomputePred();
+  predTargets(); snapPoints(); dropCar(); win = null; updWinUI();
+  if (S.mode === 'cv') startCV(); drawKPlot();
+}
+
+$('modeSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && b.dataset.m !== S.mode) setAppMode(b.dataset.m); });
+$('sK').addEventListener('input', e => { S.K = +e.target.value; $('kV').textContent = S.K; if (S.mode === 'pred') recomputePred(); drawKPlot(); });
+$('sK').addEventListener('change', () => { if (S.mode === 'cv') startCV(); });
+$('metric').addEventListener('click', e => { const b = e.target.closest('button'); if (b && b.dataset.v !== S.metric) setMetric(b.dataset.v); });
+$('newCar').addEventListener('click', newCar);
+$('sF').addEventListener('input', e => { S.F = +e.target.value; fLabel(); drawKPlot(); });
+$('sF').addEventListener('change', () => { if (S.mode === 'cv') startCV(); });
+$('runCV').addEventListener('click', () => startCV());
+$('dataSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b && b.dataset.d !== S.data) regen(b.dataset.d); });
+['sQw', 'sQy', 'sQs'].forEach(id => $(id).addEventListener('input', () => {
+  q = toNorm([+$('sQw').value, +$('sQy').value, +$('sQs').value]); syncQSliders(); recomputePred(); if (S.view === 'origin') setView('origin');
+}));
+$('sSp').addEventListener('input', e => { S.speed = +e.target.value; $('spV').textContent = '×' + S.speed.toFixed(1); });
+$('winBtn').addEventListener('click', runWinner);
+
+function setView(v){
+  S.view = v; document.querySelectorAll('#views button').forEach(b => b.classList.toggle('on', b.dataset.view === v));
+  let p, t;
+  if (cv && !cv.loo){
+    const c = cvCenter(), Dd = cv.R*2.2 + 15 + (adv ? 6 : 0);
+    t = c.clone(); p = c.clone().add((v === 'front' ? new THREE.Vector3(0, 0.3, 1) : new THREE.Vector3(0.5, 0.62, 1)).normalize().multiplyScalar(Dd));
+  } else if (v === 'front'){ t = new THREE.Vector3(5, 5, 5); p = new THREE.Vector3(5, 5.2, 27); }
+  else if (v === 'origin'){ const d = laserDir(); p = d.clone().multiplyScalar(-1.8).add(new THREE.Vector3(0, 0.9, 0)); t = sc(q); }
+  else { t = new THREE.Vector3(5, 4.5, 5); p = new THREE.Vector3(20, 11.5, 19.5); }
+  camGoal = {p, t};
+}
+document.querySelectorAll('#views button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+
+function setMode(on){
+  adv = on; document.body.classList.toggle('adv', on);
+  $('sF').max = on ? 11 : 10;
+  if (!on){
+    if (S.F > 10){ S.F = 5; $('sF').value = 5; }
+    S.speed = ADV_DEF.speed; $('sSp').value = 1; $('spV').textContent = '×1.0';
+    if (S.data !== ADV_DEF.data) regen(ADV_DEF.data);
+    win = null; updWinUI();
+    if (S.view === 'origin') setView('3d');
+  }
+  fLabel();
+  if (S.mode === 'cv') startCV();
+  requestAnimationFrame(() => { drawKPlot(); updFoldBars(); updCalc(); });
+  $('lab').scrollIntoView({behavior:'smooth'});
+}
+$('more').addEventListener('click', () => setMode(true));
+$('less').addEventListener('click', () => setMode(false));
+
+/* ======================================================================
+   לולאה
+   ====================================================================== */
+function resize(){
+  const w = view.clientWidth, h = view.clientHeight; if (!w || !h) return;
+  renderer.setSize(w, h, false); renderer.domElement.style.width = w + 'px'; renderer.domElement.style.height = h + 'px';
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+  pmat.uniforms.uScale.value = h*renderer.getPixelRatio()/(2*Math.tan(camera.fov*Math.PI/360));
+  drawKPlot();
+}
+new ResizeObserver(resize).observe(view);
+let visible = true; new IntersectionObserver(e => { visible = e[0].isIntersecting; }).observe(view);
+let last = performance.now(), clock = 0;
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt = Math.max(0, Math.min(0.05, (now - last)/1000)); last = now;
+  if (!visible) return;
+  clock += dt;
+  const k = 1 - Math.exp(-dt*6*S.speed);
+  const inPred = S.mode === 'pred';
+  // רכב התעלומה
+  if (mysDrop < 1) mysDrop = Math.min(1, mysDrop + dt*1.5*S.speed);
+  const qp = sc(q);
+  mys.visible = inPred; mys.position.set(qp.x, qp.y + 13*Math.pow(1 - mysDrop, 2), qp.z);
+  mysGlow.material.opacity = 0.65 + 0.3*Math.sin(clock*3);
+  if (cv) cvFrame(dt); else { predTargets(); space.visible = true; }
+  // אינטרפולציה של הנקודות
+  for (let i = 0; i < pts.length*3; i++){ A.pos[i] += (T.pos[i] - A.pos[i])*k; A.col[i] += (T.col[i] - A.col[i])*k; }
+  for (let i = 0; i < pts.length; i++){ A.size[i] += (T.size[i] - A.size[i])*k; A.alpha[i] += (T.alpha[i] - A.alpha[i])*k; }
+  ['position', 'color', 'size', 'alpha', 'ring'].forEach(n => pgeo.attributes[n].needsUpdate = true);
+  // בועה (אוקלידי)
+  const bT = inPred && landed() && S.metric === 'euc' ? pred.dK*SZ : 0;
+  bubbleR += (bT - bubbleR)*(1 - Math.exp(-dt*3.2*S.speed));
+  bubble.visible = bubbleR > 0.02; bubble.position.copy(qp); bubble.scale.setScalar(Math.max(bubbleR, 0.001));
+  // לייזר (קוסינוס)
+  const lT = inPred && landed() && S.metric === 'cos' ? 1 : 0;
+  laserT += (lT - laserT)*(1 - Math.exp(-dt*3.5*S.speed)); if (lT === 0 && laserT < 0.01) laserT = 0;
+  laser.visible = laserT > 0.005; const ov = inPred && S.view === 'origin'; originGlow.material.opacity = ov ? 0 : 0.9*laserT; spaceSprites.forEach(o => o.visible = !ov);
+  if (laser.visible){
+    const d = laserDir(), L = laserLen(d)*Math.min(1, laserT*1.15);
+    laser.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d);
+    laserCore.scale.set(0.035, L, 0.035); laserHalo.scale.set(0.13, L, 0.13);
+    const th = Math.acos(Math.min(1, 1 - pred.dK)), Lc = laserLen(d);
+    coneM.scale.set(Lc*Math.tan(th), Lc, Lc*Math.tan(th)); coneM.material.opacity = 0.09*Math.max(0, (laserT - 0.7)/0.3);
+  }
+  // קווי שכנות
+  let nbList = [], from = null;
+  if (inPred && landed()){ nbList = pred.nb; from = S.metric === 'euc' ? qp : new THREE.Vector3(); nbLines.material.color.set(S.metric === 'euc' ? '#bfe0ff' : '#ffd08a'); }
+  else if (cv && cv.loo && cv.phase === 'loo' && cv.looNb && cv.cur >= 0){ nbList = cv.looNb; const c = cv.pool[cv.cur]; from = new THREE.Vector3(A.pos[3*c], A.pos[3*c + 1], A.pos[3*c + 2]); nbLines.material.color.set('#ffffff'); }
+  const arr = nbGeo.attributes.position.array;
+  nbList.forEach((i, j) => { arr.set([from.x, from.y, from.z, A.pos[3*i], A.pos[3*i + 1], A.pos[3*i + 2]], j*6); });
+  nbGeo.setDrawRange(0, nbList.length*2); nbGeo.attributes.position.needsUpdate = true; nbLines.visible = nbList.length > 0;
+  // מצלמה
+  if (camGoal){
+    const kc = 1 - Math.exp(-dt*3.5);
+    camera.position.lerp(camGoal.p, kc); controls.target.lerp(camGoal.t, kc);
+    if (camera.position.distanceTo(camGoal.p) < 0.03 && controls.target.distanceTo(camGoal.t) < 0.03) camGoal = null;
+  }
+  controls.update(); renderer.render(scene, camera);
+}
+
+/* ======================================================================
+   אתחול
+   ====================================================================== */
+genData('clusters', 3); pgeo.setDrawRange(0, pts.length);
+syncQSliders(); recomputePred(); predTargets(); snapPoints(); fLabel(); resize(); setView('3d');
+camera.position.copy(camGoal.p); controls.target.copy(camGoal.t); camGoal = null;
+(function drawProblem(){                 // משקל מול מהירות, מאותם נתונים בדיוק
+  const svg = $('probSvg'), X0 = 46, X1 = 326, Y0 = 210, Y1 = 14;
+  const sx = w => X0 + (w - RANGE.w0)/(RANGE.w1 - RANGE.w0)*(X1 - X0), sy = s => Y0 - (s - RANGE.s0)/(RANGE.s1 - RANGE.s0)*(Y0 - Y1);
+  let h = '';
+  for (let t = 1; t <= 8; t++) h += `<line x1="${sx(t)}" y1="${Y1}" x2="${sx(t)}" y2="${Y0}" stroke="#16213a"/><text x="${sx(t)}" y="${Y0 + 14}" fill="#7f8fab" font-size="10" text-anchor="middle">${t}</text>`;
+  for (let s = 100; s <= 300; s += 50){ const y = sy(s); h += `<line x1="${X0}" y1="${y}" x2="${X1}" y2="${y}" stroke="#16213a"/><text x="${X0 - 6}" y="${y + 3}" fill="#7f8fab" font-size="10" text-anchor="end">${s}</text>`; }
+  h += `<line x1="${X0}" y1="${Y0}" x2="${X1}" y2="${Y0}" stroke="#4a5d84"/><line x1="${X0}" y1="${Y0}" x2="${X0}" y2="${Y1}" stroke="#4a5d84"/>`;
+  pts.forEach(o => { const r = toReal(o.p); h += `<circle cx="${sx(r[0]).toFixed(1)}" cy="${sy(r[2]).toFixed(1)}" r="1.9" fill="${CLS[o.c].col}" opacity=".8"/>`; });
+  const m = DEF_Q.clusters;
+  h += `<circle cx="${sx(m[0])}" cy="${sy(m[2])}" r="7" fill="#8790a4" opacity=".35"/><circle cx="${sx(m[0])}" cy="${sy(m[2])}" r="3.6" fill="#e6ebf5"/><text x="${sx(m[0]) + 9}" y="${sy(m[2]) - 7}" fill="#ffffff" font-size="14" font-weight="700">?</text>`;
+  h += `<text x="${(X0 + X1)/2}" y="244" fill="#b9c6dc" font-size="12" text-anchor="middle">משקל (טון)</text>`;
+  h += `<text x="12" y="${(Y0 + Y1)/2}" fill="#b9c6dc" font-size="12" text-anchor="middle" transform="rotate(-90 12 ${(Y0 + Y1)/2})">מהירות מרבית (קמ״ש)</text>`;
+  svg.innerHTML = h;
+})();
+
+/* פרמטרים בכתובת (לבדיקות): #adv&cv&cos&rays&loo&win&front&origin&k=9&f=3&sp=3 */
+(function(){
+  const h = location.hash.slice(1).split('&'); const has = x => h.includes(x);
+  const kv = x => { const e = h.find(s => s.startsWith(x + '=')); return e ? +e.split('=')[1] : null; };
+  if (has('adv')) setMode(true);
+  if (has('rays')) regen('rays');
+  if (kv('k')){ S.K = kv('k'); $('sK').value = S.K; $('kV').textContent = S.K; recomputePred(); }
+  if (kv('f')){ S.F = kv('f'); $('sF').value = S.F; fLabel(); }
+  if (has('loo')){ S.F = 11; $('sF').value = 11; fLabel(); }
+  if (kv('sp')){ S.speed = kv('sp'); $('sSp').value = S.speed; }
+  if (has('cos')) setMetric('cos', true);
+  if (has('front')) setView('front');
+  if (has('origin')) setView('origin');
+  if (has('cv')) setAppMode('cv');
+  if (has('win')) runWinner();
+  if (has('nodrop')) mysDrop = 1;
+})();
+requestAnimationFrame(frame);
+
+document.querySelectorAll('.exp .xbtn').forEach(b => b.addEventListener('click', () => {
+  const li = b.closest('.exp'); li.classList.toggle('open'); b.textContent = li.classList.contains('open') ? 'סגור' : 'הסבר';
+}));
+</script>
+
+<script>
+/* ======================================================================
+   הדגמה אוטומטית: כפתור "▶ הדגמה" ליד כל ניסוי. סמן "רפאים" מבצע את הניסוי במעבדה
+   בזמן אמת, וההסבר מוצג במסגרת מתחת למעבדה.
+   ====================================================================== */
+(function(){
+'use strict';
+
+  const SCRIPTS = [
+    async () => { await click(seg('modeSeg', 'm', 'pred')); await click(seg('metric', 'v', 'euc')); await dragSlider(byId('sK'), 1, 1500);
+      say('מגדילים את K... הבועה מתנפחת'); await dragSlider(byId('sK'), 20, 8000); say('שימו לב להצבעה ולחיזוי'); await sleep(2500); },
+    async () => { await click(seg('modeSeg', 'm', 'pred')); say('מחליפים ל"קוסינוס"'); await click(seg('metric', 'v', 'cos'));
+      say('קרן לייזר מהראשית דרך הרכב החדש; השכנים נמצאים בתוך הקונוס'); await sleep(5000); },
+    async () => { await click(seg('modeSeg', 'm', 'pred'));
+      say('מחזירים את הרכב מהפתיחה'); q = toNorm(DEF_Q[S.data]); syncQSliders(); recomputePred(); dropCar(); await sleep(1500);
+      await dragSlider(byId('sK'), 5, 1800); say('אוקלידי...'); await click(seg('metric', 'v', 'euc')); await sleep(3500);
+      say('...מול קוסינוס'); await click(seg('metric', 'v', 'cos')); await sleep(3500); say('אותו רכב, אותו K, ושתי תשובות שונות'); },
+    async () => { say('עוברים ל"אימות מוצלב"'); await click(seg('modeSeg', 'm', 'cv'));
+      say('2 קפלים'); await dragSlider(byId('sF'), 2, 1500); await sleep(9000);
+      say('10 קפלים'); await dragSlider(byId('sF'), 10, 2500); await sleep(12000); },
+    async () => { await click(seg('modeSeg', 'm', 'cv')); await dragSlider(byId('sF'), 5, 1500); say('מריצים ומסתכלים על הדיוק בכל קפל'); await click(byId('runCV'));
+      await sleep(13000); say('הממוצע יציב יותר מכל קפל בודד'); },
+    async () => { await ensureAdv(); await click(seg('modeSeg', 'm', 'cv')); say('גוררים את הקפלים עד הסוף: LOO'); await dragSlider(byId('sF'), 11, 2500);
+      say('כל נקודה נבחנת לבד מול כל השאר'); await sleep(12000); },
+    async () => { await ensureAdv(); say('נתוני "אשכולות"'); await click(seg('dataSeg', 'd', 'clusters')); say('🏆 מוצאים את המנצח'); await click(byId('winBtn'));
+      await waitFor(() => win && !win.running && cv && cv.phase === 'done', 60000); say('באשכולות האוקלידי מנצח. עכשיו "קרניים"'); await sleep(2500);
+      await click(seg('dataSeg', 'd', 'rays')); await click(byId('winBtn'));
+      await waitFor(() => win && !win.running && cv && cv.phase === 'done', 60000); say('בקרניים קוסינוס מנצח'); await sleep(2000); },
+    async () => { await ensureAdv(); await click(seg('dataSeg', 'd', 'clusters')); say('מריצים את התחרות; המבחן נפתח רק בסוף'); await click(byId('winBtn'));
+      await waitFor(() => win && !win.running && cv && cv.phase === 'done', 60000); say('בגרף "דיוק מול K": מזיזים את K ומחפשים את השיא');
+      await dragSlider(byId('sK'), 1, 2000); await dragSlider(byId('sK'), 20, 6000); }
+  ];
+
+  const byId = id => document.getElementById(id);
+  const LAB = document.querySelector('section.lab'), VIEW = LAB.querySelector('.view');
+  const cur = byId('demoCursor'), D = {alive:0, i:-1, x:0, y:0};
+  const sleep = ms => { const tok = D.alive; return new Promise(r => setTimeout(r, ms)).then(() => { if (D.alive !== tok) throw 'stop'; }); };
+  const ease = k => k*k*(3 - 2*k);
+  function anim(dur, fn){
+    const tok = D.alive;
+    return new Promise((res, rej) => { const t0 = performance.now();
+      (function step(now){ if (D.alive !== tok) return rej('stop'); const k = Math.min(1, (now - t0)/dur); fn(ease(k)); if (k < 1) requestAnimationFrame(step); else res(); })(t0); });
+  }
+  function place(x, y){ D.x = x; D.y = y; cur.style.transform = 'translate(' + (x - 3) + 'px,' + (y - 2) + 'px)'; }
+  function moveTo(x, y, dur){ const x0 = D.x, y0 = D.y; dur = dur || Math.min(1100, 350 + Math.hypot(x - x0, y - y0)*0.9); return anim(dur, k => place(x0 + (x - x0)*k, y0 + (y - y0)*k)); }
+  const center = el => { const r = el.getBoundingClientRect(); return [r.left + r.width/2, r.top + r.height/2]; };
+  function ripple(){ const r = document.createElement('div'); r.className = 'demoRipple'; r.style.left = D.x + 'px'; r.style.top = D.y + 'px'; document.body.appendChild(r); setTimeout(() => r.remove(), 600); }
+  async function press(){ cur.classList.add('down'); ripple(); await sleep(140); cur.classList.remove('down'); }
+  async function click(el){ if (!el) return; await moveTo(...center(el)); await press(); el.click(); await sleep(400); }
+  async function select(el, v){ if (el.value === v) return; await moveTo(...center(el)); await press(); el.value = v; el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(500); }
+  async function toggle(el, want){                   // מתג (checkbox מוסתר בתוך label)
+    if (el.checked === want) return;
+    await moveTo(...center(el.closest('label') || el)); await press(); el.click(); await sleep(400);
+  }
+  async function dragSlider(el, to, dur){            // גרירה אמיתית: אירועי input בזמן אמת ו-change בסוף
+    const r = el.getBoundingClientRect(), mn = +el.min, mx = +el.max, rtl = getComputedStyle(el).direction === 'rtl';
+    const xOf = v => { const f = (v - mn)/(mx - mn); return rtl ? r.right - 8 - f*(r.width - 16) : r.left + 8 + f*(r.width - 16); };
+    const from = +el.value, y = r.top + r.height/2;
+    await moveTo(xOf(from), y); cur.classList.add('down');
+    try { await anim(dur || 1500, k => { const v = from + (to - from)*k; el.value = v; el.dispatchEvent(new Event('input', {bubbles:true})); place(xOf(+el.value), y); }); }
+    finally { cur.classList.remove('down'); }
+    el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(300);
+  }
+  async function waitFor(fn, limit){ const t0 = performance.now(); while (!fn() && performance.now() - t0 < (limit || 30000)) await sleep(200); }
+  async function ensureAdv(){ if (!document.body.classList.contains('adv')){ say('פותחים את המצב המורחב'); await click(byId('more')); await sleep(900); } }
+  const say = t => { byId('demoSay').textContent = t; };
+  const seg = (id, attr, v) => document.querySelector('#' + id + ' button[data-' + attr + '="' + v + '"]');
+  const viewBtn = v => document.querySelector('#views button[data-view="' + v + '"]');
+
+  async function runDemo(i){
+    stopDemo(false);
+    const tok = D.alive; D.i = i;
+    const li = document.querySelectorAll('.exp')[i];
+    byId('demoNum').textContent = i + 1; byId('demoTitle').textContent = li.querySelector('.task').textContent;
+    byId('demoText').innerHTML = li.querySelector('.ans').innerHTML; say('עוברים למעבדה...');
+    byId('demoStop').style.display = '';
+    document.body.classList.add('demo');
+    LAB.scrollIntoView({behavior:'smooth', block:'start'});
+    try {
+      await sleep(850);
+      const r = VIEW.getBoundingClientRect(); place(r.left + r.width/2, r.top + r.height/2); cur.classList.add('on');
+      await SCRIPTS[i]();
+      if (D.alive === tok){ cur.classList.remove('on'); byId('demoStop').style.display = 'none'; }
+    } catch (e) { if (e !== 'stop') console.warn(e); }
+  }
+  function stopDemo(close){ D.alive++; cur.classList.remove('on', 'down'); if (close){ document.body.classList.remove('demo'); D.i = -1; } }
+  byId('demoStop').addEventListener('click', () => { stopDemo(false); say('ההדגמה נעצרה. אפשר להמשיך לשחק במעבדה בעצמכם.'); byId('demoStop').style.display = 'none'; });
+  byId('demoAgain').addEventListener('click', () => { if (D.i >= 0) runDemo(D.i); });
+  byId('demoClose').addEventListener('click', () => stopDemo(true));
+  document.querySelectorAll('.exp').forEach((li, i) => {
+    if (!SCRIPTS[i]) return;
+    const b = document.createElement('button'); b.className = 'pbtn'; b.type = 'button'; b.title = 'הדגמה אוטומטית במעבדה';
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>הדגמה';
+    li.querySelector('.top').insertBefore(b, li.querySelector('.xbtn'));
+    b.addEventListener('click', () => runDemo(i));
+  });
+  if (location.hash.startsWith('#demo')) setTimeout(() => runDemo(+location.hash.slice(5) || 0), 400);
+
+})();
+</script>
+</body>
+</html>

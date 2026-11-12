@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.fan{transform-box:view-box;transform-origin:262px 178px;animation:sweep 6s ease-in-out infinite}
+.beam{animation:pulse 2.4s ease-in-out infinite}
+@keyframes sweep{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+@keyframes pulse{0%,100%{opacity:.25}50%{opacity:.6}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".45" cy=".45" r=".8"><stop offset="0" stop-color="#1b1236"/><stop offset="1" stop-color="#05070d"/></radialGradient><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff3a2e"/><stop offset=".2" stop-color="#ffa52e"/><stop offset=".4" stop-color="#e8f53d"/><stop offset=".6" stop-color="#3ddc84"/><stop offset=".8" stop-color="#2f7bff"/><stop offset="1" stop-color="#8a3cff"/></linearGradient><filter id="f"><feGaussianBlur stdDeviation="6"/></filter></defs>
+<rect width="640" height="360" fill="url(#b)"/><path class="beam" d="M0 205L262 178" stroke="#fff" stroke-width="12" filter="url(#f)"/><path d="M0 205L262 178" stroke="#fff" stroke-width="4"/>
+<g class="fan"><path d="M262 178L360 186L640 250L640 330Z" fill="url(#g)" opacity=".85"/><path d="M262 178L360 186L640 250L640 330Z" fill="url(#g)" opacity=".5" filter="url(#f)"/></g>
+<path d="M320 60L410 250H230Z" fill="rgba(168,220,255,.12)" stroke="#9fd6ff" stroke-width="2.5"/></svg>

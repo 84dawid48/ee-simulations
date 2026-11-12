@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>קיטוב וחוק מאלוס</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+:root{--bg:#05070d;--card:#0c1222;--line:#1f2b44;--txt:#e3eaf6;--mut:#93a3bf;--acc:#6cb8ff;--e:#ff3a55;--grn:#46e39a;--yel:#ffd479}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:"Segoe UI","Rubik",Arial,sans-serif;padding-top:30px}
+#topbar{position:fixed;top:0;left:0;right:0;height:30px;background:#060912;border-bottom:1px solid var(--line);z-index:100}
+#bsd{position:absolute;top:7px;right:12px;font-size:12px;color:#c9d6ea}
+#copyr{position:absolute;top:4px;left:8px;font-size:12px;color:#dce6f5;background:#10172a;border:1px solid var(--line);border-radius:6px;padding:2px 10px}
+
+/* ===== פתיח ===== */
+.wrap{max-width:980px;margin:0 auto;padding:0 20px}
+#intro{padding-top:46px;padding-bottom:40px;line-height:1.75}
+#intro h1{font-size:34px;line-height:1.25;margin:0 0 8px;font-weight:700}
+#intro h1 span{color:var(--e)}
+#intro .lead{font-size:18px;color:var(--mut);margin:0 0 30px}
+#intro h2{font-size:21px;margin:40px 0 14px;color:var(--acc)}
+.theory{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px}
+.th{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.th .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;font-size:14px;margin-bottom:6px}
+.th h3{margin:0 0 4px;font-size:17px}
+.th p{margin:0;font-size:15px;color:#c3cfe3}
+.prob{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.prob p{margin:0 0 10px;font-size:15.5px;color:#d0d9ea}
+.prob p:last-child{margin-bottom:0}
+.prob svg{width:100%;height:auto;display:block;background:#080d18;border:1px solid var(--line);border-radius:12px}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:14px}
+.rd{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.rd .ic{flex:0 0 38px;height:38px;border-radius:10px;background:#101a30;display:grid;place-items:center}
+.rd h3{margin:0 0 2px;font-size:15.5px}
+.rd p{margin:0;font-size:14.5px;color:#c3cfe3}
+bdi{unicode-bidi:isolate}
+@media (max-width:900px){.prob{grid-template-columns:1fr}}
+.law{margin:18px 0 0;text-align:center;font-size:22px;background:linear-gradient(90deg,rgba(255,58,85,.08),rgba(108,184,255,.08));border:1px solid var(--line);border-radius:16px;padding:14px;direction:ltr}
+.law small{display:block;direction:rtl;font-size:14px;color:var(--mut);margin-top:4px}
+/* ניסויים */
+#exps{padding-top:10px;padding-bottom:60px;line-height:1.75}
+#exps h2{font-size:21px;margin:34px 0 14px;color:var(--acc)}
+.exps{list-style:none;margin:0;padding:0;counter-reset:ex}
+.exp{counter-increment:ex;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.exp .top{display:flex;align-items:center;gap:14px}
+.exp .top::before{content:counter(ex);flex:0 0 30px;height:30px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;display:grid;place-items:center}
+.exp .task{flex:1;font-size:16px}
+.xbtn{flex:0 0 auto;background:#1a1608;border:1px solid #6b5520;color:var(--yel);border-radius:20px;padding:5px 16px;font:inherit;font-size:14px;cursor:pointer}
+.xbtn:hover{filter:brightness(1.25)}
+.exp .ans{display:none;margin:12px 44px 2px 0;padding:10px 14px;border-right:3px solid var(--yel);background:rgba(255,212,121,.06);border-radius:8px;font-size:15px;color:#d6dcea;line-height:1.7}
+.exp.open .ans{display:block}
+.exp.open .xbtn{background:#2b230b}
+.cta{display:block;width:max-content;margin:34px auto 0;text-decoration:none;color:#fff;font:inherit;font-size:17px;font-weight:600;background:linear-gradient(180deg,#2167b8,#18508f);border:1px solid #3b86e0;border-radius:40px;padding:12px 30px;box-shadow:0 0 30px rgba(59,134,224,.35);cursor:pointer}
+.cta:hover{filter:brightness(1.15)}
+
+/* ===== מעבדה ===== */
+.lab{position:relative;height:calc(100vh - 30px);min-height:560px;border-top:1px solid var(--line)}
+.view{position:absolute;inset:0}
+.view canvas{display:block}
+.pnl{position:absolute;top:14px;background:rgba(10,15,28,.84);border:1px solid var(--line);border-radius:18px;padding:16px;backdrop-filter:blur(10px);z-index:10;max-height:calc(100% - 90px);overflow-y:auto}
+.pnl.r{right:14px;width:290px}
+.pnl.l{left:14px;width:300px}
+.c-row{margin-bottom:15px}
+.c-row:last-child{margin-bottom:0}
+.c-lbl{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px;color:#cdd8ea}
+.c-val{font-family:Consolas,monospace;font-size:14px;color:#fff;direction:ltr}
+select{width:100%;background:#0a0f1c;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:8px;font:inherit;font-size:14px}
+input[type=range]{width:100%;accent-color:var(--grn);margin:0}
+input[type=range]:disabled{opacity:.3}
+.sw{position:relative;display:inline-block;width:34px;height:19px;flex:0 0 auto}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:#2a3550;border-radius:20px;cursor:pointer;transition:.2s}
+.sw span::before{content:"";position:absolute;width:15px;height:15px;top:2px;right:2px;background:#c7d2e6;border-radius:50%;transition:.2s}
+.sw input:checked+span{background:#1f7a53}
+.sw input:checked+span::before{right:17px;background:#fff}
+.lbl-l{display:flex;align-items:center;gap:8px}
+.sep{border-top:1px solid var(--line);padding-top:14px;margin-top:4px}
+.mrow{display:grid;grid-template-columns:84px 1fr 46px;gap:8px;align-items:center;font-size:12.5px;color:var(--mut);margin:5px 0}
+.bar{height:8px;background:#0a0f1c;border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#8a1428,#ff3a55);border-radius:6px;transition:width .15s}
+.mrow b{font-family:Consolas,monospace;font-weight:400;color:#fff;direction:ltr;text-align:left}
+.views{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:4px;background:rgba(10,15,28,.84);border:1px solid var(--line);border-radius:30px;padding:4px;z-index:10}
+.views button{background:none;border:none;color:var(--mut);font:inherit;font-size:13px;padding:6px 14px;border-radius:30px;cursor:pointer;white-space:nowrap}
+.views button.on{background:#1a2b4a;color:#fff}
+.seg{display:flex;gap:4px}
+.seg button{flex:1;background:#0a0f1c;border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:5px;font:inherit;font-size:13px;cursor:pointer}
+.seg button.on{border-color:var(--acc);color:#fff;background:#16243f}
+.chk{display:flex;align-items:center;gap:8px;font-size:13.5px;color:#cdd8ea;margin:8px 0}
+.fml{direction:ltr;text-align:center;font-family:"Cambria Math","Times New Roman",serif;font-size:15px;margin:10px 0 4px;color:#fff}
+canvas.plot{width:100%;height:120px;display:block;background:#080d18;border:1px solid var(--line);border-radius:10px}
+.proj{direction:ltr;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.proj div{text-align:center;font-size:11px;color:var(--mut)}
+.proj canvas{width:100%;aspect-ratio:1;display:block;background:#080d18;border:1px solid var(--line);border-radius:8px;margin-bottom:2px}
+.ttl{font-size:13px;color:var(--mut);margin-bottom:8px}
+body:not(.adv) .adv-only{display:none!important}
+body.adv .basic-only{display:none!important}
+.morebtn{position:absolute;bottom:14px;left:14px;z-index:12;display:flex;align-items:center;gap:10px;font:inherit;font-size:18px;font-weight:700;color:#fff;border:none;border-radius:40px;padding:15px 28px;cursor:pointer;background:linear-gradient(135deg,#7b2ff7,#e0218a);box-shadow:0 8px 30px rgba(123,47,247,.45);animation:pulse 2.2s infinite}
+.morebtn .ic{font-size:22px}
+.morebtn:hover{filter:brightness(1.15)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(224,33,138,.55),0 8px 30px rgba(123,47,247,.45)}70%{box-shadow:0 0 0 16px rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}100%{box-shadow:0 0 0 0 rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}}
+.lessbtn{position:absolute;bottom:14px;left:14px;z-index:12;font:inherit;font-size:14px;color:#cdd8ea;background:rgba(10,15,28,.88);border:1px solid #3a4a6e;border-radius:30px;padding:9px 18px;cursor:pointer}
+.lessbtn:hover{border-color:var(--acc);color:#fff}
+.pnl.l{max-height:calc(100% - 100px)}
+@media (max-width:900px){
+  .morebtn,.lessbtn{position:static;margin:16px auto;animation:none}
+  #intro h1{font-size:26px}
+  .lab{height:auto;min-height:0}
+  .view{position:relative;height:62vh}
+  .pnl{position:static;width:auto!important;margin:12px;max-height:none}
+  .views{position:static;transform:none;width:max-content;max-width:calc(100% - 24px);flex-wrap:wrap;margin:0 auto 16px}
+}
+
+/* ===== הדגמה אוטומטית של ניסוי ===== */
+.pbtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:#0f2a1c;border:1px solid #2f7a52;color:#7dffb4;border-radius:20px;padding:5px 14px;font:inherit;font-size:14px;cursor:pointer}
+.pbtn:hover{filter:brightness(1.25)}
+.pbtn svg{width:12px;height:12px}
+#demoBox{display:none;position:relative;height:190px;border-top:1px solid var(--line);background:linear-gradient(180deg,#0a1322,#070b16);padding:14px 20px;overflow-y:auto;line-height:1.6}
+body.demo #demoBox{display:block}
+body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
+#demoBox .dh{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+#demoBox .dn{flex:0 0 28px;height:28px;border-radius:50%;background:#123a27;color:#7dffb4;font-weight:700;display:grid;place-items:center}
+#demoBox .dt{flex:1;font-size:15.5px;font-weight:600}
+#demoBox .say{font-size:14px;color:#7dffb4;min-height:22px;margin-bottom:6px}
+#demoBox .say::before{content:"▶ ";opacity:.7}
+#demoBox .dx{font-size:15px;color:#d6dcea;line-height:1.7;border-right:3px solid #ffd479;background:rgba(255,212,121,.06);border-radius:8px;padding:8px 12px}
+#demoBox .db{background:#0a0f1c;border:1px solid var(--line);color:#cdd8ea;border-radius:10px;padding:5px 12px;font:inherit;font-size:13.5px;cursor:pointer}
+#demoBox .db:hover{border-color:var(--acc);color:#fff}
+#demoCursor{position:fixed;left:0;top:0;z-index:300;pointer-events:none;opacity:0;transition:opacity .3s}
+#demoCursor.on{opacity:1}
+#demoCursor svg{width:30px;height:30px;filter:drop-shadow(0 0 6px rgba(125,255,180,.9)) drop-shadow(0 2px 3px rgba(0,0,0,.6));transition:transform .12s}
+#demoCursor.down svg{transform:scale(.82)}
+.demoRipple{position:fixed;z-index:299;pointer-events:none;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;border:2px solid #7dffb4;animation:demoRip .55s ease-out forwards}
+@keyframes demoRip{from{transform:scale(.4);opacity:1}to{transform:scale(3.4);opacity:0}}
+</style>
+</head>
+<body>
+<div id="topbar"><div id="bsd">בס״ד</div><div id="copyr">כל הזכויות שמורות לדוד יצחקי</div></div>
+
+<!-- ===================== פתיח ===================== -->
+<section id="intro" class="wrap">
+  <h1>מה קורה ל<span>אור</span> כשהוא עובר דרך מקטב?</h1>
+  <p class="lead">שני מסננים שקופים לגמרי, אחד אחרי השני, ופתאום עובר דרכם פחות אור, ולפעמים בכלל לא. נגלה איזו תכונה נסתרת של האור הם "מסננים", ומה החוק שקובע כמה אור עובר.</p>
+
+  <h2>הבעיה</h2>
+  <div class="prob">
+    <div>
+      <p>מנורה מאירה דרך שני <b>מקטבים</b>, יריעות שקופות שנראות זהות לגמרי, ובסוף האור נופל על מסך עם גלאי שמודד כמה אור הגיע, <b>באחוזים מעוצמת המנורה</b>. משאירים את המקטב הראשון במקומו, מסובבים את השני, ובכל זווית <b>α</b> ביניהם רושמים את העוצמה. כך נראות המדידות בגרף: הזווית בציר האופקי והעוצמה בציר האנכי.</p>
+      <p>מה רואים: העוצמה <b>אף פעם לא עולה על 50%</b>, גם כשהמקטבים מקבילים. ב-<bdi dir="ltr">α = 90°</bdi> המסך <b>כמעט חשוך</b>, אף ששני המקטבים שקופים. ובין לבין העוצמה יורדת ועולה בעקומה חלקה. מה לא ידוע: למה מקטב אחד לבד מוריד בדיוק חצי, ולמה שני מקטבים שקופים יכולים לחסום הכול.</p>
+      <p><b>המשימה:</b> להבין מהי התכונה של האור שהמקטב "מסנן" (<b>הקיטוב</b>), ולמצוא את החוק שקובע כמה אור עובר בכל זווית.</p>
+    </div>
+    <svg id="probSvg" viewBox="0 0 340 250" aria-label="עוצמה על המסך מול הזווית בין המקטבים"></svg>
+  </div>
+
+  <h2>איך לקרוא את המעבדה</h2>
+  <div class="read">
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 21V6" stroke="#ff3a55" stroke-width="2.4"/><path d="M7 8l5-5 5 5" fill="#ff3a55"/></svg></div><div><h3>חץ אדום = השדה החשמלי</h3><p>כל חץ מראה את השדה בנקודה אחת לאורך הקרן. האורך הוא העוצמה, והכיוון הוא כיוון התנודה.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M3 12C6 4 9 4 12 12S18 20 21 12" fill="none" stroke="#ff8090" stroke-width="1.8"/></svg></div><div><h3>הקו הוורוד = המסלול של קצה החץ</h3><p>הוא מראה את צורת הקיטוב: קו ישר, מעגל או אליפסה. רואים אותו הכי טוב במבט "מול המסך".</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="rgba(109,127,158,.25)" stroke="#9aa8bf" stroke-width="1.5"/><path d="M12 4V20" stroke="#46e39a" stroke-width="2.2"/><circle cx="12" cy="3" r="2" fill="#46e39a"/></svg></div><div><h3>עיגול עם קו ירוק = מקטב</h3><p>הקו הירוק הוא הציר שלו: רק החלק של השדה שלאורכו עובר. הכדור הירוק הוא הידית.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 20V7" stroke="#7a3456" stroke-width="2.4"/><path d="M8 9l4-4 4 4" fill="#7a3456"/></svg></div><div><h3>חץ סגול דהוי = מה שנחסם</h3><p>מיד אחרי המקטב רואים לרגע את החלק של השדה שהוא "זרק".</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2" fill="#1b2232" stroke="#556"/><circle cx="12" cy="12" r="5" fill="#ff3048" opacity=".7"/></svg></div><div><h3>זוהר המסך = כמה אור הגיע</h3><p>ככל שהמסך בוהק יותר, הגיעה אליו עוצמה גדולה יותר. מסך חשוך הוא אפס.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="4" rx="2" fill="#141c30"/><rect x="3" y="7" width="12" height="4" rx="2" fill="#6cb8ff"/><rect x="3" y="14" width="18" height="4" rx="2" fill="#141c30"/><rect x="3" y="14" width="6" height="4" rx="2" fill="#6cb8ff"/></svg></div><div><h3>פסי העוצמה = אחוזים</h3><p>כמה אור נשאר אחרי כל שלב, באחוזים מהמקור.</p></div></div>
+  </div>
+
+  <h2>התאוריה בקצרה</h2>
+  <div class="theory">
+    <div class="th"><div class="n">1</div><h3>אור הוא גל</h3><p>באור יש שדה חשמלי שמתנודד הלוך וחזור, בניצב לכיוון שבו האור מתקדם.</p></div>
+    <div class="th"><div class="n">2</div><h3>קיטוב</h3><p>הכיוון שבו השדה מתנודד. באור של נורה או של השמש הכיוון משתנה כל הזמן באקראי. זה <b>אור לא מקוטב</b>.</p></div>
+    <div class="th"><div class="n">3</div><h3>מקטב</h3><p>מסנן שמעביר רק את החלק של השדה שלאורך הציר שלו (הקו <b style="color:var(--grn)">הירוק</b>). מאור לא מקוטב עובר בדיוק <b>חצי</b>, והוא יוצא מקוטב.</p></div>
+    <div class="th"><div class="n">4</div><h3>שני מקטבים</h3><p>כמה אור עובר את השני תלוי רק בזווית <b>α</b> ביניהם. כשהם מקבילים עובר הכול, וכשהם ניצבים לא עובר כלום.</p></div>
+  </div>
+  <div class="law">I₂ = I₁ · cos²α<small>חוק מאלוס: α היא הזווית בין הצירים של שני המקטבים</small></div>
+
+
+  <a class="cta" href="#lab1">למעבדה ↓</a>
+</section>
+
+<!-- ===================== מעבדה ===================== -->
+<section class="lab" id="lab1">
+  <div class="view" id="view1"></div>
+  <div class="pnl r">
+    <div class="c-row">
+      <div class="c-lbl">סוג האור</div>
+      <select id="src"><option value="unpol">לא מקוטב</option><option value="lin">קיטוב ליניארי</option><option value="circ">קיטוב מעגלי</option><option value="ell">קיטוב אליפטי</option></select>
+    </div>
+    <div class="c-row" id="rowPhi"><div class="c-lbl"><span>כיוון הקיטוב</span><span class="c-val" id="phiV"></span></div><input type="range" id="phi" min="0" max="180" step="1" value="0"></div>
+    <div class="c-row adv-only" id="rowHand"><div class="seg" id="hand"><button data-v="R" class="on">ימני</button><button data-v="L">שמאלי</button></div></div>
+    <div class="c-row adv-only" id="rowPsi"><div class="c-lbl"><span>ψ</span><span class="c-val" id="psiV"></span></div><input type="range" id="psi" min="0" max="180" step="1" value="30"></div>
+    <div class="c-row adv-only" id="rowEll"><div class="c-lbl"><span>b/a</span><span class="c-val" id="ellV"></span></div><input type="range" id="ell" min="0.05" max="0.95" step="0.01" value="0.5"></div>
+    <div class="c-row"><div class="c-lbl"><span class="lbl-l"><label class="sw"><input type="checkbox" id="p1" checked><span></span></label>מקטב 1</span><span class="c-val" id="th1V"></span></div><input type="range" id="th1" min="0" max="360" step="1" value="0"></div>
+    <div class="c-row"><div class="c-lbl"><span class="lbl-l"><label class="sw"><input type="checkbox" id="p2" checked><span></span></label>מקטב 2</span><span class="c-val" id="th2V"></span></div><input type="range" id="th2" min="0" max="360" step="1" value="0"></div>
+    <div class="c-row adv-only"><div class="seg" id="pre"><button data-a="0">α=0°</button><button data-a="45">α=45°</button><button data-a="90">α=90°</button></div></div>
+    <div class="c-row sep adv-only">
+      <label class="chk"><label class="sw"><input type="checkbox" id="showB"><span></span></label>שדה מגנטי B</label>
+      <label class="chk"><label class="sw"><input type="checkbox" id="ghost" checked><span></span></label>רכיב נחסם</label>
+      <div class="c-lbl" style="margin-top:10px"><span>מהירות</span><span class="c-val" id="speedV"></span></div><input type="range" id="speed" min="0" max="2.5" step="0.05" value="1">
+    </div>
+    <div class="sep basic-only">
+      <div class="mrow"><span>מקור</span><div class="bar"><i style="width:100%"></i></div><b>100%</b></div>
+      <div class="mrow"><span>אחרי מקטב 1</span><div class="bar"><i id="m1"></i></div><b id="mv1"></b></div>
+      <div class="mrow"><span>על המסך</span><div class="bar"><i id="m2"></i></div><b id="mv2"></b></div>
+    </div>
+  </div>
+  <div class="pnl l adv-only">
+    <div class="mrow"><span>I₀</span><div class="bar"><i style="width:100%"></i></div><b>100%</b></div>
+    <div class="mrow"><span>I₁</span><div class="bar"><i id="k1"></i></div><b id="kv1"></b></div>
+    <div class="mrow"><span>I₂</span><div class="bar"><i id="k2"></i></div><b id="kv2"></b></div>
+    <div class="fml" id="fml"></div>
+    <div class="sep"><div class="ttl">I₂(α)</div><canvas class="plot" id="malus"></canvas></div>
+    <div class="sep"><div class="ttl">E במישור x-y</div>
+      <div class="proj"><div><canvas id="pj0"></canvas>z₀</div><div><canvas id="pj1"></canvas>z₁</div><div><canvas id="pj2"></canvas>z₂</div></div>
+    </div>
+  </div>
+  <div class="views" id="views"><button data-view="3d" class="on">תלת-ממד</button><button data-view="side">מהצד</button><button data-view="top" class="adv-only">מלמעלה</button><button data-view="source" class="adv-only">מול המקור</button><button data-view="screen">מול המסך</button></div>
+  <button id="more" class="morebtn basic-only"><span class="ic">🔬</span>אני רוצה לחקור יותר</button>
+  <button id="less" class="lessbtn adv-only">→ לחזור למעבדה הבסיסית</button>
+</section>
+<!-- מסגרת ההסבר של ההדגמה האוטומטית (מופיעה מתחת למעבדה, לא מעליה) -->
+<section id="demoBox" aria-live="polite">
+  <div class="dh"><div class="dn" id="demoNum">1</div><div class="dt" id="demoTitle"></div>
+    <button class="db" id="demoStop">⏹ עצור</button><button class="db" id="demoAgain">↻ שוב</button><button class="db" id="demoClose">✕ סגור</button></div>
+  <div class="say" id="demoSay"></div>
+  <div class="dx" id="demoText"></div>
+</section>
+<div id="demoCursor"><svg viewBox="0 0 24 24"><path d="M4 2l15 11-6.5 1.2L16.5 22l-3 1.3-3.6-7.6L5 20z" fill="#fff" stroke="#0b1a12" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+
+<!-- ===================== ניסויים ===================== -->
+<section id="exps" class="wrap">
+  <h2>ניסויים לנסות במעבדה</h2>
+  <ol class="exps">
+    <li class="exp"><div class="top"><div class="task">בחרו "לא מקוטב" וכבו את מקטב 2. אחרי מקטב 1 העוצמה יורדת בדיוק ל-50%.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">לאור לא מקוטב אין כיוון קבוע: השדה מצביע כל רגע לכיוון אחר. המקטב מעביר רק את החלק שלאורך הציר שלו, ובממוצע על כל הכיוונים זה בדיוק חצי מהעוצמה (הממוצע של cos² הוא ½). האור שיוצא כבר מקוטב, והוא מתנודד רק לאורך הקו הירוק.</div></li>
+    <li class="exp"><div class="top"><div class="task">באותו מצב, סובבו את מקטב 1. העוצמה אחריו נשארת 50% בכל זווית.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">לאור לא מקוטב אין כיוון מועדף, ולכן אין שום זווית "טובה" או "רעה" למקטב. הוא תמיד מעביר חצי. מה שכן משתנה הוא כיוון הקיטוב של האור היוצא: הוא מסתובב יחד עם המקטב.</div></li>
+    <li class="exp"><div class="top"><div class="task">הדליקו את שני המקטבים וכוונו אותם לאותה זווית. כל האור שעבר את הראשון עובר גם את השני.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">אחרי מקטב 1 השדה מתנודד בדיוק לאורך הציר שלו. אם הציר של מקטב 2 באותו כיוון, אין מה לחסום: <bdi dir="ltr">α = 0°</bdi> ולכן <bdi dir="ltr">cos²α = 1</bdi>.</div></li>
+    <li class="exp"><div class="top"><div class="task">כוונו את המקטבים להפרש של 90°. השדה אחרי מקטב 2 מתאפס, והמסך חשוך.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">אחרי מקטב 1 השדה מתנודד לאורך הציר של מקטב 1 בלבד. הציר של מקטב 2 ניצב לו, ולשדה כזה אין שום רכיב לאורכו. לפי חוק מאלוס: <bdi dir="ltr">cos²90° = 0</bdi>. למקטבים במצב הזה קוראים "מקטבים צלובים".</div></li>
+    <li class="exp"><div class="top"><div class="task">כוונו את המקטבים להפרש של 45°. על המסך מגיעים 25%.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">מקטב 1 מעביר חצי (50%). מקטב 2 מעביר מזה <bdi dir="ltr">cos²45° = ½</bdi>. ביחד: <bdi dir="ltr">½ × ½ = ¼</bdi>, כלומר 25%. נסו גם 60°: <bdi dir="ltr">½ × ¼ = 12.5%</bdi>.</div></li>
+    <li class="exp"><div class="top"><div class="task">בחרו "קיטוב ליניארי", כבו את מקטב 2 וסובבו את מקטב 1. העוצמה עולה ויורדת בין 100% ל-0%.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">הפעם האור כבר מקוטב, ולכן חוק מאלוס חל כבר על המקטב הראשון. כשהציר שלו מקביל לכיוון הקיטוב, הכול עובר. כשהוא ניצב, שום דבר לא עובר. בין לבין העוצמה היא cos² של הזווית ביניהם.</div></li>
+    <li class="exp"><div class="top"><div class="task">בחרו "קיטוב מעגלי", כבו את שני המקטבים ועברו למבט "מול המסך". קצה השדה משרטט מעגל.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">בקיטוב מעגלי השדה לא מתנודד בקו אחד. הוא מסתובב בקצב קבוע ושומר על אותו אורך, ולכן הקצה שלו מצייר מעגל. אם תדליקו עכשיו מקטב אחד, יעבור בדיוק 50% בכל זווית, כי המעגל "נראה אותו דבר" מכל כיוון.</div></li>
+  </ol>
+</section>
+
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id), deg = Math.PI/180;
+
+/* ======================================================================
+   פיזיקה (לכל מעבדה מצב משלה)
+   עולם: X = כיוון ההתקדמות z, Y = y, ‎-Z = x.  E = Re(J e^{i(kz-ωt)})
+   "ימני" = עם כיוון השעון כשמביטים לעבר המקור
+   ====================================================================== */
+const XS = -10, XP1 = -3.5, XP2 = 3, XSC = 10;
+const KV = 2*Math.PI/2.4, OMEGA = 2*Math.PI*0.5, VEL = OMEGA/KV, AMP = 1.55, GHOST_L = 1.2, UNP_DT = 0.4;
+function hash(n){ const s = Math.sin(n*12.9898 + 78.233)*43758.5453; return s - Math.floor(s); }
+function physics(S){
+  function sourceJ(){
+    const c = (re, im) => ({re, im}), h = S.hand === 'L' ? 1 : -1;
+    if (S.src === 'lin') return {x:c(Math.cos(S.phi*deg),0), y:c(Math.sin(S.phi*deg),0)};
+    if (S.src === 'circ') return {x:c(Math.SQRT1_2,0), y:c(0,h*Math.SQRT1_2)};
+    if (S.src === 'ell'){ const r = S.ell, a = 1/Math.sqrt(1 + r*r), b = r*a, p = S.psi*deg; return {x:c(a*Math.cos(p), -h*b*Math.sin(p)), y:c(a*Math.sin(p), h*b*Math.cos(p))}; }
+    return null;
+  }
+  function srcThrough(th){
+    if (S.src === 'unpol') return 0.5;
+    const J = sourceJ(), cs = Math.cos(th*deg), sn = Math.sin(th*deg);
+    const re = cs*J.x.re + sn*J.y.re, im = cs*J.x.im + sn*J.y.im;
+    return re*re + im*im;
+  }
+  function intensities(th2){
+    if (th2 === undefined) th2 = S.th2;
+    const I1 = S.p1 ? srcThrough(S.th1) : 1;
+    const I2 = !S.p2 ? I1 : S.p1 ? I1*Math.cos((th2 - S.th1)*deg)**2 : srcThrough(th2);
+    return {I1, I2};
+  }
+  function fieldAt(x, t){
+    const s = x - XS, ph = KV*s - OMEGA*t;
+    let ex, ey;
+    if (S.src === 'unpol'){ const a = 2*Math.PI*hash(Math.floor((t - s/VEL)/UNP_DT)), c = Math.cos(ph); ex = c*Math.cos(a); ey = c*Math.sin(a); }
+    else { const J = sourceJ(), c = Math.cos(ph), sn = Math.sin(ph); ex = J.x.re*c - J.x.im*sn; ey = J.y.re*c - J.y.im*sn; }
+    let gx = 0, gy = 0, gf = 0;
+    const proj = th => { const u0 = Math.cos(th*deg), u1 = Math.sin(th*deg), d = ex*u0 + ey*u1; return [d*u0, d*u1]; };
+    if (S.p1 && x > XP1){ const [px, py] = proj(S.th1); if (x - XP1 < GHOST_L){ gx = ex - px; gy = ey - py; gf = 1 - (x - XP1)/GHOST_L; } ex = px; ey = py; }
+    if (S.p2 && x > XP2){ const [px, py] = proj(S.th2); if (x - XP2 < GHOST_L){ gx = ex - px; gy = ey - py; gf = 1 - (x - XP2)/GHOST_L; } ex = px; ey = py; }
+    return {ex, ey, gx, gy, gf};
+  }
+  return {intensities, fieldAt};
+}
+
+/* ======================================================================
+   מעבדה תלת-ממדית (מופע לכל אזור)
+   ====================================================================== */
+function createLab(view, S, opts){
+  const P = physics(S);
+  const renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  view.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x05070d);
+  scene.fog = new THREE.FogExp2(0x05070d, 0.016);
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 400);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.dampingFactor = 0.08; controls.minDistance = 0.5; controls.maxDistance = 80; controls.screenSpacePanning = true;
+  scene.add(new THREE.AmbientLight(0x6070a0, 0.6));
+  const dl = new THREE.DirectionalLight(0xffffff, 0.75); dl.position.set(4, 12, 10); scene.add(dl);
+
+  const canvasTex = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.anisotropy = 4; return t; };
+  const glowTex = canvasTex(128,128,(g)=>{ const r = g.createRadialGradient(64,64,0,64,64,64); r.addColorStop(0,'rgba(255,255,255,1)'); r.addColorStop(.3,'rgba(255,255,255,.5)'); r.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0,0,128,128); });
+
+  // שולחן
+  const TABLE_Y = -3.1;
+  const floorGrid = new THREE.GridHelper(120, 120, 0x141e33, 0x0c1322); floorGrid.position.y = -7; scene.add(floorGrid);
+  const holeTex = canvasTex(256,256,(g,w,h)=>{ g.fillStyle = '#1a2130'; g.fillRect(0,0,w,h); g.fillStyle = '#0a0d14'; for (let i = 16; i < w; i += 32) for (let j = 16; j < h; j += 32){ g.beginPath(); g.arc(i, j, 4.5, 0, 7); g.fill(); } });
+  holeTex.wrapS = holeTex.wrapT = THREE.RepeatWrapping; holeTex.repeat.set(26, 5);
+  const sideMat = new THREE.MeshStandardMaterial({color:0x2a3242, metalness:.6, roughness:.5});
+  const table = new THREE.Mesh(new THREE.BoxGeometry(26, 0.35, 5), [sideMat, sideMat, new THREE.MeshStandardMaterial({map:holeTex, metalness:.5, roughness:.6}), new THREE.MeshStandardMaterial({color:0x1a202b}), sideMat, sideMat]);
+  table.position.set(0, TABLE_Y - 0.175, 0); scene.add(table);
+  const legMat = new THREE.MeshStandardMaterial({color:0x232a36, metalness:.7, roughness:.4});
+  [[-12,-2],[-12,2],[12,-2],[12,2]].forEach(([x,z]) => { const l = new THREE.Mesh(new THREE.BoxGeometry(0.5, 3.6, 0.5), legMat); l.position.set(x, TABLE_Y - 2.15, z); scene.add(l); });
+  const railMat = new THREE.MeshStandardMaterial({color:0x7d8798, metalness:.9, roughness:.25});
+  const rail = new THREE.Mesh(new THREE.BoxGeometry(24, 0.18, 0.5), railMat); rail.position.set(0, TABLE_Y + 0.09, 0); scene.add(rail);
+  const axisLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(XS, 0, 0), new THREE.Vector3(XSC, 0, 0)]), new THREE.LineDashedMaterial({color:0x34476a, dashSize:0.25, gapSize:0.18}));
+  axisLine.computeLineDistances(); scene.add(axisLine);
+  const post = (x, yTop, w) => { const h = yTop - TABLE_Y - 0.18; const p = new THREE.Mesh(new THREE.CylinderGeometry(w, w, h, 16), railMat); p.position.set(x, TABLE_Y + 0.18 + h/2, 0); scene.add(p); };
+
+  // מקור אור
+  const lamp = new THREE.Group(); lamp.position.set(XS, 0, 0); scene.add(lamp);
+  const lampBody = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.6, 1.6), new THREE.MeshStandardMaterial({color:0x2c3442, metalness:.8, roughness:.35})); lampBody.position.x = -1.0; lamp.add(lampBody);
+  const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.65, 0.4, 32), new THREE.MeshStandardMaterial({color:0x8090a8, metalness:1, roughness:.2})); nozzle.rotation.z = Math.PI/2; lamp.add(nozzle);
+  const lens = new THREE.Mesh(new THREE.CircleGeometry(0.48, 32), new THREE.MeshBasicMaterial({color:0xffe6e8})); lens.rotation.y = Math.PI/2; lens.position.x = 0.21; lamp.add(lens);
+  const lampGlow = new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex, color:0xff8090, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true})); lampGlow.scale.set(2.4, 2.4, 1); lampGlow.position.x = 0.3; lamp.add(lampGlow);
+  post(XS - 1, -0.8, 0.3);
+
+  // מקטבים
+  const pTex = canvasTex(1024,1024,(g,w)=>{ const c = w/2; g.strokeStyle = 'rgba(190,210,240,.7)'; g.fillStyle = 'rgba(200,220,250,.9)'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 32px Segoe UI, Arial';
+    for (let d = 0; d < 360; d += 15){ const a = d*deg, r1 = c*0.995, r0 = d % 90 === 0 ? c*0.9 : c*0.95; g.lineWidth = d % 90 === 0 ? 4 : 2;
+      g.beginPath(); g.moveTo(c + r0*Math.cos(a), c - r0*Math.sin(a)); g.lineTo(c + r1*Math.cos(a), c - r1*Math.sin(a)); g.stroke();
+      if (d % 90 === 0) g.fillText(d + '°', c + c*0.83*Math.cos(a), c - c*0.83*Math.sin(a)); } });
+  function makePolarizer(x){
+    const G = new THREE.Group(); G.position.set(x, 0, 0); scene.add(G);
+    const R0 = 2.15;
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(R0 + 0.25, 0.1, 12, 80), new THREE.MeshStandardMaterial({color:0x9aa8bf, metalness:1, roughness:.2})); ring.rotation.y = Math.PI/2; G.add(ring);
+    const prot = new THREE.Mesh(new THREE.RingGeometry(R0 - 0.02, R0 + 0.2, 96), new THREE.MeshBasicMaterial({map:pTex, transparent:true, side:THREE.DoubleSide, depthWrite:false}));
+    prot.rotation.y = Math.PI/2; prot.position.x = 0.04;
+    { const pos = prot.geometry.attributes.position, uv = prot.geometry.attributes.uv, Rm = R0 + 0.2; for (let i = 0; i < pos.count; i++) uv.setXY(i, 0.5 + pos.getX(i)/(2*Rm), 0.5 + pos.getY(i)/(2*Rm)); uv.needsUpdate = true; }
+    G.add(prot);
+    const sh = (-R0 - 0.3) - (TABLE_Y + 0.18);
+    const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, sh, 16), railMat); stand.position.set(0, TABLE_Y + 0.18 + sh/2, 0); G.add(stand);
+    const rot = new THREE.Group(); G.add(rot);
+    const disk = new THREE.Mesh(new THREE.CylinderGeometry(R0, R0, 0.07, 72), new THREE.MeshPhongMaterial({color:0x6d7f9e, transparent:true, opacity:0.18, shininess:120, specular:0x99aadd, depthWrite:false, side:THREE.DoubleSide}));
+    disk.rotation.z = Math.PI/2; rot.add(disk);
+    const dashMat = new THREE.MeshBasicMaterial({color:0x7cff9e});
+    for (let s = -R0 + 0.1; s < R0 - 0.1; s += 0.32){ const d = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.07, 0.2), dashMat); d.position.set(0, 0, -s); rot.add(d); }
+    rot.add(new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.22, 2*R0 - 0.1), new THREE.MeshBasicMaterial({color:0x46e39a, transparent:true, opacity:0.18, blending:THREE.AdditiveBlending, depthWrite:false})));
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 12), new THREE.MeshStandardMaterial({color:0x46e39a, emissive:0x1d6a45})); knob.position.set(0, 0, -(R0 + 0.25)); rot.add(knob);
+    return {G, rot};
+  }
+  const pol1 = makePolarizer(XP1), pol2 = makePolarizer(XP2);
+
+  // מסך שקוף-למחצה
+  const scr = new THREE.Group(); scr.position.set(XSC, 0, 0); scene.add(scr);
+  const scrMat = new THREE.MeshStandardMaterial({color:0x1b2232, emissive:0xff3048, emissiveIntensity:0.5, roughness:.9, side:THREE.DoubleSide, transparent:true, opacity:0.78, depthWrite:false});
+  const scrPlane = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 4.6), scrMat); scrPlane.rotation.y = -Math.PI/2; scr.add(scrPlane);
+  { const fm = new THREE.MeshStandardMaterial({color:0x2b3342, metalness:.8, roughness:.35});
+    [[2.42,0,0.2,5],[-2.42,0,0.2,5],[0,2.42,5,0.2],[0,-2.42,5,0.2]].forEach(([y,z,b,c]) => { const m = new THREE.Mesh(new THREE.BoxGeometry(0.2,b,c), fm); m.position.set(0.05, y, z); scr.add(m); }); }
+  const scrGlow = new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex, color:0xff3048, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true})); scrGlow.position.x = -0.1; scrGlow.scale.set(4, 4, 1); scr.add(scrGlow);
+  post(XSC + 0.15, -2.5, 0.2);
+
+  // תוויות
+  function makeLabel(text, color){
+    const fs = 44, pad = 18, c = document.createElement('canvas'), g = c.getContext('2d');
+    g.font = `600 ${fs}px "Segoe UI", Arial`; const w = Math.ceil(g.measureText(text).width) + pad*2; c.width = w; c.height = fs + pad;
+    g.font = `600 ${fs}px "Segoe UI", Arial`; g.fillStyle = color; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = 'rtl'; g.fillText(text, w/2, c.height/2 + 2);
+    const t = new THREE.CanvasTexture(c); t.minFilter = THREE.LinearFilter;
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({map:t, depthWrite:false, transparent:true, opacity:0.85})); sp.scale.set(0.42*w/c.height, 0.42, 1); return sp;
+  }
+  const labels = new THREE.Group(); scene.add(labels);
+  const L1 = makeLabel('מקטב 1', '#9fe8c0'), L2 = makeLabel('מקטב 2', '#9fe8c0');
+  [[makeLabel('מקור אור', '#b9c6dc'), XS - 1, 1.5], [L1, XP1, 3.0], [L2, XP2, 3.0], [makeLabel('מסך', '#b9c6dc'), XSC, 2.95]].forEach(([l, x, y]) => { l.position.set(x, y, 0); labels.add(l); });
+
+  // וקטורים
+  const Yv = new THREE.Vector3(0,1,0), tmpV = new THREE.Vector3(), dummy = new THREE.Object3D();
+  const shaftGeo = new THREE.CylinderGeometry(1, 1, 1, 8); shaftGeo.translate(0, 0.5, 0);
+  const headGeo = new THREE.ConeGeometry(1, 1, 10); headGeo.translate(0, 0.5, 0);
+  const xs = []; for (let x = XS + 0.35; x <= XSC - 0.05; x += 0.14) xs.push(x);
+  const N = xs.length;
+  const vecMesh = (color, opacity) => {
+    const mat = new THREE.MeshBasicMaterial({color, transparent:opacity < 1, opacity, depthWrite:opacity >= 1});
+    const sh = new THREE.InstancedMesh(shaftGeo, mat, N), hd = new THREE.InstancedMesh(headGeo, mat, N);
+    sh.frustumCulled = hd.frustumCulled = false; scene.add(sh, hd); return {sh, hd};
+  };
+  const VE = vecMesh(0xff3a55, 1), VG = vecMesh(0x7a3456, 0.5), VB = vecMesh(0x3e63a8, 0.7);
+  function setVec(V, i, x, wy, wz, r){
+    const L = Math.hypot(wy, wz);
+    dummy.position.set(x, 0, 0);
+    if (L < 0.02){ dummy.scale.set(1e-4, 1e-4, 1e-4); dummy.quaternion.identity(); dummy.updateMatrix(); V.sh.setMatrixAt(i, dummy.matrix); V.hd.setMatrixAt(i, dummy.matrix); return; }
+    tmpV.set(0, wy/L, wz/L); dummy.quaternion.setFromUnitVectors(Yv, tmpV);
+    const h = Math.min(0.2, L*0.4);
+    dummy.scale.set(r, L - h, r); dummy.updateMatrix(); V.sh.setMatrixAt(i, dummy.matrix);
+    dummy.position.set(x, wy*(L - h)/L, wz*(L - h)/L); dummy.scale.set(r*2.6, h, r*2.6); dummy.updateMatrix(); V.hd.setMatrixAt(i, dummy.matrix);
+  }
+  const tipGeo = new THREE.BufferGeometry(); tipGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N*3), 3));
+  const tipLine = new THREE.Line(tipGeo, new THREE.LineBasicMaterial({color:0xff8090, transparent:true, opacity:0.8})); tipLine.frustumCulled = false; scene.add(tipLine);
+  const TR = 140, trBuf = [];
+  const trGeo = new THREE.BufferGeometry();
+  trGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(TR*3), 3));
+  trGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(TR*3), 3));
+  const trLine = new THREE.Line(trGeo, new THREE.LineBasicMaterial({vertexColors:true, transparent:true, blending:THREE.AdditiveBlending, depthWrite:false, depthTest:false}));
+  trLine.frustumCulled = false; trLine.renderOrder = 5; scene.add(trLine);
+  const scrDot = new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex, color:0xffffff, blending:THREE.AdditiveBlending, depthWrite:false, depthTest:false, transparent:true}));
+  scrDot.renderOrder = 6; scrDot.scale.set(0.5, 0.5, 1); scene.add(scrDot);
+
+  function setView(v){
+    camera.near = 0.05; labels.visible = !(v === 'screen' || v === 'source');
+    if (v === 'side'){ controls.target.set(0, 0, 0); camera.position.set(0, 0.3, 30); }
+    else if (v === 'top'){ controls.target.set(0, 0, 0); camera.position.set(0, 32, 0.01); }
+    else if (v === 'source'){ controls.target.set(XS, 0, 0); camera.position.set(XP1 - 0.4, 0, 0.001); camera.near = 1.4; }
+    else if (v === 'screen'){ controls.target.set(XSC, 0, 0); camera.position.set(XSC + 7, 0.001, 0.001); camera.near = 3; }   // מאחורי המסך: x ימינה, y למעלה
+    else { controls.target.set(-1.2, -0.4, 0); camera.position.set(-10, 10, 27); }
+    camera.updateProjectionMatrix();
+  }
+  function resize(){
+    const w = view.clientWidth, h = view.clientHeight; if (!w || !h) return;
+    renderer.setSize(w, h, false); renderer.domElement.style.width = w + 'px'; renderer.domElement.style.height = h + 'px';
+    camera.aspect = w/h; camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(view);
+
+  let t = 0, last = performance.now(), Ismooth = null, visible = true, dirty = true;
+  new IntersectionObserver(e => { visible = e[0].isIntersecting; }).observe(view);
+  function frame(now){
+    requestAnimationFrame(frame);
+    const dt = Math.min(0.05, (now - last)/1000); last = now;
+    if (dirty){
+      dirty = false;
+      pol1.G.visible = L1.visible = S.p1; pol2.G.visible = L2.visible = S.p2;
+      pol1.rot.rotation.x = S.th1*deg; pol2.rot.rotation.x = S.th2*deg;
+      VB.sh.visible = VB.hd.visible = !!S.showB; VG.sh.visible = VG.hd.visible = S.ghost !== false;
+    }
+    if (!visible) return;
+    t += dt*(S.speed === undefined ? 1 : S.speed);
+    const tp = tipGeo.attributes.position.array;
+    for (let i = 0; i < N; i++){
+      const x = xs[i], f = P.fieldAt(x, t), wy = AMP*f.ey, wz = -AMP*f.ex;
+      setVec(VE, i, x, wy, wz, 0.03);
+      if (S.ghost !== false) setVec(VG, i, x, f.gf > 0 ? AMP*f.gy*f.gf : 0, f.gf > 0 ? -AMP*f.gx*f.gf : 0, 0.022);
+      if (S.showB) setVec(VB, i, x, AMP*0.7*f.ex, AMP*0.7*f.ey, 0.016);            // B = k̂×E
+      tp[3*i] = x; tp[3*i+1] = wy; tp[3*i+2] = wz;
+    }
+    [VE, VG, VB].forEach(V => { V.sh.instanceMatrix.needsUpdate = true; V.hd.instanceMatrix.needsUpdate = true; });
+    tipGeo.attributes.position.needsUpdate = true;
+    const fs = P.fieldAt(XSC - 0.02, t);
+    if (S.speed !== 0){ trBuf.push([fs.ey*AMP, -fs.ex*AMP]); if (trBuf.length > TR) trBuf.shift(); }
+    const pa = trGeo.attributes.position.array, ca = trGeo.attributes.color.array, off = TR - trBuf.length;
+    for (let i = 0; i < TR; i++){
+      const p = trBuf[Math.max(0, i - off)] || [0,0], k = Math.max(0, (i - off)/TR);
+      pa[3*i] = XSC - 0.03; pa[3*i+1] = p[0]; pa[3*i+2] = p[1];
+      ca[3*i] = k; ca[3*i+1] = 0.85*k*k; ca[3*i+2] = 0.9*k*k;
+    }
+    trGeo.attributes.position.needsUpdate = true; trGeo.attributes.color.needsUpdate = true;
+    scrDot.position.set(XSC - 0.06, fs.ey*AMP, -fs.ex*AMP);
+    const In = P.intensities();
+    Ismooth = Ismooth === null ? In.I2 : Ismooth + (In.I2 - Ismooth)*Math.min(1, dt*6);
+    scrDot.visible = In.I2 > 1e-3;
+    scrMat.emissiveIntensity = 0.03 + 0.9*Ismooth;
+    scrGlow.material.opacity = Math.min(1, 0.85*Ismooth);
+    if (opts && opts.onFrame) opts.onFrame(t, P.fieldAt);
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  resize(); setView('3d'); requestAnimationFrame(frame);
+  return {setView, P, touch(){ dirty = true; }, clearTrace(){ trBuf.length = 0; }, resize};
+}
+
+const pct = v => { const p = v*100; return (Math.abs(p - Math.round(p)) < 0.05 ? Math.round(p) : p.toFixed(1)) + '%'; };
+function bindViews(barId, lab){
+  document.querySelectorAll('#' + barId + ' button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('#' + barId + ' button').forEach(x => x.classList.toggle('on', x === b)); lab.setView(b.dataset.view);
+  }));
+}
+
+/* ======================================================================
+   ניסויים: כפתורי הסבר
+   ====================================================================== */
+(function drawProblem(){                 // מדידות על המסך: מקטב 1 קבוע, מסובבים את מקטב 2 (חוק מאלוס + רעש מדידה קטן)
+  const svg = $('probSvg'), X0 = 46, X1 = 326, Y0 = 210, Y1 = 14, px = a => X0 + a/180*(X1 - X0), py = v => Y0 - v/60*(Y0 - Y1);
+  const noise = [0.6, -1.1, 0.8, -0.4, 1.0, -0.7, 0.3, -0.9, 0.5, 1.1, -0.6, 0.2, -0.8];
+  let h = '';
+  [0, 45, 90, 135, 180].forEach(a => h += `<line x1="${px(a)}" y1="${Y1}" x2="${px(a)}" y2="${Y0}" stroke="#16213a"/><text x="${px(a)}" y="${Y0 + 14}" fill="#7f8fab" font-size="10" text-anchor="middle">${a}°</text>`);
+  [0, 25, 50].forEach(v => h += `<line x1="${X0}" y1="${py(v)}" x2="${X1}" y2="${py(v)}" stroke="#16213a"/><text x="${X0 - 6}" y="${py(v) + 3}" fill="#7f8fab" font-size="10" text-anchor="end">${v}%</text>`);
+  h += `<line x1="${X0}" y1="${Y0}" x2="${X1}" y2="${Y0}" stroke="#4a5d84"/><line x1="${X0}" y1="${Y0}" x2="${X0}" y2="${Y1}" stroke="#4a5d84"/>`;
+  for (let i = 0; i <= 12; i++){ const a = i*15, v = Math.max(0, 50*Math.cos(a*deg)**2 + noise[i]); h += `<circle cx="${px(a)}" cy="${py(v).toFixed(1)}" r="4" fill="#ff3a55"/>`; }
+  h += `<circle cx="${px(90)}" cy="${py(0.3)}" r="9" fill="none" stroke="#ffd479" stroke-width="2"/><text x="${px(90) + 12}" y="${py(0) - 12}" fill="#ffd479" font-size="14" font-weight="700">?</text>`;
+  h += `<text x="${px(0) + 16}" y="${py(50) - 8}" fill="#ffd479" font-size="11" text-anchor="end">לא יותר מ-50%</text>`;
+  h += `<text x="${(X0 + X1)/2}" y="244" fill="#b9c6dc" font-size="12" text-anchor="middle">הזווית בין המקטבים α</text>`;
+  h += `<text x="12" y="${(Y0 + Y1)/2}" fill="#b9c6dc" font-size="12" text-anchor="middle" transform="rotate(-90 12 ${(Y0 + Y1)/2})">עוצמה על המסך</text>`;
+  svg.innerHTML = h;
+})();
+document.querySelectorAll('.exp .xbtn').forEach(b => b.addEventListener('click', () => {
+  const li = b.closest('.exp'); li.classList.toggle('open'); b.textContent = li.classList.contains('open') ? 'סגור' : 'הסבר';
+}));
+
+/* ======================================================================
+   המעבדה: מצב בסיסי / מצב מורחב
+   ====================================================================== */
+const DEF_ADV = {hand:'R', psi:30, ell:0.5, showB:false, ghost:true, speed:1};
+const S = Object.assign({src:'unpol', phi:0, th1:0, th2:0, p1:true, p2:true}, DEF_ADV);
+let adv = false, curView = '3d';
+const pjBuf = [[],[],[]];
+function fitCanvas(c){
+  const r = c.getBoundingClientRect(), d = window.devicePixelRatio || 1, W = Math.max(10, Math.round(r.width*d)), H = Math.max(10, Math.round(r.height*d));
+  if (c.width !== W || c.height !== H){ c.width = W; c.height = H; }
+  const g = c.getContext('2d'); g.setTransform(d,0,0,d,0,0); return {g, w:r.width, h:r.height};
+}
+function drawProj(i, ex, ey, axis){
+  const {g, w, h} = fitCanvas($('pj' + i)), cx = w/2, cy = h/2, sc = w*0.36;
+  g.clearRect(0,0,w,h);
+  g.strokeStyle = 'rgba(120,140,180,.3)'; g.lineWidth = 1; g.beginPath(); g.moveTo(6, cy); g.lineTo(w - 6, cy); g.moveTo(cx, 6); g.lineTo(cx, h - 6); g.stroke();
+  if (axis !== null){ const a = axis*deg; g.strokeStyle = 'rgba(70,227,154,.75)'; g.setLineDash([4,3]); g.beginPath(); g.moveTo(cx - sc*1.25*Math.cos(a), cy + sc*1.25*Math.sin(a)); g.lineTo(cx + sc*1.25*Math.cos(a), cy - sc*1.25*Math.sin(a)); g.stroke(); g.setLineDash([]); }
+  const b = pjBuf[i]; b.push([ex, ey]); if (b.length > 70) b.shift();
+  for (let k = 1; k < b.length; k++){ g.strokeStyle = `rgba(255,60,90,${k/b.length})`; g.lineWidth = 1.5; g.beginPath(); g.moveTo(cx + sc*b[k-1][0], cy - sc*b[k-1][1]); g.lineTo(cx + sc*b[k][0], cy - sc*b[k][1]); g.stroke(); }
+  g.strokeStyle = '#ff3a55'; g.lineWidth = 2.2; g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + sc*ex, cy - sc*ey); g.stroke();
+}
+const lab = createLab($('view1'), S, {onFrame(t, fieldAt){
+  if (!adv || (S.speed === 0 && pjBuf[0].length)) return;
+  const f0 = fieldAt(XP1 - 0.6, t), f1 = fieldAt((XP1 + XP2)/2, t), f2 = fieldAt(XSC - 0.02, t);
+  drawProj(0, f0.ex, f0.ey, null); drawProj(1, f1.ex, f1.ey, S.p1 ? S.th1 : null); drawProj(2, f2.ex, f2.ey, S.p2 ? S.th2 : null);
+}});
+function drawMalus(){
+  if (!adv) return;
+  const {g, w, h} = fitCanvas($('malus'));
+  g.clearRect(0,0,w,h);
+  const pl = 34, pr = 8, pt = 8, pb = 20, X = a => pl + a/360*(w - pl - pr), Y = v => pt + (1 - v)*(h - pt - pb);
+  g.strokeStyle = 'rgba(90,120,170,.22)'; g.lineWidth = 1; g.fillStyle = '#7f8fab'; g.font = '10px Segoe UI, Arial'; g.textAlign = 'center';
+  for (let a = 0; a <= 360; a += 90){ g.beginPath(); g.moveTo(X(a), pt); g.lineTo(X(a), h - pb); g.stroke(); g.fillText(a + '°', X(a), h - 6); }
+  g.textAlign = 'right';
+  [0, 0.5, 1].forEach(v => { g.beginPath(); g.moveTo(pl, Y(v)); g.lineTo(w - pr, Y(v)); g.stroke(); g.fillText((v*100) + '%', pl - 4, Y(v) + 3); });
+  g.beginPath();
+  for (let i = 0; i <= 360; i++){ const v = S.p2 ? lab.P.intensities(S.th1 + i).I2 : lab.P.intensities().I2; i ? g.lineTo(X(i), Y(v)) : g.moveTo(X(i), Y(v)); }
+  g.strokeStyle = '#ff3a55'; g.lineWidth = 2; g.stroke();
+  const a = (((S.th2 - S.th1) % 360) + 360) % 360;
+  g.fillStyle = '#fff'; g.beginPath(); g.arc(X(a), Y(lab.P.intensities().I2), 4.5, 0, 7); g.fill();
+}
+function pushUI(){
+  $('src').value = S.src;
+  ['phi','psi','ell','th1','th2','speed'].forEach(k => $(k).value = S[k]);
+  ['p1','p2','showB','ghost'].forEach(k => $(k).checked = S[k]);
+}
+function upd(){
+  $('phiV').textContent = S.phi + '°'; $('psiV').textContent = S.psi + '°'; $('ellV').textContent = S.ell.toFixed(2);
+  $('th1V').textContent = S.th1 + '°'; $('th2V').textContent = S.th2 + '°'; $('speedV').textContent = '×' + S.speed.toFixed(2);
+  $('rowPhi').style.display = S.src === 'lin' ? '' : 'none';
+  $('rowHand').style.display = (S.src === 'circ' || S.src === 'ell') ? '' : 'none';
+  $('rowPsi').style.display = $('rowEll').style.display = S.src === 'ell' ? '' : 'none';
+  $('th1').disabled = !S.p1; $('th2').disabled = !S.p2;
+  document.querySelectorAll('#hand button').forEach(b => b.classList.toggle('on', b.dataset.v === S.hand));
+  const In = lab.P.intensities();
+  [['m1','mv1','I1'],['m2','mv2','I2'],['k1','kv1','I1'],['k2','kv2','I2']].forEach(([b, v, k]) => { $(b).style.width = In[k]*100 + '%'; $(v).textContent = pct(In[k]); });
+  $('fml').textContent = S.p1 && S.p2 ? `I₂ = I₁ cos²(${S.th2 - S.th1}°) = ${pct(In.I2)}` : S.p1 ? 'I₂ = I₁' : S.p2 ? `I₂ = ${pct(In.I2)}` : 'I₂ = I₀';
+  drawMalus(); lab.touch();
+}
+['phi','psi','ell','th1','th2','speed'].forEach(k => $(k).addEventListener('input', e => { S[k] = parseFloat(e.target.value); upd(); }));
+['p1','p2','showB','ghost'].forEach(k => $(k).addEventListener('change', e => { S[k] = e.target.checked; upd(); }));
+$('src').addEventListener('change', e => { S.src = e.target.value; lab.clearTrace(); pjBuf.forEach(b => b.length = 0); upd(); });
+document.querySelectorAll('#hand button').forEach(b => b.addEventListener('click', () => { S.hand = b.dataset.v; lab.clearTrace(); pjBuf.forEach(x => x.length = 0); upd(); }));
+document.querySelectorAll('#pre button').forEach(b => b.addEventListener('click', () => { S.th2 = (S.th1 + parseFloat(b.dataset.a)) % 360; S.p1 = S.p2 = true; pushUI(); upd(); }));
+function setView(v){
+  curView = v; lab.setView(v);
+  document.querySelectorAll('#views button').forEach(x => x.classList.toggle('on', x.dataset.view === v));
+}
+document.querySelectorAll('#views button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+function setMode(on){
+  adv = on; document.body.classList.toggle('adv', on);
+  if (!on){                                   // חזרה לבסיסי: איפוס ההגדרות המתקדמות
+    Object.assign(S, DEF_ADV); pushUI();
+    if (curView === 'top' || curView === 'source') setView('3d');
+  }
+  lab.clearTrace(); pjBuf.forEach(b => b.length = 0);
+  requestAnimationFrame(upd);
+  $('lab1').scrollIntoView({behavior:'smooth'});
+}
+$('more').addEventListener('click', () => setMode(true));
+$('less').addEventListener('click', () => setMode(false));
+new ResizeObserver(drawMalus).observe($('malus'));
+pushUI(); upd();
+if (location.hash === '#adv') setMode(true);
+</script>
+
+
+<script>
+/* ======================================================================
+   הדגמה אוטומטית: כפתור "▶ הדגמה" ליד כל ניסוי. סמן "רפאים" מבצע את הניסוי במעבדה
+   בזמן אמת, וההסבר מוצג במסגרת מתחת למעבדה.
+   ====================================================================== */
+(function(){
+'use strict';
+
+  const SRC = () => byId('src');
+  async function both(on1, on2){ await toggle(byId('p1'), on1); await toggle(byId('p2'), on2); }
+  const SCRIPTS = [
+    async () => { say('בוחרים אור "לא מקוטב"'); await select(SRC(), 'unpol'); say('מקטב 1 דולק, מקטב 2 כבוי'); await both(true, false);
+      say('אחרי מקטב 1 נשאר בדיוק חצי: 50%'); await sleep(3500); },
+    async () => { await select(SRC(), 'unpol'); await both(true, false);
+      say('מסובבים לאט את מקטב 1...'); await dragSlider(byId('th1'), 180, 6000); say('העוצמה נשארת 50% בכל זווית'); await sleep(2000); },
+    async () => { await select(SRC(), 'unpol'); await both(true, true);
+      say('מכוונים את מקטב 1 ל-30°'); await dragSlider(byId('th1'), 30, 1800);
+      say('ואת מקטב 2 לאותה זווית'); await dragSlider(byId('th2'), 30, 1800); say('כל מה שעבר את הראשון עובר גם את השני'); await sleep(3000); },
+    async () => { await select(SRC(), 'unpol'); await both(true, true); await dragSlider(byId('th1'), 30, 1500); await dragSlider(byId('th2'), 30, 1200);
+      say('מסובבים את מקטב 2 עד הפרש של 90°...'); await dragSlider(byId('th2'), 120, 4500); say('המסך חשוך: מקטבים צלובים'); await sleep(3000); },
+    async () => { await select(SRC(), 'unpol'); await both(true, true); await dragSlider(byId('th1'), 30, 1500);
+      say('מכוונים את מקטב 2 להפרש של 45°'); await dragSlider(byId('th2'), 75, 3000); say('½ × cos²45° = ¼ → 25% על המסך'); await sleep(3500); },
+    async () => { say('בוחרים "קיטוב ליניארי"'); await select(SRC(), 'lin'); await both(true, false);
+      await dragSlider(byId('th1'), 0, 1200); say('מסובבים את מקטב 1 חצי סיבוב...'); await dragSlider(byId('th1'), 180, 7000);
+      say('העוצמה עלתה וירדה בין 100% ל-0% לפי cos²'); await sleep(2000); },
+    async () => { say('בוחרים "קיטוב מעגלי"'); await select(SRC(), 'circ'); say('מכבים את שני המקטבים'); await both(false, false);
+      say('עוברים למבט "מול המסך"'); await click(viewBtn('screen')); say('קצה השדה משרטט מעגל'); await sleep(5000); await click(viewBtn('3d')); }
+  ];
+
+  const byId = id => document.getElementById(id);
+  const LAB = document.querySelector('section.lab'), VIEW = LAB.querySelector('.view');
+  const cur = byId('demoCursor'), D = {alive:0, i:-1, x:0, y:0};
+  const sleep = ms => { const tok = D.alive; return new Promise(r => setTimeout(r, ms)).then(() => { if (D.alive !== tok) throw 'stop'; }); };
+  const ease = k => k*k*(3 - 2*k);
+  function anim(dur, fn){
+    const tok = D.alive;
+    return new Promise((res, rej) => { const t0 = performance.now();
+      (function step(now){ if (D.alive !== tok) return rej('stop'); const k = Math.min(1, (now - t0)/dur); fn(ease(k)); if (k < 1) requestAnimationFrame(step); else res(); })(t0); });
+  }
+  function place(x, y){ D.x = x; D.y = y; cur.style.transform = 'translate(' + (x - 3) + 'px,' + (y - 2) + 'px)'; }
+  function moveTo(x, y, dur){ const x0 = D.x, y0 = D.y; dur = dur || Math.min(1100, 350 + Math.hypot(x - x0, y - y0)*0.9); return anim(dur, k => place(x0 + (x - x0)*k, y0 + (y - y0)*k)); }
+  const center = el => { const r = el.getBoundingClientRect(); return [r.left + r.width/2, r.top + r.height/2]; };
+  function ripple(){ const r = document.createElement('div'); r.className = 'demoRipple'; r.style.left = D.x + 'px'; r.style.top = D.y + 'px'; document.body.appendChild(r); setTimeout(() => r.remove(), 600); }
+  async function press(){ cur.classList.add('down'); ripple(); await sleep(140); cur.classList.remove('down'); }
+  async function click(el){ if (!el) return; await moveTo(...center(el)); await press(); el.click(); await sleep(400); }
+  async function select(el, v){ if (el.value === v) return; await moveTo(...center(el)); await press(); el.value = v; el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(500); }
+  async function toggle(el, want){                   // מתג (checkbox מוסתר בתוך label)
+    if (el.checked === want) return;
+    await moveTo(...center(el.closest('label') || el)); await press(); el.click(); await sleep(400);
+  }
+  async function dragSlider(el, to, dur){            // גרירה אמיתית: אירועי input בזמן אמת ו-change בסוף
+    const r = el.getBoundingClientRect(), mn = +el.min, mx = +el.max, rtl = getComputedStyle(el).direction === 'rtl';
+    const xOf = v => { const f = (v - mn)/(mx - mn); return rtl ? r.right - 8 - f*(r.width - 16) : r.left + 8 + f*(r.width - 16); };
+    const from = +el.value, y = r.top + r.height/2;
+    await moveTo(xOf(from), y); cur.classList.add('down');
+    try { await anim(dur || 1500, k => { const v = from + (to - from)*k; el.value = v; el.dispatchEvent(new Event('input', {bubbles:true})); place(xOf(+el.value), y); }); }
+    finally { cur.classList.remove('down'); }
+    el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(300);
+  }
+  async function waitFor(fn, limit){ const t0 = performance.now(); while (!fn() && performance.now() - t0 < (limit || 30000)) await sleep(200); }
+  async function ensureAdv(){ if (!document.body.classList.contains('adv')){ say('פותחים את המצב המורחב'); await click(byId('more')); await sleep(900); } }
+  const say = t => { byId('demoSay').textContent = t; };
+  const seg = (id, attr, v) => document.querySelector('#' + id + ' button[data-' + attr + '="' + v + '"]');
+  const viewBtn = v => document.querySelector('#views button[data-view="' + v + '"]');
+
+  async function runDemo(i){
+    stopDemo(false);
+    const tok = D.alive; D.i = i;
+    const li = document.querySelectorAll('.exp')[i];
+    byId('demoNum').textContent = i + 1; byId('demoTitle').textContent = li.querySelector('.task').textContent;
+    byId('demoText').innerHTML = li.querySelector('.ans').innerHTML; say('עוברים למעבדה...');
+    byId('demoStop').style.display = '';
+    document.body.classList.add('demo');
+    LAB.scrollIntoView({behavior:'smooth', block:'start'});
+    try {
+      await sleep(850);
+      const r = VIEW.getBoundingClientRect(); place(r.left + r.width/2, r.top + r.height/2); cur.classList.add('on');
+      await SCRIPTS[i]();
+      if (D.alive === tok){ cur.classList.remove('on'); byId('demoStop').style.display = 'none'; }
+    } catch (e) { if (e !== 'stop') console.warn(e); }
+  }
+  function stopDemo(close){ D.alive++; cur.classList.remove('on', 'down'); if (close){ document.body.classList.remove('demo'); D.i = -1; } }
+  byId('demoStop').addEventListener('click', () => { stopDemo(false); say('ההדגמה נעצרה. אפשר להמשיך לשחק במעבדה בעצמכם.'); byId('demoStop').style.display = 'none'; });
+  byId('demoAgain').addEventListener('click', () => { if (D.i >= 0) runDemo(D.i); });
+  byId('demoClose').addEventListener('click', () => stopDemo(true));
+  document.querySelectorAll('.exp').forEach((li, i) => {
+    if (!SCRIPTS[i]) return;
+    const b = document.createElement('button'); b.className = 'pbtn'; b.type = 'button'; b.title = 'הדגמה אוטומטית במעבדה';
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>הדגמה';
+    li.querySelector('.top').insertBefore(b, li.querySelector('.xbtn'));
+    b.addEventListener('click', () => runDemo(i));
+  });
+  if (location.hash.startsWith('#demo')) setTimeout(() => runDemo(+location.hash.slice(5) || 0), 400);
+
+})();
+</script>
+</body>
+</html>

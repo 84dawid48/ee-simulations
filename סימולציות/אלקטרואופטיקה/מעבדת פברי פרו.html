@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מעבדת פברי-פרו מהפכת קיטוב</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+:root{--bg:#05070d;--card:#0c1222;--line:#1f2b44;--txt:#e3eaf6;--mut:#93a3bf;--acc:#6cb8ff;--te:#3d9bff;--tm:#ff4b4b;--grn:#46e39a;--yel:#ffd479}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:"Segoe UI","Rubik",Arial,sans-serif;padding-top:30px}
+#topbar{position:fixed;top:0;left:0;right:0;height:30px;background:#060912;border-bottom:1px solid var(--line);z-index:100}
+#bsd{position:absolute;top:7px;right:12px;font-size:12px;color:#c9d6ea}
+#copyr{position:absolute;top:4px;left:8px;font-size:12px;color:#dce6f5;background:#10172a;border:1px solid var(--line);border-radius:6px;padding:2px 10px}
+bdi{unicode-bidi:isolate}
+.te{color:var(--te);font-weight:700}.tm{color:var(--tm);font-weight:700}
+
+/* ===== פתיח ===== */
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+#intro{padding-top:46px;padding-bottom:40px;line-height:1.75}
+#intro h1{font-size:34px;line-height:1.25;margin:0 0 8px;font-weight:700}
+#intro h1 span{background:linear-gradient(90deg,#3d9bff,#ff4b4b);-webkit-background-clip:text;background-clip:text;color:transparent}
+#intro .lead{font-size:18px;color:var(--mut);margin:0 0 30px}
+h2.sec{font-size:21px;margin:40px 0 14px;color:var(--acc)}
+.prob{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.prob p{margin:0 0 10px;font-size:15.5px;color:#d0d9ea}
+.prob p:last-child{margin-bottom:0}
+.prob ol{margin:4px 0 0;padding-right:20px;font-size:15px;color:#d0d9ea}
+.prob svg{width:100%;height:auto;display:block;background:#080d18;border:1px solid var(--line);border-radius:12px}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.rd{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.rd .ic{flex:0 0 38px;height:38px;border-radius:10px;background:#101a30;display:grid;place-items:center}
+.rd h3{margin:0 0 2px;font-size:15.5px}
+.rd p{margin:0;font-size:14.5px;color:#c3cfe3}
+.theory{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}
+.th{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px}
+.th .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;font-size:14px;margin-bottom:6px}
+.th h3{margin:0 0 4px;font-size:16.5px}
+.th p{margin:0;font-size:14.5px;color:#c3cfe3}
+.law{margin:18px 0 0;text-align:center;font-size:21px;background:linear-gradient(90deg,rgba(61,155,255,.08),rgba(255,75,75,.08));border:1px solid var(--line);border-radius:16px;padding:14px;font-family:"Cambria Math","Times New Roman",serif}
+.law .eq{direction:ltr;display:inline-block}
+.law small{display:block;font-family:"Segoe UI",Arial,sans-serif;font-size:14px;color:var(--mut);margin-top:4px}
+.cta{display:block;width:max-content;margin:34px auto 0;text-decoration:none;color:#fff;font:inherit;font-size:17px;font-weight:600;background:linear-gradient(180deg,#2167b8,#18508f);border:1px solid #3b86e0;border-radius:40px;padding:12px 30px;box-shadow:0 0 30px rgba(59,134,224,.35);cursor:pointer}
+.cta:hover{filter:brightness(1.15)}
+
+/* ===== מעבדה ===== */
+.lab{position:relative;height:calc(100vh - 30px);min-height:620px;border-top:1px solid var(--line)}
+.view{position:absolute;inset:0}
+.view canvas{display:block}
+.pnl{position:absolute;top:14px;background:rgba(10,15,28,.86);border:1px solid var(--line);border-radius:18px;padding:16px;backdrop-filter:blur(10px);z-index:10;max-height:calc(100% - 100px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2a3550 transparent}
+.pnl.r{right:14px;width:290px}
+.pnl.l{left:14px;width:330px}
+.c-row{margin-bottom:14px}
+.c-lbl{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px;color:#cdd8ea}
+.c-val{font-family:Consolas,monospace;font-size:13.5px;color:#fff;direction:ltr}
+input[type=range]{width:100%;accent-color:var(--acc);margin:0}
+#lam{-webkit-appearance:none;appearance:none;height:10px;border-radius:6px;background:linear-gradient(90deg,#7a00ff,#3d00ff,#0066ff,#00c8ff,#00ff6a,#b8ff00,#ffe600,#ff8c00,#ff2a00,#b30000)}
+#lam::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid #0a0f1c;box-shadow:0 0 6px #000}
+#lam::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid #0a0f1c}
+.seg{display:flex;gap:4px}
+.seg button{flex:1;background:#0a0f1c;border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:6px 4px;font:inherit;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.seg button.on{border-color:var(--acc);color:#fff;background:#16243f}
+.seg button.pte.on{border-color:var(--te);background:#10264a}
+.seg button.ptm.on{border-color:var(--tm);background:#3a1218}
+.sep{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.meter .lbl{display:flex;justify-content:space-between;font-size:13.5px;color:#cdd8ea;margin-bottom:6px}
+.meter .lbl b{font-family:Consolas,monospace;font-weight:400;color:#fff;direction:ltr}
+.bar{height:10px;background:#0a0f1c;border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#7a1420,#ff4b4b);border-radius:6px;transition:width .12s}
+.maxlamp{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--mut);margin-top:8px}
+.lamp{width:10px;height:10px;border-radius:50%;background:#2a3348;transition:.15s}
+.lamp.on{background:var(--grn);box-shadow:0 0 10px var(--grn)}
+.chk{display:flex;align-items:center;gap:8px;font-size:13.5px;color:#cdd8ea;margin:8px 0}
+.sw{position:relative;display:inline-block;width:34px;height:19px;flex:0 0 auto}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:#2a3550;border-radius:20px;cursor:pointer;transition:.2s}
+.sw span::before{content:"";position:absolute;width:15px;height:15px;top:2px;right:2px;background:#c7d2e6;border-radius:50%;transition:.2s}
+.sw input:checked+span{background:#1f5fa8}
+.sw input:checked+span::before{right:17px;background:#fff}
+.ttl{display:flex;justify-content:space-between;font-size:12.5px;color:var(--mut);margin-bottom:6px}
+.ttl b{color:#fff;font-weight:400;font-family:Consolas,monospace;direction:ltr}
+canvas.plot{width:100%;height:118px;display:block;background:#080d18;border:1px solid var(--line);border-radius:10px}
+canvas.plot.sm{height:100px}
+table.ct{width:100%;border-collapse:collapse;font-size:12.5px;direction:ltr;font-family:Consolas,monospace}
+table.ct td,table.ct th{padding:3px 4px;text-align:center;border-bottom:1px solid var(--line)}
+table.ct th{color:var(--mut);font-weight:400;font-family:"Segoe UI",Arial}
+.kv{direction:ltr;font-family:Consolas,monospace;font-size:12.5px;color:#cdd8ea;line-height:1.7}
+.views{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:4px;background:rgba(10,15,28,.86);border:1px solid var(--line);border-radius:30px;padding:4px;z-index:10}
+.views button{background:none;border:none;color:var(--mut);font:inherit;font-size:13px;padding:6px 14px;border-radius:30px;cursor:pointer;white-space:nowrap}
+.views button.on{background:#1a2b4a;color:#fff}
+#hud{position:absolute;pointer-events:none;display:none;z-index:20;background:rgba(8,12,24,.95);border:1px solid #3e5d8f;border-radius:12px;padding:10px 12px;font-size:12.5px;min-width:260px;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+#hud .t{font-weight:700;margin-bottom:6px}
+#hud .f{direction:ltr;text-align:left;font-family:"Cambria Math","Times New Roman",serif;font-size:14px;margin:3px 0;color:#e8eef9}
+#hud .f.hl{background:rgba(108,184,255,.12);border-radius:6px;padding:2px 6px}
+#hud .s{color:var(--mut);direction:ltr;text-align:left;font-size:12px}
+body:not(.adv) .adv-only{display:none!important}
+body.adv .basic-only{display:none!important}
+.morebtn{position:absolute;bottom:14px;left:14px;z-index:12;display:flex;align-items:center;gap:10px;font:inherit;font-size:18px;font-weight:700;color:#fff;border:none;border-radius:40px;padding:15px 28px;cursor:pointer;background:linear-gradient(135deg,#7b2ff7,#e0218a);box-shadow:0 8px 30px rgba(123,47,247,.45);animation:pulse 2.2s infinite}
+.morebtn .ic{font-size:22px}
+.morebtn:hover{filter:brightness(1.15)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(224,33,138,.55),0 8px 30px rgba(123,47,247,.45)}70%{box-shadow:0 0 0 16px rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}100%{box-shadow:0 0 0 0 rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}}
+.lessbtn{position:absolute;bottom:14px;left:14px;z-index:12;font:inherit;font-size:14px;color:#cdd8ea;background:rgba(10,15,28,.88);border:1px solid #3a4a6e;border-radius:30px;padding:9px 18px;cursor:pointer}
+.lessbtn:hover{border-color:var(--acc);color:#fff}
+
+/* ===== ניסויים ===== */
+#exps{padding-top:10px;padding-bottom:60px;line-height:1.75}
+.exps{list-style:none;margin:0;padding:0;counter-reset:ex}
+.exp{counter-increment:ex;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.exp .top{display:flex;align-items:center;gap:14px}
+.exp .top::before{content:counter(ex);flex:0 0 30px;height:30px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;display:grid;place-items:center}
+.exp .task{flex:1;font-size:16px}
+.tag{font-size:12px;color:#c9a6ff;border:1px solid #5b3d8f;border-radius:10px;padding:0 7px;margin-right:6px;white-space:nowrap}
+.xbtn{flex:0 0 auto;background:#1a1608;border:1px solid #6b5520;color:var(--yel);border-radius:20px;padding:5px 16px;font:inherit;font-size:14px;cursor:pointer}
+.xbtn:hover{filter:brightness(1.25)}
+.exp .ans{display:none;margin:12px 44px 2px 0;padding:10px 14px;border-right:3px solid var(--yel);background:rgba(255,212,121,.06);border-radius:8px;font-size:15px;color:#d6dcea;line-height:1.7}
+.exp.open .ans{display:block}
+.exp.open .xbtn{background:#2b230b}
+.eqb{display:block;direction:ltr;text-align:center;font-family:"Cambria Math","Times New Roman",serif;font-size:16px;margin:6px 0;color:#fff}
+@media (max-width:900px){
+  #intro h1{font-size:26px}
+  .prob{grid-template-columns:1fr}
+  .lab{height:auto;min-height:0}
+  .view{position:relative;height:62vh}
+  .pnl{position:static;width:auto!important;margin:12px;max-height:none}
+  .views{position:static;transform:none;width:max-content;max-width:calc(100% - 24px);flex-wrap:wrap;margin:0 auto 12px}
+  .morebtn,.lessbtn{position:static;margin:12px auto 18px;animation:none}
+}
+
+/* ===== הדגמה אוטומטית של ניסוי ===== */
+.pbtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:#0f2a1c;border:1px solid #2f7a52;color:#7dffb4;border-radius:20px;padding:5px 14px;font:inherit;font-size:14px;cursor:pointer}
+.pbtn:hover{filter:brightness(1.25)}
+.pbtn svg{width:12px;height:12px}
+#demoBox{display:none;position:relative;height:190px;border-top:1px solid var(--line);background:linear-gradient(180deg,#0a1322,#070b16);padding:14px 20px;overflow-y:auto;line-height:1.6}
+body.demo #demoBox{display:block}
+body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
+#demoBox .dh{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+#demoBox .dn{flex:0 0 28px;height:28px;border-radius:50%;background:#123a27;color:#7dffb4;font-weight:700;display:grid;place-items:center}
+#demoBox .dt{flex:1;font-size:15.5px;font-weight:600}
+#demoBox .say{font-size:14px;color:#7dffb4;min-height:22px;margin-bottom:6px}
+#demoBox .say::before{content:"▶ ";opacity:.7}
+#demoBox .dx{font-size:15px;color:#d6dcea;line-height:1.7;border-right:3px solid #ffd479;background:rgba(255,212,121,.06);border-radius:8px;padding:8px 12px}
+#demoBox .db{background:#0a0f1c;border:1px solid var(--line);color:#cdd8ea;border-radius:10px;padding:5px 12px;font:inherit;font-size:13.5px;cursor:pointer}
+#demoBox .db:hover{border-color:var(--acc);color:#fff}
+#demoCursor{position:fixed;left:0;top:0;z-index:300;pointer-events:none;opacity:0;transition:opacity .3s}
+#demoCursor.on{opacity:1}
+#demoCursor svg{width:30px;height:30px;filter:drop-shadow(0 0 6px rgba(125,255,180,.9)) drop-shadow(0 2px 3px rgba(0,0,0,.6));transition:transform .12s}
+#demoCursor.down svg{transform:scale(.82)}
+.demoRipple{position:fixed;z-index:299;pointer-events:none;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;border:2px solid #7dffb4;animation:demoRip .55s ease-out forwards}
+@keyframes demoRip{from{transform:scale(.4);opacity:1}to{transform:scale(3.4);opacity:0}}
+</style>
+</head>
+<body>
+<div id="topbar"><div id="bsd">בס״ד</div><div id="copyr">כל הזכויות שמורות לדוד יצחקי</div></div>
+
+<!-- ===================== פתיח ===================== -->
+<section id="intro" class="wrap">
+  <h1>מה רואה גלאי שמסתכל רק על <span>קיטוב אחד</span>?</h1>
+  <p class="lead">מהוד פברי-פרו עם טוויסט: המראה שבקצה שלו הופכת את הקיטוב של האור. בעמוד הזה נבין אילו קרניים מגיעות לגלאי, ולמה העוצמה שלו עולה ויורדת כשמשנים את אורך הגל.</p>
+
+  <h2 class="sec">הבעיה</h2>
+  <div class="prob">
+    <div>
+      <p>גביש באורך <b>L</b> עם מקדם שבירה <b>n = 1.5</b>. בקצה הימני שלו מוצמדת <b>מראה מושלמת</b> מיוחדת: היא הופכת קיטוב <span class="te">TE</span> ל-<span class="tm">TM</span> ולהפך. קרן לייזר בקיטוב <span class="te">TE</span> פוגעת בדופן השמאלית בזווית של 20°.</p>
+      <p>בכל פעם שהאור פוגע בדופן השמאלית, חלק ממנו יוצא החוצה וחלק חוזר פנימה. לכן יוצאות מהגביש הרבה קרניים מקבילות, והקיטוב שלהן מתחלף. <b>הגלאי</b> שבצד שמאל מודד רק את עוצמת ה-<span class="tm">TM</span>.</p>
+      <p><b>השאלות:</b></p>
+      <ol>
+        <li>מהם מקדמי ההעברה וההחזרה בכניסה לגביש וביציאה ממנו?</li>
+        <li>אילו רכיבי אמפליטודה מגיעים לגלאי, ובאיזה קיטוב?</li>
+        <li>מה העוצמה בגלאי כפונקציה של אורך הגל, ובאילו אורכי גל היא מקסימלית?</li>
+      </ol>
+    </div>
+    <svg id="probSvg" viewBox="0 0 360 260" aria-label="שרטוט המערכת"></svg>
+  </div>
+
+  <h2 class="sec">איך לקרוא את המעבדה</h2>
+  <div class="read">
+    <div class="rd"><div class="ic"><svg width="24" height="10"><rect y="3" width="24" height="4" rx="2" fill="#3d9bff"/></svg></div><div><h3>קרן כחולה = <span class="te">TE</span></h3><p>השדה החשמלי ניצב למישור הפגיעה: החצים על הקרן נעים "פנימה והחוצה" מהמסך.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="10"><rect y="3" width="24" height="4" rx="2" fill="#ff4b4b"/></svg></div><div><h3>קרן אדומה = <span class="tm">TM</span></h3><p>השדה החשמלי נמצא במישור הפגיעה: החצים על הקרן נעים "למעלה ולמטה".</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24"><rect x="2" y="9" width="20" height="2" fill="#ff4b4b" opacity=".35"/><rect x="2" y="14" width="20" height="4" fill="#ff4b4b"/></svg></div><div><h3>בהירות הקרן = משרעת</h3><p>קרן חלשה (שעברה הרבה החזרות) נראית דהויה יותר.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24"><circle cx="12" cy="12" r="5" fill="#eaf6ff"/><circle cx="12" cy="12" r="10" fill="#7fc0ff" opacity=".25"/></svg></div><div><h3>נקודה לבנה = פגיעה בדופן</h3><p>כאן הקרן מתפצלת לחלק שיוצא ולחלק שחוזר. במצב המורחב, ריחוף עליה מציג את החישוב.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24"><rect x="6" y="2" width="12" height="20" fill="#d8dde6"/><path d="M6 6l12-4M6 12l12-4M6 18l12-4M6 22l10-3" stroke="#111" stroke-width="1.6"/></svg></div><div><h3>המראה המקווקוות</h3><p>כל קרן שפוגעת בה חוזרת בקיטוב ההפוך. טבעת קטנה שמחליפה צבע מסמנת את ההיפוך.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24"><path d="M3 20A10 10 0 0 1 21 20z" fill="#4a78c2"/><circle cx="12" cy="15" r="2.5" fill="#ff4b4b"/></svg></div><div><h3>הגלאי ופס העוצמה</h3><p>קרני <span class="tm">TM</span> נקלטות (נקודה זוהרת), וקרני <span class="te">TE</span> נבלעות (✕). הפס בפאנל מראה את העוצמה הכוללת שנקלטת.</p></div></div>
+  </div>
+
+  <h2 class="sec">התאוריה בקצרה</h2>
+  <div class="theory">
+    <div class="th"><div class="n">1</div><h3>שבירה והחזרה</h3><p>בכל דופן חלק מהאור עובר (t) וחלק מוחזר (r). הכמויות נקבעות ממשוואות פרנל, ותלויות בקיטוב: ל-TE ול-TM יש מקדמים שונים.</p></div>
+    <div class="th"><div class="n">2</div><h3>המראה הופכת קיטוב</h3><p>בכל פגיעה במראה TE הופך ל-TM ולהפך. לכן הקרניים שיוצאות משמאל מתחלפות: TM, TE, TM, ...</p></div>
+    <div class="th"><div class="n">3</div><h3>הגלאי בררני</h3><p>הגלאי סופר רק TM. מכל הקרניים שיוצאות, רק הקרניים במקומות 1, 3, 5, ... משתתפות.</p></div>
+    <div class="th"><div class="n">4</div><h3>הפרש דרכים</h3><p>כל הלוך-חזור בגביש מוסיף פאזה <bdi dir="ltr">δ = (2π/λ)·2nL·cosθ<sub>t</sub></bdi>. בין שתי קרני TM עוקבות יש <b>שני</b> הלוכי-חזור, כלומר הפרש פאזה של 2δ.</p></div>
+    <div class="th"><div class="n">5</div><h3>התאבכות</h3><p>הגלאי מחבר את כל קרני ה-TM. כשהן מגיעות "פסגה על פסגה", העוצמה מקסימלית. זה קורה רק באורכי גל מסוימים.</p></div>
+  </div>
+  <div class="law"><span class="eq">I(λ) / I₀ = (t<sub>s</sub> t′<sub>p</sub>)² / (1 + ρ² − 2ρ cos 2δ)</span><small>ρ = r′<sub>s</sub> r′<sub>p</sub> הוא מה שנשאר מקרן TM אחרי שני הלוכי-חזור</small></div>
+  <a class="cta" href="#lab">למעבדה ↓</a>
+</section>
+
+<!-- ===================== מעבדה ===================== -->
+<section class="lab" id="lab">
+  <div class="view" id="view"></div>
+  <div id="hud"></div>
+  <div class="pnl r">
+    <div class="c-row"><div class="c-lbl"><span>זווית פגיעה θ</span><span class="c-val" id="thV"></span></div><input type="range" id="th" min="0" max="89" step="0.1" value="20"></div>
+    <div class="c-row"><div class="c-lbl"><span>אורך הגביש L</span><span class="c-val" id="LV"></span></div><input type="range" id="L" min="0.5" max="10" step="0.005" value="2"></div>
+    <div class="c-row"><div class="c-lbl"><span>אורך גל λ</span><span class="c-val" id="lamV"></span></div><input type="range" id="lam" min="380" max="750" step="0.1" value="550"></div>
+    <div class="c-row adv-only"><div class="c-lbl"><span>מקדם שבירה n</span><span class="c-val" id="nV"></span></div><input type="range" id="n" min="1" max="4" step="0.01" value="1.5"></div>
+    <div class="c-row"><div class="seg" id="modeSeg"><button data-v="cw" class="on">גל רציף</button><button data-v="pulse">▶ שגר פולס</button></div></div>
+    <div class="sep adv-only">
+      <div class="c-row"><div class="c-lbl">קיטוב הלייזר</div><div class="seg" id="polSeg"><button data-v="TE" class="pte on">TE</button><button data-v="TM" class="ptm">TM</button></div></div>
+      <div class="c-row"><div class="c-lbl">מסנן הגלאי</div><div class="seg" id="detSeg"><button data-v="TM" class="ptm on">TM</button><button data-v="TE" class="pte">TE</button><button data-v="ALL">שניהם</button></div></div>
+      <div class="c-row"><div class="c-lbl"><span>מרחק הגלאי</span><span class="c-val" id="dDetV"></span></div><input type="range" id="dDet" min="3" max="12" step="0.1" value="6"></div>
+      <div class="c-row"><div class="c-lbl"><span>מהירות</span><span class="c-val" id="speedV"></span></div><input type="range" id="speed" min="0.1" max="3" step="0.05" value="1"></div>
+      <label class="chk"><label class="sw"><input type="checkbox" id="arrows" checked><span></span></label>וקטורי שדה</label>
+      <label class="chk"><label class="sw"><input type="checkbox" id="colorLam"><span></span></label>צבע לפי λ</label>
+      <label class="chk"><label class="sw"><input type="checkbox" id="norm" checked><span></span></label>נרמול גלים</label>
+      <label class="chk"><label class="sw"><input type="checkbox" id="sound" checked><span></span></label>צליל במקסימום</label>
+    </div>
+    <div class="sep meter basic-only">
+      <div class="lbl"><span>עוצמה בגלאי</span><b id="mV"></b></div>
+      <div class="bar"><i id="mBar"></i></div>
+      <div class="maxlamp"><span class="lamp" id="mLamp"></span>מקסימום</div>
+    </div>
+  </div>
+  <div class="pnl l adv-only">
+    <div class="ttl"><span>I(λ) בגלאי</span><b id="spInfo"></b></div>
+    <canvas class="plot" id="spec"></canvas>
+    <div class="sep"><div class="ttl"><span>גלי <span id="scPol">TM</span> בגלאי ושקולם</span><b id="scInfo"></b></div><canvas class="plot" id="scope"></canvas></div>
+    <div class="sep"><div class="ttl"><span>פאזורים</span><b></b></div><canvas class="plot sm" id="phasor"></canvas></div>
+    <div class="sep"><table class="ct" id="ctab"></table><div class="kv" id="kv"></div></div>
+  </div>
+  <div class="views" id="views"><button data-view="3d" class="on">תלת-ממד</button><button data-view="2d">חזית</button><button data-view="inside" class="adv-only">בתוך הגביש</button><button data-view="det" class="adv-only">מהגלאי</button></div>
+  <button id="more" class="morebtn basic-only"><span class="ic">🔬</span>אני רוצה לחקור יותר</button>
+  <button id="less" class="lessbtn adv-only">→ לחזור למעבדה הבסיסית</button>
+</section>
+<!-- מסגרת ההסבר של ההדגמה האוטומטית (מופיעה מתחת למעבדה, לא מעליה) -->
+<section id="demoBox" aria-live="polite">
+  <div class="dh"><div class="dn" id="demoNum">1</div><div class="dt" id="demoTitle"></div>
+    <button class="db" id="demoStop">⏹ עצור</button><button class="db" id="demoAgain">↻ שוב</button><button class="db" id="demoClose">✕ סגור</button></div>
+  <div class="say" id="demoSay"></div>
+  <div class="dx" id="demoText"></div>
+</section>
+<div id="demoCursor"><svg viewBox="0 0 24 24"><path d="M4 2l15 11-6.5 1.2L16.5 22l-3 1.3-3.6-7.6L5 20z" fill="#fff" stroke="#0b1a12" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+
+<!-- ===================== ניסויים ===================== -->
+<section id="exps" class="wrap">
+  <h2 class="sec">ניסויים לנסות במעבדה</h2>
+  <ol class="exps">
+    <li class="exp"><div class="top"><div class="task">לחצו "שגר פולס" ועקבו אחרי החבילה: בדופן השמאלית חלק כחול מוחזר אל הגלאי, וחלק נשבר פנימה.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">בכל מעבר בין חומרים חלק מהגל עובר וחלק מוחזר. היחס נקבע ממשוואות פרנל, אחרי שמוצאים את זווית השבירה מחוק סנל: <bdi dir="ltr">sin20° = 1.5·sinθ<sub>t</sub> ⇒ θ<sub>t</sub> ≈ 13.2°</bdi>. עבור TE בכניסה מתקבל <bdi dir="ltr">r<sub>s</sub> ≈ −0.217, t<sub>s</sub> ≈ 0.783</bdi>. הקרן המוחזרת היא TE, ולכן הגלאי בולע אותה. זה סעיף א'.</div></li>
+    <li class="exp"><div class="top"><div class="task">המשיכו לעקוב: הקרן שחוזרת מהמראה כבר אדומה, והקרן שיוצאת ממנה החוצה אדומה ונקלטת בגלאי.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">המראה הופכת TE ל-TM. כשהקרן האדומה מגיעה לדופן השמאלית, חלק ממנה יוצא (מקדם <bdi dir="ltr">t′<sub>p</sub></bdi>) וחלק חוזר פנימה (<bdi dir="ltr">r′<sub>p</sub></bdi>). החלק שחוזר פוגע שוב במראה, הופך ל-TE, ויוצא בפעם הבאה ככחול. לכן הקיטובים מתחלפים: TM, TE, TM, ...</div></li>
+    <li class="exp"><div class="top"><div class="task">עברו ל"גל רציף" והסתכלו על הגלאי: רק הקרניים האדומות (1, 3, 5, ...) נקלטות, והן הולכות ונחלשות.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">כל קרן TM שמגיעה לגלאי עשתה עוד שני הלוכי-חזור לעומת הקודמת, והפסידה בדרך החזרה אחת ב-TM ואחת ב-TE. לכן:
+        <span class="eqb">E<sub>2j+1</sub> = −E₀ t<sub>s</sub> t′<sub>p</sub> (r′<sub>p</sub> r′<sub>s</sub>)<sup>j</sup> e<sup>i(2j+1)δ</sup></span>
+        אלה רכיבי האמפליטודה שמגיעים לגלאי. זה סעיף ב'.</div></li>
+    <li class="exp"><div class="top"><div class="task">הזיזו לאט את סליידר אורך הגל. פס העוצמה עולה ויורד, ובכל מקסימום נדלקת נורה ונשמע צליל.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">בין שתי קרני TM עוקבות יש הפרש פאזה של 2δ, ויחס משרעות ρ = r′<sub>s</sub>r′<sub>p</sub>. סכום הטור ההנדסי נותן:
+        <span class="eqb">I/I₀ = (t<sub>s</sub>t′<sub>p</sub>)² / (1 + ρ² − 2ρ cos2δ)</span>
+        כאן ρ שלילי (≈ −0.04), ולכן המקסימום מתקבל כש-cos2δ = −1:
+        <span class="eqb">λ<sub>m</sub> = 8nL cosθ<sub>t</sub> / (2m − 1)</span>
+        זה סעיף ג'. (הסימן של ρ תלוי במוסכמת הסימן של r<sub>p</sub>. במוסכמה ההפוכה התנאי הוא λ<sub>m</sub> = 4nL cosθ<sub>t</sub>/m.)</div></li>
+    <li class="exp"><div class="top"><div class="task">הגדילו את L והזיזו שוב את λ. המקסימומים מגיעים הרבה יותר צפוף.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">המרחק בין שני מקסימומים שכנים הוא בערך <bdi dir="ltr">Δλ ≈ λ² / (4nL cosθ<sub>t</sub>)</bdi>. גביש ארוך פי 2 נותן מרווח קטן פי 2, כי שינוי קטן ב-λ כבר משנה הרבה את הפאזה לאורך דרך ארוכה.</div></li>
+    <li class="exp"><div class="top"><div class="task">העלו את זווית הפגיעה לכ-56°. פס העוצמה כמעט מפסיק לזוז כשמשנים את λ.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">זו זווית ברוסטר: <bdi dir="ltr">θ<sub>B</sub> = arctan(1.5) ≈ 56.3°</bdi>. בזווית הזו r′<sub>p</sub> = 0, כלומר קרן TM לא מוחזרת בכלל מהדופן. לכן מגיעה לגלאי רק קרן TM אחת, ואין עם מה להתאבך.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span> שנו את n ל-3.5 (מקדם השבירה האמיתי של סיליקון) והסתכלו על הגרף I(λ). ההבדל בין מקסימום למינימום גדל מאוד.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">כשמקדם השבירה גבוה, הדפנות מחזירות הרבה יותר, ולכן |ρ| גדל. הניגודיות היא <bdi dir="ltr">I<sub>max</sub>/I<sub>min</sub> = ((1+|ρ|)/(1−|ρ|))²</bdi>. עם n = 1.5 היא בערך 1.17, ועם n = 3.5 היא כבר בערך 3.6.</div></li>
+  </ol>
+</section>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id), deg = Math.PI/180;
+const ADV_DEF = {n:1.5, pol:'TE', det:'TM', dDet:6, speed:1, arrows:true, colorLam:false, norm:true, sound:true};
+const S = Object.assign({th:20, L:2, lam:550, mode:'cw', playing:false, T:0}, ADV_DEF);
+let adv = false, dirty = true, rebuild = true;
+
+/* ====================== פיזיקה ====================== */
+function fres(n1, n2, thI){
+  const s = n1*Math.sin(thI)/n2, thT = Math.asin(Math.min(1, s)), cI = Math.cos(thI), cT = Math.cos(thT);
+  return {thT, rs:(n1*cI - n2*cT)/(n1*cI + n2*cT), ts:2*n1*cI/(n1*cI + n2*cT), rp:(n2*cI - n1*cT)/(n2*cI + n1*cT), tp:2*n1*cI/(n2*cI + n1*cT)};
+}
+function phys(n, th){ n = n || S.n; th = th === undefined ? S.th : th; const thI = th*deg, ci = fres(1, n, thI), thT = ci.thT, co = fres(n, 1, thT); return {thI, thT, ci, co}; }
+const coef = (c, pol, k) => pol === 'TE' ? c[k + 's'] : c[k + 'p'];
+const flip = p => p === 'TE' ? 'TM' : 'TE';
+const sp = p => p === 'TE' ? 's' : 'p';
+const isDet = pol => S.det === 'ALL' || S.det === pol;
+// כל הקרניים היוצאות מהדופן השמאלית (משרעת ופאזה)
+function terms(lam, K, P){
+  const d1 = 2*Math.PI*2*S.n*S.L*1000*Math.cos(P.thT)/lam;
+  const out = [{k:0, pol:S.pol, A:coef(P.ci, S.pol, 'r'), ph:0}];
+  let amp = coef(P.ci, S.pol, 't'), pol = S.pol;
+  for (let k = 1; k <= K; k++){
+    amp = -amp; pol = flip(pol);                          // מראה מושלמת: פאזה π והיפוך קיטוב
+    out.push({k, pol, A:amp*coef(P.co, pol, 't'), ph:k*d1});
+    amp *= coef(P.co, pol, 'r');
+    if (Math.abs(amp) < 1e-10) break;
+  }
+  return out;
+}
+function sumPol(list, pol){ let re = 0, im = 0; for (const t of list) if (t.pol === pol){ re += t.A*Math.cos(t.ph); im += t.A*Math.sin(t.ph); } return {re, im, I:re*re + im*im}; }
+function detI(list){ return S.det === 'ALL' ? sumPol(list, 'TE').I + sumPol(list, 'TM').I : sumPol(list, S.det).I; }
+
+/* ====================== צבעים ====================== */
+function lamRGB(l){
+  let r = 0, g = 0, b = 0;
+  if (l < 440){ r = -(l - 440)/60; b = 1 } else if (l < 490){ g = (l - 440)/50; b = 1 } else if (l < 510){ g = 1; b = -(l - 510)/20 }
+  else if (l < 580){ r = (l - 510)/70; g = 1 } else if (l < 645){ r = 1; g = -(l - 645)/65 } else { r = 1 }
+  const f = l < 420 ? 0.35 + 0.65*(l - 380)/40 : l > 700 ? 0.35 + 0.65*(750 - l)/50 : 1;
+  return [r*f, g*f, b*f].map(v => Math.pow(Math.max(0, v), 0.8));
+}
+const lamCss = (l, a = 1) => `rgba(${lamRGB(l).map(v => Math.round(v*255)).join(',')},${a})`;
+const lamColor = l => { const c = lamRGB(l); return new THREE.Color(c[0], c[1], c[2]); };
+const C_TE = new THREE.Color(0x3d9bff), C_TM = new THREE.Color(0xff3b3b);
+const polColor = pol => S.colorLam ? lamColor(S.lam) : (pol === 'TE' ? C_TE : C_TM);
+const polRGB = (pol, a) => S.colorLam ? lamCss(S.lam, a) : (pol === 'TE' ? `rgba(61,155,255,${a})` : `rgba(255,75,75,${a})`);
+
+/* ====================== שרטוט הבעיה (פתיח) ====================== */
+(function drawProblem(){
+  const P = phys(1.5, 20), svg = $('probSvg');
+  const xL = 150, xR = 300, yTop = 22, yBot = 238, y0 = 208, Lw = xR - xL, tt = Math.tan(P.thT);
+  const ln = (x1, y1, x2, y2, c, w, op) => `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${c}" stroke-width="${w}" opacity="${op}" stroke-linecap="round"/>`;
+  const BL = '#3d9bff', RD = '#ff4b4b';
+  let h = `<rect x="${xL}" y="${yTop}" width="${Lw}" height="${yBot - yTop}" fill="#5d6b80" opacity=".35" stroke="#8fa3c4"/>`;
+  h += `<rect x="${xR}" y="${yTop}" width="12" height="${yBot - yTop}" fill="#d8dde6"/>`;
+  for (let y = yTop; y < yBot; y += 9) h += ln(xR, y + 9, xR + 12, y, '#111', 1.4, 1);
+  h += `<text x="${(xL + xR)/2}" y="${yTop + 24}" fill="#e3eaf6" font-size="14" text-anchor="middle" font-weight="700">n = 1.5</text>`;
+  h += `<path d="M18 30 A70 70 0 0 1 18 170 Z" fill="#4a78c2" opacity=".75"/><text x="30" y="104" fill="#fff" font-size="13">גלאי</text>`;
+  // קרן נכנסת
+  const ax = xL - 125*Math.cos(P.thI), ay = y0 + 125*Math.sin(P.thI);
+  h += ln(ax, ay, xL, y0, BL, 3, 1) + `<text x="${ax + 4}" y="${ay - 6}" fill="${BL}" font-size="11">TE</text>`;
+  h += ln(xL - 60, y0, xL, y0, '#8fa3c4', 1, .6).replace('/>', ' stroke-dasharray="3 3"/>');
+  h += `<text x="${xL - 70}" y="${y0 + 18}" fill="#ffd479" font-size="11">20°</text>`;
+  // מסלולים פנימיים ויציאות
+  const ex = (x, y, c, op) => ln(x, y, 34, y - (x - 34)*Math.tan(P.thI), c, 2.4, op);
+  h += ex(xL, y0, BL, 0.55);
+  let y = y0, pol = 'TE', amp = 1;
+  for (let k = 1; k <= 3; k++){
+    const ym = y - Lw*tt; h += ln(xL, y, xR, ym, pol === 'TE' ? BL : RD, 2.4, 0.95*amp);
+    pol = flip(pol); const yb = ym - Lw*tt; h += ln(xR, ym, xL, yb, pol === 'TE' ? BL : RD, 2.4, 0.95*amp);
+    h += ex(xL, yb, pol === 'TE' ? BL : RD, Math.max(0.35, amp)); h += `<circle cx="${xL}" cy="${yb}" r="3" fill="#eaf6ff"/>`;
+    h += `<text x="${xL - 16}" y="${yb + 14}" fill="${pol === 'TE' ? BL : RD}" font-size="11">${k}</text>`;
+    y = yb; amp *= 0.7;
+  }
+  h += `<circle cx="${xL}" cy="${y0}" r="3" fill="#eaf6ff"/>`;
+  h += ln(xL, yBot + 10, xR, yBot + 10, '#8fa3c4', 1, 1) + `<text x="${(xL + xR)/2}" y="${yBot + 22}" fill="#8fa3c4" font-size="11" text-anchor="middle">L</text>`;
+  svg.innerHTML = h;
+})();
+
+/* ====================== סצנה ====================== */
+const view = $('view');
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+view.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05070d);
+scene.fog = new THREE.FogExp2(0x05070d, 0.013);
+const camera = new THREE.PerspectiveCamera(45, 1, 0.02, 400);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08; controls.minDistance = 0.15; controls.maxDistance = 90; controls.screenSpacePanning = true;
+scene.add(new THREE.AmbientLight(0x6070a0, 0.55));
+const dl = new THREE.DirectionalLight(0xffffff, 0.8); dl.position.set(6, 14, 10); scene.add(dl);
+const laserLight = new THREE.PointLight(0xffffff, 0.9, 10); scene.add(laserLight);
+const TABLE_Y = -8.5;
+const table = new THREE.Mesh(new THREE.PlaneGeometry(90, 60), new THREE.MeshStandardMaterial({color:0x0c111b, roughness:0.85, metalness:0.3}));
+table.rotation.x = -Math.PI/2; table.position.y = TABLE_Y; scene.add(table);
+const grid = new THREE.GridHelper(90, 90, 0x1d2a40, 0x121a29); grid.position.y = TABLE_Y + 0.01; scene.add(grid);
+
+function canvasTex(w, h, draw){ const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); return new THREE.CanvasTexture(c); }
+const glowTex = canvasTex(128,128,(g,w,h)=>{ const r = g.createRadialGradient(64,64,0,64,64,64); r.addColorStop(0,'rgba(255,255,255,1)'); r.addColorStop(0.25,'rgba(255,255,255,.6)'); r.addColorStop(1,'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0,0,w,h); });
+const absorbTex = canvasTex(128,128,(g)=>{ g.strokeStyle = 'rgba(140,190,255,.95)'; g.lineWidth = 7; g.beginPath(); g.arc(64,64,44,0,7); g.stroke(); g.lineWidth = 8; g.beginPath(); g.moveTo(38,38); g.lineTo(90,90); g.moveTo(90,38); g.lineTo(38,90); g.stroke(); });
+const mirrorTex = canvasTex(512,512,(g,w,h)=>{ const gr = g.createLinearGradient(0,0,w,h); gr.addColorStop(0,'#2b3442'); gr.addColorStop(.5,'#556274'); gr.addColorStop(1,'#232a35'); g.fillStyle = gr; g.fillRect(0,0,w,h);
+  g.strokeStyle = 'rgba(215,230,255,.55)'; g.lineWidth = 1.2; for (let i = 0; i <= w; i += 8){ g.beginPath(); g.moveTo(i,0); g.lineTo(i,h); g.stroke(); g.beginPath(); g.moveTo(0,i); g.lineTo(w,i); g.stroke(); }});
+mirrorTex.wrapS = mirrorTex.wrapT = THREE.RepeatWrapping; mirrorTex.repeat.set(2, 6);
+const hatchTex = canvasTex(256,256,(g,w,h)=>{ g.fillStyle = '#d8dde6'; g.fillRect(0,0,w,h); g.strokeStyle = '#111'; g.lineWidth = 6; for (let i = -w; i < w*2; i += 28){ g.beginPath(); g.moveTo(i,0); g.lineTo(i + w,h); g.stroke(); }});
+hatchTex.wrapS = hatchTex.wrapT = THREE.RepeatWrapping; hatchTex.repeat.set(1, 6);
+
+const crystalG = new THREE.Group(); scene.add(crystalG);
+crystalG.add(new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshPhongMaterial({color:0x8a9bb5, transparent:true, opacity:0.17, shininess:120, specular:0xaabbdd, side:THREE.DoubleSide, depthWrite:false})));
+crystalG.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1,1,1)), new THREE.LineBasicMaterial({color:0x8fb3ff, transparent:true, opacity:0.75})));
+const mirrorG = new THREE.Group(); scene.add(mirrorG);
+const mirrorFace = new THREE.Mesh(new THREE.PlaneGeometry(1,1), new THREE.MeshStandardMaterial({map:mirrorTex, metalness:0.8, roughness:0.25, emissive:0x223044, emissiveIntensity:0.6, side:THREE.DoubleSide}));
+mirrorFace.rotation.y = -Math.PI/2; mirrorFace.position.x = 0.002; mirrorG.add(mirrorFace);
+const mirrorBack = new THREE.Mesh(new THREE.BoxGeometry(0.28,1,1), new THREE.MeshStandardMaterial({map:hatchTex, roughness:0.7})); mirrorBack.position.x = 0.15; mirrorG.add(mirrorBack);
+const laserG = new THREE.Group(); scene.add(laserG);
+{ const body = new THREE.CylinderGeometry(0.34,0.34,2.6,32); body.translate(0,-1.35,0);
+  laserG.add(new THREE.Mesh(body, new THREE.MeshStandardMaterial({color:0x39414f, metalness:0.85, roughness:0.3})));
+  const ring = new THREE.CylinderGeometry(0.38,0.38,0.12,32); ring.translate(0,-0.06,0);
+  laserG.add(new THREE.Mesh(ring, new THREE.MeshStandardMaterial({color:0x8090a8, metalness:1, roughness:0.2})));
+  const fin = new THREE.TorusGeometry(0.36,0.04,8,32); for (let i = 0; i < 5; i++){ const m = new THREE.Mesh(fin, new THREE.MeshStandardMaterial({color:0x222831, metalness:.7})); m.rotation.x = Math.PI/2; m.position.y = -0.8 - i*0.35; laserG.add(m); } }
+const laserGlow = new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true})); laserGlow.scale.set(1.1,1.1,1); laserG.add(laserGlow);
+const detG = new THREE.Group(); scene.add(detG);
+detG.add(new THREE.Mesh(new THREE.SphereGeometry(1,40,20,0,Math.PI*2,0,Math.PI/2), new THREE.MeshPhongMaterial({color:0x4a78c2, transparent:true, opacity:0.55, side:THREE.DoubleSide, shininess:60, depthWrite:false})));
+const detGrid = new THREE.PolarGridHelper(1, 16, 6, 64, 0x9fd0ff, 0x4f84c9); detGrid.position.y = 0.005; detG.add(detGrid);
+const detRim = new THREE.Mesh(new THREE.TorusGeometry(1,0.035,8,64), new THREE.MeshStandardMaterial({color:0x9ab8e6, metalness:0.9, roughness:0.2})); detRim.rotation.x = Math.PI/2; detG.add(detRim);
+
+const dyn = new THREE.Group(); scene.add(dyn);
+const beamGeo = new THREE.CylinderGeometry(1,1,1,10,1,true); beamGeo.translate(0,0.5,0);
+const nodeGeo = new THREE.SphereGeometry(0.14, 20, 12), ringGeo = new THREE.TorusGeometry(0.45, 0.035, 8, 48);
+const postMat = new THREE.MeshStandardMaterial({color:0x5b6577, metalness:0.9, roughness:0.35});
+const Yv = new THREE.Vector3(0,1,0), V = (x,y,z) => new THREE.Vector3(x,y,z);
+
+function makeLabel(text, color, size){
+  const fs = 44, pad = 14, c = document.createElement('canvas'), g = c.getContext('2d');
+  g.font = `600 ${fs}px "Segoe UI", Arial`; const w = Math.ceil(g.measureText(text).width) + pad*2; c.width = w; c.height = fs + pad;
+  g.font = `600 ${fs}px "Segoe UI", Arial`; g.fillStyle = color; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = 'rtl'; g.fillText(text, w/2, c.height/2 + 2);
+  const t = new THREE.CanvasTexture(c); t.minFilter = THREE.LinearFilter;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({map:t, depthWrite:false, transparent:true, opacity:0.9})); s.scale.set(size*w/c.height, size, 1); s.renderOrder = 10; return s;
+}
+function post(x, yTop, z, r){ const h = yTop - TABLE_Y; if (h <= 0) return; const m = new THREE.Mesh(new THREE.CylinderGeometry(r || 0.12, r || 0.12, h, 16), postMat); m.position.set(x, TABLE_Y + h/2, z); m.userData.own = true; dyn.add(m); }
+function clearDyn(){
+  dyn.traverse(o => {
+    if (o.material){ (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { if (m.map && m.map !== glowTex && m.map !== absorbTex) m.map.dispose(); m.dispose(); }); }
+    if (o.geometry && o.userData.own) o.geometry.dispose();
+  });
+  dyn.clear();
+}
+
+/* ====================== מסלולי הקרניים ====================== */
+let G = null, arrows = [], nodeMeshes = [];
+const vis = a => Math.min(1.15, Math.pow(Math.abs(a), 0.55));
+function build(){
+  clearDyn(); arrows = []; nodeMeshes = [];
+  const P = phys(), {thI, thT, ci, co} = P;
+  const Lv = 1.6 + (S.L - 0.5)/9.5*5.4, H = 6, Dz = 4, y0 = -4.8;
+  crystalG.position.set(Lv/2, 0, 0); crystalG.scale.set(Lv, 2*H, Dz);
+  mirrorG.position.set(Lv, 0, 0); mirrorG.scale.set(1, 2*H, Dz);
+  const dIn = V(Math.cos(thI), Math.sin(thI), 0), dR = V(-Math.cos(thI), Math.sin(thI), 0);
+  const dF = V(Math.cos(thT), Math.sin(thT), 0), dB = V(-Math.cos(thT), Math.sin(thT), 0);
+  const segs = [], nodes = [], mirrors = [], exits = [];
+  const addSeg = (a, b, n, pol, amp, t0, kind, k) => { const d = b.clone().sub(a), len = d.length(); const s = {a:a.clone(), b:b.clone(), dir:len > 1e-9 ? d.normalize() : dIn.clone(), len, n, pol, amp, t0, t1:t0 + len*n, kind, k}; segs.push(s); return s; };
+  const P0 = V(0, y0, 0), Dl = 6.5, ls = P0.clone().addScaledVector(dIn, -Dl);
+  addSeg(ls, P0, 1, S.pol, 1, 0, 'inc', -1);
+  let t = Dl;
+  nodes.push({p:P0, type:'in', pol:S.pol, k:0});
+  exits.push({p:P0, pol:S.pol, amp:coef(ci, S.pol, 'r'), t, k:0});
+  let pos = P0.clone(), pol = S.pol, amp = coef(ci, pol, 't');
+  const l = Lv/Math.cos(thT), top = H - 0.12;
+  for (let k = 1; k <= 9; k++){
+    const M = pos.clone().addScaledVector(dF, l);
+    if (M.y > top){ const lc = (top - pos.y)/Math.sin(thT); if (lc > 0.01) addSeg(pos, pos.clone().addScaledVector(dF, lc), S.n, pol, amp, t, 'fwd', k); break; }
+    addSeg(pos, M, S.n, pol, amp, t, 'fwd', k); t += l*S.n;
+    const np = flip(pol); mirrors.push({p:M, t, from:pol, to:np}); amp = -amp; pol = np;
+    const Pn = M.clone().addScaledVector(dB, l);
+    if (Pn.y > top){ const lc = (top - M.y)/Math.sin(thT); if (lc > 0.01) addSeg(M, M.clone().addScaledVector(dB, lc), S.n, pol, amp, t, 'back', k); break; }
+    addSeg(M, Pn, S.n, pol, amp, t, 'back', k); t += l*S.n;
+    nodes.push({p:Pn, type:'out', pol, k});
+    exits.push({p:Pn, pol, amp:amp*coef(co, pol, 't'), t, k});
+    amp *= coef(co, pol, 'r'); pos = Pn;
+    if (Math.abs(amp) < 1e-4) break;
+  }
+  const Pmid = V(0,0,0); exits.forEach(e => Pmid.add(e.p)); Pmid.multiplyScalar(1/exits.length);
+  const C = Pmid.clone().addScaledVector(dR, S.dDet);
+  let spread = 0; exits.forEach(e => { const q = e.p.clone().sub(Pmid); q.addScaledVector(dR, -q.dot(dR)); spread = Math.max(spread, q.length()); });
+  const Rdet = Math.max(1.1, spread + 0.7);
+  detG.position.copy(C); detG.quaternion.setFromUnitVectors(Yv, dR); detG.scale.setScalar(Rdet);
+  const impacts = exits.map(e => addSeg(e.p, e.p.clone().addScaledVector(dR, Math.max(0.05, C.clone().sub(e.p).dot(dR))), 1, e.pol, e.amp, e.t, 'out', e.k));
+  laserG.position.copy(ls); laserG.quaternion.setFromUnitVectors(Yv, dIn);
+  laserGlow.material.color = lamColor(S.lam); laserLight.color = lamColor(S.lam); laserLight.position.copy(ls);
+  post(Lv/2, -H, 0, 0.35); post(ls.x - dIn.x*1.3, ls.y - dIn.y*1.3 - 0.34, 0); post(C.x, C.y - Rdet*0.3, 0, 0.14);
+  segs.forEach(s => {
+    const col = polColor(s.pol), v = vis(s.amp), g = new THREE.Group();
+    const core = new THREE.Mesh(beamGeo, new THREE.MeshBasicMaterial({color:col, transparent:true, opacity:Math.min(1, 0.3 + 0.7*v)})); core.scale.set(0.022, s.len, 0.022);
+    const glow = new THREE.Mesh(beamGeo, new THREE.MeshBasicMaterial({color:col, transparent:true, opacity:0.05 + 0.2*v, blending:THREE.AdditiveBlending, depthWrite:false})); glow.scale.set(0.085, s.len, 0.085);
+    g.add(core, glow); g.position.copy(s.a); g.quaternion.setFromUnitVectors(Yv, s.dir); dyn.add(g); s.mesh = g;
+    const pk = new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex, color:col, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true}));
+    const ps = 0.5 + 0.9*v; pk.scale.set(ps, ps, 1); pk.visible = false; dyn.add(pk); s.packet = pk;
+    const pv = s.pol === 'TE' ? V(0,0,1) : V(-s.dir.y, s.dir.x, 0).normalize(), step = 0.32, cnt = Math.floor(s.len/step);
+    for (let i = 0; i < cnt; i++){
+      const sPos = (i + 0.5)*step, ah = new THREE.ArrowHelper(pv, s.a.clone().addScaledVector(s.dir, sPos), 0.2, col.getHex(), 0.08, 0.06);
+      dyn.add(ah); arrows.push({seg:s, s:sPos, pv, nv:pv.clone().negate(), h:ah, sign:1});
+    }
+  });
+  nodes.forEach(nd => {
+    const m = new THREE.Mesh(nodeGeo, new THREE.MeshBasicMaterial({color:0xeaf6ff})); m.position.copy(nd.p); m.userData.node = nd; dyn.add(m); nodeMeshes.push(m);
+    const gsp = new THREE.Sprite(new THREE.SpriteMaterial({map:glowTex, color:nd.pol === 'TE' ? 0x7fc0ff : 0xff8080, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true}));
+    gsp.scale.set(0.9,0.9,1); gsp.position.copy(nd.p); dyn.add(gsp); nd.glow = gsp;
+  });
+  mirrors.forEach(mh => { const r = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.8, blending:THREE.AdditiveBlending, depthWrite:false})); r.position.copy(mh.p).add(V(-0.03,0,0)); r.rotation.y = Math.PI/2; dyn.add(r); mh.ring = r; });
+  impacts.forEach(sg => {
+    const det = isDet(sg.pol);
+    const s2 = new THREE.Sprite(new THREE.SpriteMaterial({map:det ? glowTex : absorbTex, color:det ? polColor(sg.pol) : 0x6fa8ff, blending:det ? THREE.AdditiveBlending : THREE.NormalBlending, depthWrite:false, transparent:true}));
+    s2.position.copy(sg.b); dyn.add(s2); sg.impact = s2; sg.detected = det; sg.baseSize = det ? 0.5 + 0.9*vis(sg.amp) : 0.45;
+  });
+  const add = (s, p) => { s.position.copy(p); dyn.add(s); };
+  add(makeLabel('גביש', '#cfe0ff', 0.5), V(Lv/2, H + 0.7, 0));
+  add(makeLabel('מראה מהפכת קיטוב', '#e7ecf5', 0.42), V(Lv + 0.2, H + 1.45, 0));
+  add(makeLabel('לייזר', '#cfd8e8', 0.42), ls.clone().addScaledVector(dIn, -1.6).add(V(0, 0.95, 0)));
+  add(makeLabel('גלאי', '#a9ccff', 0.45), C.clone().add(V(0, Rdet + 0.55, 0)));
+  if (adv) exits.forEach(e => add(makeLabel(e.k + ' · ' + e.pol, e.pol === 'TE' ? '#8fc5ff' : '#ff9a9a', 0.27), e.p.clone().addScaledVector(dR, Math.min(2.2, S.dDet*0.45)).add(V(0, 0.28, 0.3))));
+  G = {Lv, H, y0, P0, C, Rdet, dR, segs, nodes, mirrors, exits, tEnd:Math.max(...segs.map(s => s.t1)), P};
+}
+
+/* ====================== אנימציה ====================== */
+let cwClock = 0, scopeClock = 0;
+const kvis = () => 2*Math.PI/(0.55 + 0.9*(S.lam - 380)/370);
+function updateScene(time){
+  const pulse = S.mode === 'pulse', T = S.T, kv = kvis(), tau = pulse ? T : cwClock, sig = 0.55;
+  for (const s of G.segs){
+    const L = pulse ? Math.max(0, Math.min(s.len, (T - s.t0)/s.n)) : s.len;
+    s.mesh.visible = L > 1e-3; s.mesh.children.forEach(c => c.scale.y = Math.max(L, 1e-3));
+    if (pulse && T >= s.t0 && T <= s.t1){ s.packet.visible = true; s.packet.position.copy(s.a).addScaledVector(s.dir, (T - s.t0)/s.n); } else s.packet.visible = false;
+    if (s.impact){
+      const a = pulse ? (T < s.t1 ? 0 : Math.min(1, (T - s.t1)*2)) : 1;
+      if (s.detected){ const p = 1 + 0.15*Math.sin(time*6 + s.k); s.impact.scale.set(s.baseSize*p, s.baseSize*p, 1); s.impact.material.opacity = a; }
+      else { const ph = (time*1.3 + s.k*0.37) % 1, sc = s.baseSize*(1.2 - 0.8*ph); s.impact.scale.set(sc, sc, 1); s.impact.material.opacity = a*(0.85 - 0.75*ph); }
+    }
+  }
+  for (const ar of arrows){
+    const sg = ar.seg;
+    if (!S.arrows){ ar.h.visible = false; continue; }
+    const opl = sg.t0 + ar.s*sg.n;
+    let env = 1;
+    if (pulse){ const d = opl - T; env = Math.exp(-d*d/(2*sig*sig)); if (env < 0.03){ ar.h.visible = false; continue; } }
+    const val = Math.sign(sg.amp)*vis(sg.amp)*Math.cos(kv*(opl - tau))*env, len = Math.abs(val)*0.62;
+    if (len < 0.03){ ar.h.visible = false; continue; }
+    ar.h.visible = true;
+    const sgn = val >= 0 ? 1 : -1; if (sgn !== ar.sign){ ar.h.setDirection(sgn > 0 ? ar.pv : ar.nv); ar.sign = sgn; }
+    ar.h.setLength(len, Math.min(0.13, len*0.45), 0.065);
+  }
+  for (const mh of G.mirrors){
+    const r = mh.ring, cA = polColor(mh.from), cB = polColor(mh.to);
+    if (pulse){
+      const d = T - mh.t; if (d < 0 || d > 2.2){ r.visible = false; continue; }
+      const f = d/2.2; r.visible = true; r.scale.setScalar(0.4 + 2.2*f); r.material.opacity = 1 - f; r.material.color.copy(cA).lerp(cB, Math.min(1, f*2.5)); r.rotation.x = f*Math.PI*2;
+    } else { const f = (time*0.6 + mh.t*0.1) % 1; r.visible = true; r.scale.setScalar(0.5 + 1.2*f); r.material.opacity = 0.7*(1 - f); r.material.color.copy(cA).lerp(cB, f); r.rotation.x = time*1.5; }
+  }
+  for (const nd of G.nodes){
+    const sc = 0.75 + 0.2*Math.sin(time*3 + nd.k); nd.glow.scale.set(sc, sc, 1);
+    nd.glow.visible = !pulse || T >= (nd.k === 0 ? G.segs[0].t1 : G.exits.find(e => e.k === nd.k).t);
+  }
+  mirrorTex.offset.y = time*0.02;
+  laserGlow.material.opacity = pulse ? (T < 1.5 ? 1 : 0.35) : 0.9 + 0.1*Math.sin(time*20);
+}
+
+/* ====================== ניתוח ====================== */
+let A = null, wasAligned = false;
+function analyze(){
+  const P = phys(), list = terms(S.lam, 80, P), mainPol = S.det === 'ALL' ? flip(S.pol) : S.det;
+  const rho = P.co.rs*P.co.rp, d1 = 2*Math.PI*2*S.n*S.L*1000*Math.cos(P.thT)/S.lam;
+  let psi = 2*d1 + (rho < 0 ? Math.PI : 0); psi = ((psi % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+  const lams = [], Is = [];
+  for (let l = 380; l <= 750.001; l += 0.5){ lams.push(l); Is.push(detI(terms(l, 60, P))); }
+  const Imax = Math.max(...Is), Imin = Math.min(...Is), peaks = [];
+  for (let i = 1; i < Is.length - 1; i++) if (Is[i] > Is[i-1] && Is[i] >= Is[i+1] && Imax - Imin > 1e-9) peaks.push(lams[i]);
+  const Icur = detI(list), aligned = Math.abs(rho) > 1e-6 && Math.cos(psi) > 0.996;
+  A = {P, list, mainPol, rho, d1, psi, lams, Is, Imax, Imin, peaks, Icur, aligned};
+  if (aligned && !wasAligned) beep();
+  wasAligned = aligned;
+}
+let actx = null;
+function beep(){
+  if (!S.sound) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const t = actx.currentTime;
+    [880, 1320].forEach((f, i) => { const o = actx.createOscillator(), g = actx.createGain(); o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t + i*0.09); g.gain.exponentialRampToValueAtTime(0.16, t + i*0.09 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + i*0.09 + 0.35);
+      o.connect(g).connect(actx.destination); o.start(t + i*0.09); o.stop(t + i*0.09 + 0.4); });
+  } catch(e){}
+}
+document.addEventListener('pointerdown', () => { if (!actx){ try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} } }, {once:true});
+
+/* ====================== גרפים (מצב מורחב) ====================== */
+function fit(c){
+  const r = c.getBoundingClientRect(), d = window.devicePixelRatio || 1, W = Math.max(10, Math.round(r.width*d)), H = Math.max(10, Math.round(r.height*d));
+  if (c.width !== W || c.height !== H){ c.width = W; c.height = H; }
+  const g = c.getContext('2d'); g.setTransform(d,0,0,d,0,0); return {g, w:r.width, h:r.height};
+}
+function drawScope(){
+  const {g, w, h} = fit($('scope')); g.clearRect(0,0,w,h);
+  const mid = h/2, amp = h*0.4;
+  g.strokeStyle = 'rgba(140,170,220,.25)'; g.beginPath(); g.moveTo(0, mid); g.lineTo(w, mid); g.stroke();
+  const pol = A.mainPol, list = A.list.filter(t => t.pol === pol); if (!list.length) return;
+  const sum = sumPol(A.list, pol), sumMag = Math.hypot(sum.re, sum.im), absSum = list.reduce((s, t) => s + Math.abs(t.A), 0), indiv = list.slice(0, 4), N = Math.ceil(w);
+  const wave = (re, im, sc) => { g.beginPath(); for (let i = 0; i <= N; i++){ const th = 2*Math.PI*2.5*i/N - scopeClock, v = (re*Math.cos(th) + im*Math.sin(th))*sc; i ? g.lineTo(i, mid - v*amp) : g.moveTo(i, mid - v*amp); } g.stroke(); };
+  const m = Math.max(sumMag, ...indiv.map(t => Math.abs(t.A)));
+  indiv.forEach((t, i) => { g.strokeStyle = polRGB(pol, 0.85 - i*0.16); g.lineWidth = 1.4; g.setLineDash(i ? [5, 3 + i] : []); wave(t.A*Math.cos(t.ph), t.A*Math.sin(t.ph), S.norm ? 0.8/Math.abs(t.A) : 1/m); });
+  g.setLineDash([]); g.strokeStyle = '#fff'; g.lineWidth = 2.6; g.shadowColor = A.aligned ? '#46e39a' : 'transparent'; g.shadowBlur = A.aligned ? 12 : 0;
+  wave(sum.re, sum.im, S.norm ? 1/absSum : 1/m); g.shadowBlur = 0;
+  $('scInfo').textContent = S.norm ? `|ΣA|/Σ|A| = ${(sumMag/absSum*100).toFixed(1)}%` : `|E| = ${sumMag.toFixed(4)}`;
+  $('scPol').textContent = pol;
+}
+function drawPhasor(){
+  const {g, w, h} = fit($('phasor')); g.clearRect(0,0,w,h);
+  const pol = A.mainPol, list = A.list.filter(t => t.pol === pol).slice(0, 8); if (!list.length) return;
+  const rot = -list[0].ph - (list[0].A < 0 ? Math.PI : 0), absSum = list.reduce((s, t) => s + Math.abs(t.A), 0);
+  const arrow = (xa, ya, xb, yb, col, lw) => { g.strokeStyle = col; g.fillStyle = col; g.lineWidth = lw; g.beginPath(); g.moveTo(xa, ya); g.lineTo(xb, yb); g.stroke();
+    const an = Math.atan2(yb - ya, xb - xa), hl = Math.min(8, Math.hypot(xb - xa, yb - ya)*0.5); g.beginPath(); g.moveTo(xb, yb); g.lineTo(xb - hl*Math.cos(an - 0.4), yb - hl*Math.sin(an - 0.4)); g.lineTo(xb - hl*Math.cos(an + 0.4), yb - hl*Math.sin(an + 0.4)); g.fill(); };
+  const pts = [[0,0]]; let px = 0, py = 0;
+  list.forEach(t => { const len = S.norm ? 1 : Math.abs(t.A)/absSum*list.length, an = t.ph + (t.A < 0 ? Math.PI : 0) + rot; px += len*Math.cos(an); py -= len*Math.sin(an); pts.push([px, py]); });
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), bw = Math.max(1e-9, Math.max(...xs) - Math.min(...xs)), bh = Math.max(1e-9, Math.max(...ys) - Math.min(...ys));
+  const sc = Math.min((w - 24)/bw, (h - 24)/bh, (w - 24)/2), ox = w/2 - sc*(Math.max(...xs) + Math.min(...xs))/2, oy = h/2 - sc*(Math.max(...ys) + Math.min(...ys))/2;
+  let x = ox, y = oy;
+  for (let i = 1; i < pts.length; i++){ const xb = ox + sc*pts[i][0], yb = oy + sc*pts[i][1]; arrow(x, y, xb, yb, polRGB(pol, 0.95 - (i - 1)*0.09), 1.8); x = xb; y = yb; }
+  arrow(ox, oy, x, y, '#fff', 2.3);
+}
+function drawSpec(){
+  const {g, w, h} = fit($('spec')); g.clearRect(0,0,w,h);
+  const pl = 8, pr = 8, pt = 8, pb = 26, X = l => pl + (l - 380)/370*(w - pl - pr);
+  const span = Math.max(1e-12, A.Imax - A.Imin), lo = A.Imin - span*0.08, hi = A.Imax + span*0.08, Y = I => pt + (1 - (I - lo)/(hi - lo))*(h - pt - pb);
+  for (let l = 380; l < 750; l += 2){ g.fillStyle = lamCss(l, 0.9); g.fillRect(X(l), h - pb + 4, X(l + 2) - X(l) + 0.5, 5); }
+  g.fillStyle = '#7f8fab'; g.font = '10px Segoe UI, Arial'; g.textAlign = 'center';
+  for (let l = 400; l <= 700; l += 100) g.fillText(l, X(l), h - 4);
+  g.beginPath(); A.lams.forEach((l, i) => { const xx = X(l), yy = Y(A.Is[i]); i ? g.lineTo(xx, yy) : g.moveTo(xx, yy); }); g.strokeStyle = polRGB(A.mainPol, 1); g.lineWidth = 1.8; g.stroke();
+  g.fillStyle = '#46e39a'; A.peaks.forEach(l => { const i = Math.round((l - 380)/0.5); g.beginPath(); g.arc(X(l), Y(A.Is[i]), 2.6, 0, 7); g.fill(); });
+  g.strokeStyle = lamCss(S.lam, 1); g.lineWidth = 2; g.setLineDash([4,3]); g.beginPath(); g.moveTo(X(S.lam), pt); g.lineTo(X(S.lam), h - pb); g.stroke(); g.setLineDash([]);
+  g.fillStyle = '#fff'; g.beginPath(); g.arc(X(S.lam), Y(A.Icur), 4, 0, 7); g.fill();
+  const C = A.Imin > 0 ? A.Imax/A.Imin : Infinity;
+  $('spInfo').textContent = `max/min = ${isFinite(C) ? C.toFixed(3) : '∞'}`;
+}
+function fmt(x){ return (x < 0 ? '−' : '') + Math.abs(x).toFixed(4); }
+function drawTable(){
+  const ci = A.P.ci, co = A.P.co;
+  $('ctab').innerHTML = `<tr><th></th><th>r</th><th>t</th><th>r′</th><th>t′</th></tr>
+    <tr><td class="te">s</td><td>${fmt(ci.rs)}</td><td>${fmt(ci.ts)}</td><td>${fmt(co.rs)}</td><td>${fmt(co.ts)}</td></tr>
+    <tr><td class="tm">p</td><td>${fmt(ci.rp)}</td><td>${fmt(ci.tp)}</td><td>${fmt(co.rp)}</td><td>${fmt(co.tp)}</td></tr>`;
+  const Lam = 4*S.n*S.L*1000*Math.cos(A.P.thT), mx = [];
+  if (Math.abs(A.rho) > 1e-6) for (let m = 1; m < 400; m++){ const l = A.rho < 0 ? Lam/(m - 0.5) : Lam/m; if (l < 380) break; if (l <= 750) mx.push(l.toFixed(1)); }
+  $('kv').innerHTML = `θt = ${(A.P.thT/deg).toFixed(2)}°<br>ρ = r′s·r′p = ${fmt(A.rho)}<br>2δ mod 360° = ${(((2*A.d1/deg) % 360 + 360) % 360).toFixed(1)}°<br>I/I₀ = ${A.Icur.toFixed(4)}<br>λmax: ${mx.slice(0, 8).join(', ')}${mx.length > 8 ? ' …' : ''}${mx.length ? ' nm' : '—'}`;
+}
+function drawBasicMeter(){
+  const rel = (A.Icur - A.Imin)/Math.max(1e-12, A.Imax - A.Imin);
+  $('mBar').style.width = Math.max(2, rel*100) + '%';
+  $('mV').textContent = A.Imax - A.Imin < 1e-6 ? '—' : Math.round(rel*100) + '%';
+  $('mLamp').classList.toggle('on', A.aligned);
+}
+
+/* ====================== HUD לצמתי פרנל (מצב מורחב) ====================== */
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2(), hud = $('hud');
+renderer.domElement.addEventListener('pointermove', ev => {
+  if (!adv){ hud.style.display = 'none'; return; }
+  const r = renderer.domElement.getBoundingClientRect();
+  mouse.set(((ev.clientX - r.left)/r.width)*2 - 1, -((ev.clientY - r.top)/r.height)*2 + 1); ray.setFromCamera(mouse, camera);
+  const hit = ray.intersectObjects(nodeMeshes)[0];
+  if (!hit){ hud.style.display = 'none'; renderer.domElement.style.cursor = ''; return; }
+  renderer.domElement.style.cursor = 'help';
+  const nd = hit.object.userData.node, P = G.P, p = sp(nd.pol), q = p === 's' ? 'p' : 's', th = S.th.toFixed(1), tt = (P.thT/deg).toFixed(2), n = S.n.toFixed(2);
+  const F = {
+    in:{rs:'r<sub>s</sub> = (cosθ<sub>i</sub> − n cosθ<sub>t</sub>)/(cosθ<sub>i</sub> + n cosθ<sub>t</sub>)', ts:'t<sub>s</sub> = 2cosθ<sub>i</sub>/(cosθ<sub>i</sub> + n cosθ<sub>t</sub>)', rp:'r<sub>p</sub> = (n cosθ<sub>i</sub> − cosθ<sub>t</sub>)/(n cosθ<sub>i</sub> + cosθ<sub>t</sub>)', tp:'t<sub>p</sub> = 2cosθ<sub>i</sub>/(n cosθ<sub>i</sub> + cosθ<sub>t</sub>)'},
+    out:{rs:'r′<sub>s</sub> = (n cosθ<sub>t</sub> − cosθ<sub>i</sub>)/(n cosθ<sub>t</sub> + cosθ<sub>i</sub>)', ts:'t′<sub>s</sub> = 2n cosθ<sub>t</sub>/(n cosθ<sub>t</sub> + cosθ<sub>i</sub>)', rp:'r′<sub>p</sub> = (cosθ<sub>t</sub> − n cosθ<sub>i</sub>)/(cosθ<sub>t</sub> + n cosθ<sub>i</sub>)', tp:'t′<sub>p</sub> = 2n cosθ<sub>t</sub>/(cosθ<sub>t</sub> + n cosθ<sub>i</sub>)'}
+  };
+  const io = nd.type === 'in' ? 'in' : 'out', c = io === 'in' ? P.ci : P.co, pr = io === 'in' ? '' : '′';
+  hud.innerHTML = `<div class="t">${io === 'in' ? 'כניסה: אוויר → גביש' : 'יציאה #' + nd.k + ': גביש → אוויר'} · <span class="${nd.pol === 'TE' ? 'te' : 'tm'}">${nd.pol}</span></div>
+    <div class="f">sin ${th}° = ${n} · sin θ<sub>t</sub> ⇒ θ<sub>t</sub> = ${tt}°</div>
+    <div class="f hl">${F[io]['t' + p]} = ${fmt(c['t' + p])}</div><div class="f hl">${F[io]['r' + p]} = ${fmt(c['r' + p])}</div>
+    <div class="s">r${pr}<sub>${q}</sub> = ${fmt(c['r' + q])}, t${pr}<sub>${q}</sub> = ${fmt(c['t' + q])}</div>`;
+  hud.style.display = 'block';
+  const vr = $('lab').getBoundingClientRect();
+  let x = ev.clientX - vr.left + 18, y = ev.clientY - vr.top + 18;
+  if (x + hud.offsetWidth > vr.width - 8) x = ev.clientX - vr.left - hud.offsetWidth - 18;
+  if (y + hud.offsetHeight > vr.height - 8) y = vr.height - hud.offsetHeight - 8;
+  hud.style.left = Math.max(6, x) + 'px'; hud.style.top = Math.max(6, y) + 'px';
+});
+renderer.domElement.addEventListener('pointerleave', () => hud.style.display = 'none');
+
+/* ====================== ממשק ====================== */
+function syncUI(){
+  $('thV').textContent = S.th.toFixed(1) + '°'; $('LV').textContent = S.L.toFixed(3) + ' µm'; $('lamV').textContent = S.lam.toFixed(1) + ' nm'; $('lamV').style.color = lamCss(S.lam);
+  $('nV').textContent = S.n.toFixed(2); $('dDetV').textContent = S.dDet.toFixed(1); $('speedV').textContent = '×' + S.speed.toFixed(2);
+  [['modeSeg','mode'],['polSeg','pol'],['detSeg','det']].forEach(([id, k]) => document.querySelectorAll('#' + id + ' button').forEach(b => b.classList.toggle('on', S[k] === b.dataset.v)));
+}
+function pushUI(){
+  ['th','L','lam','n','dDet','speed'].forEach(k => $(k).value = S[k]);
+  ['arrows','colorLam','norm','sound'].forEach(k => $(k).checked = S[k]);
+}
+['th','L','lam','n','dDet'].forEach(k => $(k).addEventListener('input', () => { S[k] = parseFloat($(k).value); dirty = rebuild = true; }));
+$('speed').addEventListener('input', () => { S.speed = parseFloat($('speed').value); syncUI(); });
+['arrows','norm','sound'].forEach(k => $(k).addEventListener('change', () => { S[k] = $(k).checked; dirty = true; }));
+$('colorLam').addEventListener('change', () => { S.colorLam = $('colorLam').checked; dirty = rebuild = true; });
+$('polSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b){ S.pol = b.dataset.v; dirty = rebuild = true; } });
+$('detSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b){ S.det = b.dataset.v; dirty = rebuild = true; } });
+$('modeSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  S.mode = b.dataset.v; if (S.mode === 'pulse'){ S.T = 0; S.playing = true; } syncUI();
+});
+function setView(v){
+  document.querySelectorAll('#views button').forEach(b => b.classList.toggle('on', b.dataset.view === v));
+  const cx = G.Lv/2 - 3;
+  if (v === '2d'){ controls.target.set(cx, 0, 0); camera.position.set(cx, 0, 26); }
+  else if (v === 'inside'){ controls.target.set(G.Lv, G.y0 + 2.5, 0); camera.position.set(G.Lv*0.15, G.y0 + 0.6, 1.1); }
+  else if (v === 'det'){ camera.position.copy(G.C.clone().addScaledVector(G.dR, 2.5).add(V(0, 0.6, 2.2))); controls.target.set(G.Lv/2, 0, 0); }
+  else { controls.target.set(cx, 0, 0); camera.position.set(cx + 11, 9, 23); }
+  viewNow = v;
+}
+let viewNow = '3d';
+document.querySelectorAll('#views button').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+function setMode(on){
+  adv = on; document.body.classList.toggle('adv', on);
+  if (!on){ Object.assign(S, ADV_DEF); pushUI(); if (viewNow === 'inside' || viewNow === 'det') setView('3d'); hud.style.display = 'none'; }
+  dirty = rebuild = true;
+  $('lab').scrollIntoView({behavior:'smooth'});
+}
+$('more').addEventListener('click', () => setMode(true));
+$('less').addEventListener('click', () => setMode(false));
+document.querySelectorAll('.exp .xbtn').forEach(b => b.addEventListener('click', () => {
+  const li = b.closest('.exp'); li.classList.toggle('open'); b.textContent = li.classList.contains('open') ? 'סגור' : 'הסבר';
+}));
+// תנועה חופשית במקלדת
+const keys = {};
+window.addEventListener('keydown', e => { if (e.target.tagName !== 'INPUT') keys[e.key.toLowerCase()] = true; });
+window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+function moveKeys(dt){
+  const f = V(0,0,0), r = V(0,0,0), m = V(0,0,0); camera.getWorldDirection(f); r.crossVectors(f, camera.up).normalize();
+  if (keys.w) m.add(f); if (keys.s) m.sub(f); if (keys.d) m.add(r); if (keys.a) m.sub(r); if (keys.e) m.y += 1; if (keys.q) m.y -= 1;
+  if (m.lengthSq() > 0){ m.normalize().multiplyScalar(7*dt); camera.position.add(m); controls.target.add(m); }
+}
+function resize(){
+  const w = view.clientWidth, h = view.clientHeight; if (!w || !h) return;
+  renderer.setSize(w, h, false); renderer.domElement.style.width = w + 'px'; renderer.domElement.style.height = h + 'px';
+  camera.aspect = w/h; camera.updateProjectionMatrix(); if (A && adv){ drawSpec(); drawPhasor(); }
+}
+new ResizeObserver(resize).observe(view);
+let visible = true; new IntersectionObserver(e => { visible = e[0].isIntersecting; }).observe(view);
+
+/* ====================== לולאה ====================== */
+let last = performance.now(), first = true;
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt = Math.min(0.05, (now - last)/1000); last = now;
+  if (dirty){
+    dirty = false; syncUI(); if (rebuild){ build(); rebuild = false; } analyze(); drawBasicMeter();
+    if (adv){ drawSpec(); drawPhasor(); drawTable(); }
+    if (first){ first = false; resize(); setView('3d'); }
+  }
+  if (!visible) return;
+  moveKeys(dt);
+  if (S.mode === 'pulse' && S.playing){ S.T += dt*3.2*S.speed; if (S.T > G.tEnd + 3) S.playing = false; }
+  cwClock += dt*2.2*S.speed; scopeClock += dt*2.5*S.speed;
+  updateScene(now/1000);
+  controls.update(); renderer.render(scene, camera);
+  if (adv) drawScope();
+}
+pushUI();
+if (location.hash === '#adv') setMode(true);
+requestAnimationFrame(frame);
+</script>
+
+<script>
+/* ======================================================================
+   הדגמה אוטומטית: כפתור "▶ הדגמה" ליד כל ניסוי. סמן "רפאים" מבצע את הניסוי במעבדה
+   בזמן אמת, וההסבר מוצג במסגרת מתחת למעבדה.
+   ====================================================================== */
+(function(){
+'use strict';
+
+  const SCRIPTS = [
+    async () => { say('לוחצים "שגר פולס"'); await click(seg('modeSeg', 'v', 'pulse')); say('עקבו אחרי החבילה: בדופן חלק מוחזר וחלק נשבר פנימה'); await sleep(8000); },
+    async () => { say('משגרים שוב'); await click(seg('modeSeg', 'v', 'pulse')); say('הקרן שחוזרת מהמראה כבר אדומה, ונקלטת בגלאי'); await sleep(9000); },
+    async () => { say('עוברים ל"גל רציף"'); await click(seg('modeSeg', 'v', 'cw')); say('רק הקרניים האדומות (1, 3, 5...) מגיעות לגלאי, והולכות ונחלשות'); await sleep(5000); },
+    async () => { await click(seg('modeSeg', 'v', 'cw')); await dragSlider(byId('lam'), 450, 1500);
+      say('מזיזים לאט את אורך הגל... (פס העוצמה עולה ויורד)'); await dragSlider(byId('lam'), 650, 9000); },
+    async () => { await click(seg('modeSeg', 'v', 'cw')); say('מגדילים את L'); await dragSlider(byId('L'), 8, 2500);
+      say('ושוב מזיזים את λ: המקסימומים צפופים הרבה יותר'); await dragSlider(byId('lam'), 450, 8000); },
+    async () => { await click(seg('modeSeg', 'v', 'cw')); say('מעלים את זווית הפגיעה לכ-56° (ברוסטר)'); await dragSlider(byId('th'), 56.3, 3500);
+      say('ומזיזים את λ: הפס כמעט לא זז'); await dragSlider(byId('lam'), 650, 6000); await dragSlider(byId('th'), 20, 1500); },
+    async () => { await ensureAdv(); say('משנים את n ל-3.5 (סיליקון)'); await dragSlider(byId('n'), 3.5, 3500);
+      say('בגרף I(λ) ההבדל בין מקסימום למינימום גדל מאוד'); await sleep(4000); }
+  ];
+
+  const byId = id => document.getElementById(id);
+  const LAB = document.querySelector('section.lab'), VIEW = LAB.querySelector('.view');
+  const cur = byId('demoCursor'), D = {alive:0, i:-1, x:0, y:0};
+  const sleep = ms => { const tok = D.alive; return new Promise(r => setTimeout(r, ms)).then(() => { if (D.alive !== tok) throw 'stop'; }); };
+  const ease = k => k*k*(3 - 2*k);
+  function anim(dur, fn){
+    const tok = D.alive;
+    return new Promise((res, rej) => { const t0 = performance.now();
+      (function step(now){ if (D.alive !== tok) return rej('stop'); const k = Math.min(1, (now - t0)/dur); fn(ease(k)); if (k < 1) requestAnimationFrame(step); else res(); })(t0); });
+  }
+  function place(x, y){ D.x = x; D.y = y; cur.style.transform = 'translate(' + (x - 3) + 'px,' + (y - 2) + 'px)'; }
+  function moveTo(x, y, dur){ const x0 = D.x, y0 = D.y; dur = dur || Math.min(1100, 350 + Math.hypot(x - x0, y - y0)*0.9); return anim(dur, k => place(x0 + (x - x0)*k, y0 + (y - y0)*k)); }
+  const center = el => { const r = el.getBoundingClientRect(); return [r.left + r.width/2, r.top + r.height/2]; };
+  function ripple(){ const r = document.createElement('div'); r.className = 'demoRipple'; r.style.left = D.x + 'px'; r.style.top = D.y + 'px'; document.body.appendChild(r); setTimeout(() => r.remove(), 600); }
+  async function press(){ cur.classList.add('down'); ripple(); await sleep(140); cur.classList.remove('down'); }
+  async function click(el){ if (!el) return; await moveTo(...center(el)); await press(); el.click(); await sleep(400); }
+  async function select(el, v){ if (el.value === v) return; await moveTo(...center(el)); await press(); el.value = v; el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(500); }
+  async function toggle(el, want){                   // מתג (checkbox מוסתר בתוך label)
+    if (el.checked === want) return;
+    await moveTo(...center(el.closest('label') || el)); await press(); el.click(); await sleep(400);
+  }
+  async function dragSlider(el, to, dur){            // גרירה אמיתית: אירועי input בזמן אמת ו-change בסוף
+    const r = el.getBoundingClientRect(), mn = +el.min, mx = +el.max, rtl = getComputedStyle(el).direction === 'rtl';
+    const xOf = v => { const f = (v - mn)/(mx - mn); return rtl ? r.right - 8 - f*(r.width - 16) : r.left + 8 + f*(r.width - 16); };
+    const from = +el.value, y = r.top + r.height/2;
+    await moveTo(xOf(from), y); cur.classList.add('down');
+    try { await anim(dur || 1500, k => { const v = from + (to - from)*k; el.value = v; el.dispatchEvent(new Event('input', {bubbles:true})); place(xOf(+el.value), y); }); }
+    finally { cur.classList.remove('down'); }
+    el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(300);
+  }
+  async function waitFor(fn, limit){ const t0 = performance.now(); while (!fn() && performance.now() - t0 < (limit || 30000)) await sleep(200); }
+  async function ensureAdv(){ if (!document.body.classList.contains('adv')){ say('פותחים את המצב המורחב'); await click(byId('more')); await sleep(900); } }
+  const say = t => { byId('demoSay').textContent = t; };
+  const seg = (id, attr, v) => document.querySelector('#' + id + ' button[data-' + attr + '="' + v + '"]');
+  const viewBtn = v => document.querySelector('#views button[data-view="' + v + '"]');
+
+  async function runDemo(i){
+    stopDemo(false);
+    const tok = D.alive; D.i = i;
+    const li = document.querySelectorAll('.exp')[i];
+    byId('demoNum').textContent = i + 1; byId('demoTitle').textContent = li.querySelector('.task').textContent;
+    byId('demoText').innerHTML = li.querySelector('.ans').innerHTML; say('עוברים למעבדה...');
+    byId('demoStop').style.display = '';
+    document.body.classList.add('demo');
+    LAB.scrollIntoView({behavior:'smooth', block:'start'});
+    try {
+      await sleep(850);
+      const r = VIEW.getBoundingClientRect(); place(r.left + r.width/2, r.top + r.height/2); cur.classList.add('on');
+      await SCRIPTS[i]();
+      if (D.alive === tok){ cur.classList.remove('on'); byId('demoStop').style.display = 'none'; }
+    } catch (e) { if (e !== 'stop') console.warn(e); }
+  }
+  function stopDemo(close){ D.alive++; cur.classList.remove('on', 'down'); if (close){ document.body.classList.remove('demo'); D.i = -1; } }
+  byId('demoStop').addEventListener('click', () => { stopDemo(false); say('ההדגמה נעצרה. אפשר להמשיך לשחק במעבדה בעצמכם.'); byId('demoStop').style.display = 'none'; });
+  byId('demoAgain').addEventListener('click', () => { if (D.i >= 0) runDemo(D.i); });
+  byId('demoClose').addEventListener('click', () => stopDemo(true));
+  document.querySelectorAll('.exp').forEach((li, i) => {
+    if (!SCRIPTS[i]) return;
+    const b = document.createElement('button'); b.className = 'pbtn'; b.type = 'button'; b.title = 'הדגמה אוטומטית במעבדה';
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>הדגמה';
+    li.querySelector('.top').insertBefore(b, li.querySelector('.xbtn'));
+    b.addEventListener('click', () => runDemo(i));
+  });
+  if (location.hash.startsWith('#demo')) setTimeout(() => runDemo(+location.hash.slice(5) || 0), 400);
+
+})();
+</script>
+</body>
+</html>

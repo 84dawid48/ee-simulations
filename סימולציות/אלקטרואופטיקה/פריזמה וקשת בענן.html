@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מעבדת הקשת</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+:root{--bg:#05070d;--card:#0c1222;--line:#1f2b44;--txt:#e3eaf6;--mut:#93a3bf;--acc:#6cb8ff;--grn:#46e39a;--yel:#ffd479}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:"Segoe UI","Rubik",Arial,sans-serif;padding-top:30px}
+#topbar{position:fixed;top:0;left:0;right:0;height:30px;background:#060912;border-bottom:1px solid var(--line);z-index:100}
+#bsd{position:absolute;top:7px;right:12px;font-size:12px;color:#c9d6ea}
+#copyr{position:absolute;top:4px;left:8px;font-size:12px;color:#dce6f5;background:#10172a;border:1px solid var(--line);border-radius:6px;padding:2px 10px}
+bdi{unicode-bidi:isolate}
+
+/* ===== פתיח ===== */
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+#intro{padding-top:46px;padding-bottom:40px;line-height:1.75}
+#intro h1{font-size:34px;line-height:1.25;margin:0 0 8px;font-weight:700}
+#intro h1 span{background:linear-gradient(90deg,#8a5cff,#3d8bff,#3ddc84,#ffd23d,#ff4d4d);-webkit-background-clip:text;background-clip:text;color:transparent}
+#intro .lead{font-size:18px;color:var(--mut);margin:0 0 30px}
+.prob{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.prob p{margin:0 0 10px;font-size:15.5px;color:#d0d9ea}
+.prob p:last-child{margin-bottom:0}
+.prob svg{width:100%;height:auto;display:block;background:#080d18;border:1px solid var(--line);border-radius:12px}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:14px}
+.rd{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.rd .ic{flex:0 0 38px;height:38px;border-radius:10px;background:#101a30;display:grid;place-items:center}
+.rd h3{margin:0 0 2px;font-size:15.5px}
+.rd p{margin:0;font-size:14.5px;color:#c3cfe3}
+@media (max-width:900px){.prob{grid-template-columns:1fr}}
+h2.sec{font-size:21px;margin:40px 0 14px;color:var(--acc)}
+.theory{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}
+.th{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px}
+.th .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;font-size:14px;margin-bottom:6px}
+.th h3{margin:0 0 4px;font-size:16.5px}
+.th p{margin:0;font-size:14.5px;color:#c3cfe3}
+.law{margin:18px 0 0;text-align:center;font-size:21px;background:linear-gradient(90deg,rgba(138,92,255,.08),rgba(61,220,132,.06),rgba(255,77,77,.08));border:1px solid var(--line);border-radius:16px;padding:14px;font-family:"Cambria Math","Times New Roman",serif}
+.law .eq{direction:ltr;display:inline-block;margin:0 14px}
+.law small{display:block;font-family:"Segoe UI",Arial,sans-serif;font-size:14px;color:var(--mut);margin-top:4px}
+.cta{display:block;width:max-content;margin:34px auto 0;text-decoration:none;color:#fff;font:inherit;font-size:17px;font-weight:600;background:linear-gradient(180deg,#2167b8,#18508f);border:1px solid #3b86e0;border-radius:40px;padding:12px 30px;box-shadow:0 0 30px rgba(59,134,224,.35);cursor:pointer}
+.cta:hover{filter:brightness(1.15)}
+
+/* ===== מעבדה ===== */
+.lab{position:relative;height:calc(100vh - 30px);min-height:600px;border-top:1px solid var(--line);overflow:hidden}
+.view{position:absolute;inset:0}
+.view canvas{display:block}
+.pnl{position:absolute;top:14px;background:rgba(10,15,28,.86);border:1px solid var(--line);border-radius:18px;padding:16px;backdrop-filter:blur(10px);z-index:10;max-height:calc(100% - 100px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2a3550 transparent}
+.pnl.r{right:14px;width:290px}
+.pnl.l{left:14px;width:290px}
+.c-row{margin-bottom:14px}
+.c-lbl{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:6px;color:#cdd8ea}
+.c-val{font-family:Consolas,monospace;font-size:13.5px;color:#fff;direction:ltr}
+input[type=range]{width:100%;accent-color:var(--acc);margin:0}
+input.spec{-webkit-appearance:none;appearance:none;height:10px;border-radius:6px;background:linear-gradient(to left,#7a3cff,#3d5bff,#2fb5ff,#3ddc84,#e8f53d,#ffa52e,#ff3a2e)}
+input.spec::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #05070d;box-shadow:0 0 8px #fff;cursor:pointer}
+input.spec::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid #05070d}
+.seg{display:flex;gap:4px}
+.seg button{flex:1;background:#0a0f1c;border:1px solid var(--line);color:var(--mut);border-radius:9px;padding:7px 0;font:inherit;font-size:14px;cursor:pointer}
+.seg button.on{border-color:var(--acc);color:#fff;background:#16243f}
+.seg.big button{font-size:15px;padding:9px 0}
+.sep{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+.ttl{font-size:13px;color:var(--mut);margin-bottom:8px}
+.mt{display:grid;grid-template-columns:14px 1fr 54px;gap:8px;align-items:center;font-size:13.5px;margin:7px 0;color:#cdd8ea}
+.dot{width:12px;height:12px;border-radius:50%;box-shadow:0 0 8px currentColor}
+.bar{height:9px;background:#141c30;border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px;transition:width .2s}
+.mt .pc{font-family:Consolas,monospace;color:#fff;direction:ltr;text-align:left;font-size:13px}
+.status{font-size:13px;text-align:center;color:var(--yel);min-height:18px;margin-top:6px}
+.status.rb{color:#fff;text-shadow:0 0 10px #ffd479,0 0 20px #ff7ad9;font-weight:700}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px;color:#cdd8ea;margin:8px 0;cursor:pointer}
+.sw{position:relative;display:inline-block;width:34px;height:19px;flex:0 0 auto}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:#2a3550;border-radius:20px;cursor:pointer;transition:.2s}
+.sw span::before{content:"";position:absolute;width:15px;height:15px;top:2px;right:2px;background:#c7d2e6;border-radius:50%;transition:.2s}
+.sw input:checked+span{background:#1f5fa8}
+.sw input:checked+span::before{right:17px;background:#fff}
+select{width:100%;background:#0a0f1c;border:1px solid var(--line);color:#fff;border-radius:9px;padding:7px;font:inherit;font-size:14px}
+canvas.plot{width:100%;height:120px;display:block;background:#080d18;border:1px solid var(--line);border-radius:10px}
+.leg{display:flex;gap:12px;justify-content:center;font-size:12px;color:var(--mut);margin-top:5px;flex-wrap:wrap}
+.leg i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-left:5px}
+.calc{font-family:Consolas,"Cambria Math",monospace;font-size:12.5px;direction:ltr;text-align:left;color:#fff;background:#0a0f1c;border:1px solid var(--line);border-radius:8px;padding:8px 10px;line-height:1.75}
+.calc .k{color:var(--yel)}
+.hud{position:absolute;z-index:8;pointer-events:none;transform:translate(-50%,-100%);font-family:Consolas,"Cambria Math",monospace;font-size:12.5px;direction:ltr;white-space:nowrap;color:#fff;background:rgba(8,12,24,.82);border:1px solid #3a4a6e;border-radius:8px;padding:3px 8px;box-shadow:0 0 14px rgba(108,184,255,.25)}
+body:not(.adv) .hud,body:not(.fx) .hud,body:not(.fx) .fx-only{display:none!important}
+.views{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:4px;background:rgba(10,15,28,.86);border:1px solid var(--line);border-radius:30px;padding:4px;z-index:10}
+.views button{background:none;border:none;color:var(--mut);font:inherit;font-size:13px;padding:6px 16px;border-radius:30px;cursor:pointer;white-space:nowrap}
+.views button.on{background:#1a2b4a;color:#fff}
+.views button.fx{font-family:"Cambria Math",serif;font-style:italic}
+.views button.fx.on{background:#3a2a0b;color:var(--yel)}
+body:not(.adv) .adv-only{display:none!important}
+body.adv .basic-only{display:none!important}
+body.drop .prism-only{display:none!important}
+body:not(.drop) .drop-only{display:none!important}
+body.white .single-only{display:none!important}
+body:not(.single) .ray-only{display:none!important}
+.morebtn{position:absolute;bottom:14px;left:14px;z-index:12;display:flex;align-items:center;gap:10px;font:inherit;font-size:18px;font-weight:700;color:#fff;border:none;border-radius:40px;padding:15px 28px;cursor:pointer;background:linear-gradient(135deg,#7b2ff7,#e0218a);box-shadow:0 8px 30px rgba(123,47,247,.45);animation:pulse 2.2s infinite}
+.morebtn .ic{font-size:22px}
+.morebtn:hover{filter:brightness(1.15)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(224,33,138,.55),0 8px 30px rgba(123,47,247,.45)}70%{box-shadow:0 0 0 16px rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}100%{box-shadow:0 0 0 0 rgba(224,33,138,0),0 8px 30px rgba(123,47,247,.45)}}
+.lessbtn{position:absolute;bottom:14px;left:14px;z-index:12;font:inherit;font-size:14px;color:#cdd8ea;background:rgba(10,15,28,.88);border:1px solid #3a4a6e;border-radius:30px;padding:9px 18px;cursor:pointer}
+.lessbtn:hover{border-color:var(--acc);color:#fff}
+
+/* ===== ניסויים ===== */
+#exps{padding-top:10px;padding-bottom:60px;line-height:1.75}
+.exps{list-style:none;margin:0;padding:0;counter-reset:ex}
+.exp{counter-increment:ex;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
+.exp .top{display:flex;align-items:center;gap:14px}
+.exp .top::before{content:counter(ex);flex:0 0 30px;height:30px;border-radius:50%;background:#152544;color:var(--acc);font-weight:700;display:grid;place-items:center}
+.exp .task{flex:1;font-size:16px}
+.exp .tag{display:inline-block;font-size:12px;color:#e9b8ff;border:1px solid #5b2d7a;background:#1d0f2a;border-radius:10px;padding:0 8px;margin-left:6px}
+.xbtn{flex:0 0 auto;background:#1a1608;border:1px solid #6b5520;color:var(--yel);border-radius:20px;padding:5px 16px;font:inherit;font-size:14px;cursor:pointer}
+.xbtn:hover{filter:brightness(1.25)}
+.exp .ans{display:none;margin:12px 44px 2px 0;padding:10px 14px;border-right:3px solid var(--yel);background:rgba(255,212,121,.06);border-radius:8px;font-size:15px;color:#d6dcea;line-height:1.7}
+.exp.open .ans{display:block}
+.exp.open .xbtn{background:#2b230b}
+@media (max-width:900px){
+  #intro h1{font-size:26px}
+  .lab{height:auto;min-height:0;overflow:visible}
+  .view{position:relative;height:62vh}
+  .pnl{position:static;width:auto!important;margin:12px;max-height:none}
+  .views{position:static;transform:none;width:max-content;max-width:calc(100% - 24px);flex-wrap:wrap;margin:0 auto 12px}
+  .morebtn,.lessbtn{position:static;margin:12px auto 18px;animation:none}
+}
+
+/* ===== הדגמה אוטומטית של ניסוי ===== */
+.pbtn{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:#0f2a1c;border:1px solid #2f7a52;color:#7dffb4;border-radius:20px;padding:5px 14px;font:inherit;font-size:14px;cursor:pointer}
+.pbtn:hover{filter:brightness(1.25)}
+.pbtn svg{width:12px;height:12px}
+#demoBox{display:none;position:relative;height:190px;border-top:1px solid var(--line);background:linear-gradient(180deg,#0a1322,#070b16);padding:14px 20px;overflow-y:auto;line-height:1.6}
+body.demo #demoBox{display:block}
+body.demo .lab{height:calc(100vh - 30px - 190px);min-height:420px}
+#demoBox .dh{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+#demoBox .dn{flex:0 0 28px;height:28px;border-radius:50%;background:#123a27;color:#7dffb4;font-weight:700;display:grid;place-items:center}
+#demoBox .dt{flex:1;font-size:15.5px;font-weight:600}
+#demoBox .say{font-size:14px;color:#7dffb4;min-height:22px;margin-bottom:6px}
+#demoBox .say::before{content:"▶ ";opacity:.7}
+#demoBox .dx{font-size:15px;color:#d6dcea;line-height:1.7;border-right:3px solid #ffd479;background:rgba(255,212,121,.06);border-radius:8px;padding:8px 12px}
+#demoBox .db{background:#0a0f1c;border:1px solid var(--line);color:#cdd8ea;border-radius:10px;padding:5px 12px;font:inherit;font-size:13.5px;cursor:pointer}
+#demoBox .db:hover{border-color:var(--acc);color:#fff}
+#demoCursor{position:fixed;left:0;top:0;z-index:300;pointer-events:none;opacity:0;transition:opacity .3s}
+#demoCursor.on{opacity:1}
+#demoCursor svg{width:30px;height:30px;filter:drop-shadow(0 0 6px rgba(125,255,180,.9)) drop-shadow(0 2px 3px rgba(0,0,0,.6));transition:transform .12s}
+#demoCursor.down svg{transform:scale(.82)}
+.demoRipple{position:fixed;z-index:299;pointer-events:none;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;border:2px solid #7dffb4;animation:demoRip .55s ease-out forwards}
+@keyframes demoRip{from{transform:scale(.4);opacity:1}to{transform:scale(3.4);opacity:0}}
+</style>
+</head>
+<body class="white">
+<div id="topbar"><div id="bsd">בס״ד</div><div id="copyr">כל הזכויות שמורות לדוד יצחקי</div></div>
+
+<!-- ===================== פתיח ===================== -->
+<section id="intro" class="wrap">
+  <h1>איך אור לבן הופך <span>לקשת של צבעים</span>?</h1>
+  <p class="lead">מנסרת זכוכית וטיפת גשם עושות בדיוק את אותו הדבר: הן שוברות כל צבע בזווית קצת אחרת. במעבדה נעקוב אחרי הקרניים ונגלה למה הקשת בשמיים מופיעה תמיד באותה זווית, בערך 42°.</p>
+
+  <h2 class="sec">הבעיה</h2>
+  <div class="prob">
+    <div>
+      <p>אור לבן הוא תערובת של כל אורכי הגל, מסגול (<bdi dir="ltr">400 nm</bdi>) ועד אדום (<bdi dir="ltr">700 nm</bdi>). כשאור עובר מאוויר לזכוכית או למים הוא נשבר, ומידת השבירה נקבעת לפי <b>מקדם השבירה n</b>. בגרף רואים את n שנמדד לזכוכית ולמים בכל אורך גל.</p>
+      <p>שימו לב כמה ההבדל קטן: בין סגול לאדום n משתנה רק בכ-1%. ובכל זאת, בפריזמה הוא מספיק כדי לפרוש את הלבן למניפת צבעים. ובטיפת גשם, שבה כל קרן שמש נכנסת בנקודה אחרת ויוצאת בזווית אחרת, נוצרת קשת חדה ומסודרת, ולא מריחה של צבעים.</p>
+      <p><b>המשימה:</b> לעקוב אחרי הקרניים דרך פריזמה ודרך טיפה, ולגלות: (1) למה כל צבע יוצא בזווית אחרת, ו-(2) למה האור של הטיפה "מתרכז" דווקא בזווית של בערך 42°.</p>
+    </div>
+    <svg id="probSvg" viewBox="0 0 340 250" aria-label="מקדם השבירה כתלות באורך הגל, לזכוכית ולמים"></svg>
+  </div>
+
+  <h2 class="sec">איך לקרוא את המעבדה</h2>
+  <div class="read">
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M2 12H22" stroke="#fff" stroke-width="2.4"/><path d="M2 12H22" stroke="#fff" stroke-width="7" opacity=".2"/></svg></div><div><h3>קרן זוהרת = מסלול האור</h3><p>הצבע של הקרן הוא אורך הגל שלה. קרן לבנה היא כל הצבעים יחד.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 3L21 20H3Z" fill="rgba(159,214,255,.15)" stroke="#9fd6ff" stroke-width="1.4"/></svg></div><div><h3>משולש שקוף = פריזמה</h3><p>זווית הראש שלה היא α. בכל דופן האור נשבר.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="rgba(108,184,255,.12)" stroke="#9fd6ff" stroke-width="1.4"/></svg></div><div><h3>עיגול = חתך של טיפה</h3><p>האור נכנס, מוחזר מהדופן האחורית, ויוצא בחזרה לכיוון השמש.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M3 18L21 6" stroke="#93a3bf" stroke-width="1.5" stroke-dasharray="3 3"/><path d="M3 18L21 15" stroke="#fff" stroke-width="2"/><path d="M15 10A8 8 0 0 1 16 16" fill="none" stroke="#ffd479" stroke-width="1.5"/></svg></div><div><h3>קו מקווקו = כיוון בלי שבירה</h3><p>הזווית בינו לבין הקרן היוצאת היא ההסחה δ (בפריזמה), או זווית הקשת φ (בטיפה).</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="18" fill="#1a2234" stroke="#556"/><circle cx="12" cy="9" r="2" fill="#ff4d4d"/><circle cx="12" cy="13" r="2" fill="#3ddc84"/><circle cx="12" cy="17" r="2" fill="#7a5cff"/></svg></div><div><h3>מסך = איפה הצבעים נוחתים</h3><p>הכתמים על המסך מראים כמה רחוק כל צבע הוסט.</p></div></div>
+    <div class="rd"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="#ffd479" opacity=".25"/><circle cx="12" cy="12" r="3.5" fill="#fff"/></svg></div><div><h3>הבזק בוהק = הקשת</h3><p>בטיפה, הקרן זוהרת חזק כשהיא בזווית שבה הרבה קרניים יוצאות יחד.</p></div></div>
+  </div>
+
+  <h2 class="sec">התאוריה בקצרה</h2>
+  <div class="theory">
+    <div class="th"><div class="n">1</div><h3>חוק סנל</h3><p>כשאור עובר לחומר "צפוף" יותר הוא מאט ומתקרב לאנך. כמה? לפי מקדם השבירה n.</p></div>
+    <div class="th"><div class="n">2</div><h3>נפיצה</h3><p>n תלוי באורך הגל: לסגול n גדול מעט יותר, ולכן הוא נשבר יותר מהאדום. כך הלבן מתפרק.</p></div>
+    <div class="th"><div class="n">3</div><h3>הסחה בפריזמה</h3><p>האור נשבר פעמיים, בכניסה וביציאה, ויוצא מוטה בזווית <b>δ</b>. יש זווית כניסה שבה ההסחה הכי קטנה.</p></div>
+    <div class="th"><div class="n">4</div><h3>מסלול בטיפה</h3><p>שבירה בכניסה, החזרה מהדופן האחורית, ושבירה ביציאה. הזווית <b>φ</b> תלויה במרחק <b>β</b> של הקרן ממרכז הטיפה.</p></div>
+    <div class="th"><div class="n">5</div><h3>הקשת היא שיא</h3><p>ל-φ(β) יש מקסימום. ליד המקסימום הרבה קרניים יוצאות כמעט באותה זווית, ושם האור מתרכז: זו הקשת.</p></div>
+  </div>
+  <div class="law"><span class="eq">n₁ sin θ₁ = n₂ sin θ₂</span><span class="eq">φ(β) = 4·arcsin(β/n) − 2·arcsin(β)</span><small>חוק סנל בכל דופן, וזווית היציאה מהטיפה כתלות בנקודת הפגיעה (β = מרחק ממרכז הטיפה, ביחידות של הרדיוס)</small></div>
+  <a class="cta" href="#lab">למעבדה ↓</a>
+</section>
+
+<!-- ===================== מעבדה ===================== -->
+<section class="lab" id="lab">
+  <div class="view" id="view"></div>
+  <div class="hud" id="hud1"></div><div class="hud" id="hud2"></div>
+  <div class="pnl r">
+    <div class="c-row"><div class="seg big" id="modeSeg"><button data-m="prism" class="on">🔺 פריזמה</button><button data-m="drop">💧 טיפת מים</button></div></div>
+    <div class="c-row"><div class="seg" id="lightSeg"><button data-l="white" class="on">☀ אור לבן</button><button data-l="single">🔦 צבע אחד</button></div></div>
+    <div class="c-row single-only"><div class="c-lbl"><span>אורך גל</span><span class="c-val" id="lamV"></span></div><input type="range" class="spec" id="sLam" min="400" max="700" step="1" value="550"></div>
+
+    <div class="prism-only">
+      <div class="c-row"><div class="c-lbl"><span>זווית פגיעה <bdi dir="ltr">θ₁</bdi></span><span class="c-val" id="th1V"></span></div><input type="range" id="sTh1" min="5" max="85" step="0.5" value="50"></div>
+      <div class="c-row"><div class="c-lbl"><span>זווית ראש הפריזמה <bdi dir="ltr">α</bdi></span><span class="c-val" id="alV"></span></div><input type="range" id="sAl" min="25" max="80" step="0.5" value="60"></div>
+    </div>
+    <div class="drop-only">
+      <div class="c-row"><div class="seg" id="raySeg"><button data-r="bundle" class="on">אלומת שמש</button><button data-r="single">קרן בודדת</button></div></div>
+      <div class="c-row ray-only"><div class="c-lbl"><span>פרמטר פגיעה <bdi dir="ltr">β</bdi></span><span class="c-val" id="bV"></span></div><input type="range" id="sB" min="0" max="0.995" step="0.001" value="0.6"></div>
+    </div>
+
+    <div class="sep">
+      <div class="ttl prism-only">זווית הסחה δ</div>
+      <div class="ttl drop-only" id="phiTtl">זווית הקשת φ</div>
+      <div id="meters"></div>
+      <div class="status" id="status"></div>
+    </div>
+
+    <div class="sep adv-only">
+      <div class="c-row prism-only"><div class="c-lbl">חומר הפריזמה</div><select id="matSel"><option value="bk7">זכוכית N-BK7</option><option value="f2">זכוכית צור F2</option><option value="dia">יהלום</option></select></div>
+      <label class="chk drop-only"><label class="sw"><input type="checkbox" id="secChk"><span></span></label>קשת משנית (2 החזרות)</label>
+      <label class="chk drop-only"><label class="sw"><input type="checkbox" id="coneChk"><span></span></label>חרוט הקשת בתלת-ממד</label>
+    </div>
+  </div>
+
+  <div class="pnl l adv-only">
+    <div class="prism-only">
+      <div class="ttl">מקדם שבירה n(λ)</div><canvas class="plot" id="nPlot"></canvas>
+      <div class="sep"><div class="ttl">הסחה δ מול זווית פגיעה θ₁</div><canvas class="plot" id="dPlot"></canvas>
+      <div class="leg"><span><i style="background:#8a6cff"></i>400 nm</span><span><i style="background:#ff4d4d"></i>700 nm</span></div></div>
+    </div>
+    <div class="drop-only">
+      <div class="ttl">זווית הקשת φ מול β</div><canvas class="plot" id="pPlot" style="height:150px"></canvas>
+      <div class="leg"><span><i style="background:#8a6cff"></i>400 nm</span><span><i style="background:#ff4d4d"></i>700 nm</span><span class="sec-leg" style="display:none"><i style="background:#8a6cff;opacity:.5"></i>משנית</span></div>
+    </div>
+    <div class="sep fx-only"><div class="calc" id="calc"></div></div>
+  </div>
+
+  <div class="views" id="views"><button data-view="3d" class="on">תלת-ממד</button><button data-view="cut">חתך</button><button data-view="zoom" class="adv-only">זום לפגיעה</button><button class="fx adv-only on" id="fxBtn">f(x)</button></div>
+  <button id="more" class="morebtn basic-only"><span class="ic">🔬</span>אני רוצה לחקור יותר</button>
+  <button id="less" class="lessbtn adv-only">→ לחזור למעבדה הבסיסית</button>
+</section>
+<!-- מסגרת ההסבר של ההדגמה האוטומטית (מופיעה מתחת למעבדה, לא מעליה) -->
+<section id="demoBox" aria-live="polite">
+  <div class="dh"><div class="dn" id="demoNum">1</div><div class="dt" id="demoTitle"></div>
+    <button class="db" id="demoStop">⏹ עצור</button><button class="db" id="demoAgain">↻ שוב</button><button class="db" id="demoClose">✕ סגור</button></div>
+  <div class="say" id="demoSay"></div>
+  <div class="dx" id="demoText"></div>
+</section>
+<div id="demoCursor"><svg viewBox="0 0 24 24"><path d="M4 2l15 11-6.5 1.2L16.5 22l-3 1.3-3.6-7.6L5 20z" fill="#fff" stroke="#0b1a12" stroke-width="1.2" stroke-linejoin="round"/></svg></div>
+
+<!-- ===================== ניסויים ===================== -->
+<section id="exps" class="wrap">
+  <h2 class="sec">ניסויים לנסות במעבדה</h2>
+  <ol class="exps">
+    <li class="exp"><div class="top"><div class="task">בפריזמה, בחרו "צבע אחד" והזיזו את אורך הגל מ-400 ל-700. הקרן היוצאת מתרוממת: האדום מוסט פחות מהסגול.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">מקדם השבירה של הזכוכית תלוי באורך הגל: ב-N-BK7 הוא בערך <bdi dir="ltr">1.531</bdi> לסגול ו-<bdi dir="ltr">1.513</bdi> לאדום. ככל ש-n גדול יותר, האור נשבר חזק יותר בכל אחת משתי הדפנות, וההסחה δ גדלה. זו <b>נפיצה</b>.</div></li>
+    <li class="exp"><div class="top"><div class="task">עברו ל"אור לבן". הקרן הלבנה נכנסת אחת, מתפצלת למניפה בתוך הזכוכית, ויוצאת כקשת על המסך.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">אור לבן הוא כל הצבעים יחד. בכניסה כל צבע נשבר בזווית קצת אחרת, ולכן כבר בתוך הזכוכית הקרניים נפרדות. ביציאה השבירה השנייה מגדילה את ההפרדה. על המסך סדר הצבעים תמיד זהה: הסגול הכי רחוק מהכיוון המקורי, והאדום הכי קרוב.</div></li>
+    <li class="exp"><div class="top"><div class="task">הזיזו לאט את זווית הפגיעה <bdi dir="ltr">θ₁</bdi>. ההסחה δ קטנה, מגיעה למינימום (בערך 38.8° ב-α = 60°), ואז גדלה שוב.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">ההסחה היא <bdi dir="ltr">δ = θ₁ + θ₄ − α</bdi>. היא הכי קטנה כשהמסלול סימטרי: זווית הכניסה שווה לזווית היציאה, והקרן בתוך הפריזמה מקבילה לבסיס. במצב הזה <bdi dir="ltr">n = sin((α+δ<sub>min</sub>)/2) / sin(α/2)</bdi>, וזו בדיוק השיטה שבה מודדים n במעבדה.</div></li>
+    <li class="exp"><div class="top"><div class="task">הגדילו את α ל-75° והקטינו את <bdi dir="ltr">θ₁</bdi> ל-20°. האור כבר לא יוצא מהדופן השנייה. הוא מוחזר פנימה.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">בדופן היציאה האור עובר מזכוכית לאוויר. אם זווית הפגיעה מבפנים <bdi dir="ltr">θ₃ = α − θ₂</bdi> גדולה מהזווית הקריטית (<bdi dir="ltr">arcsin(1/n) ≈ 41°</bdi> בזכוכית), אין זווית יציאה שמקיימת את חוק סנל, וכל האור מוחזר. זו <b>החזרה פנימית מלאה</b>, אותו עיקרון שעליו עובדים סיבים אופטיים.</div></li>
+    <li class="exp"><div class="top"><div class="task">עברו ל"טיפת מים". הקרניים היוצאות לא מתפזרות באופן שווה: רובן מצטופפות סביב זווית אחת.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">כל קרן שמש פוגעת בטיפה במרחק β אחר מהמרכז, ויוצאת בזווית φ אחרת. אבל ל-φ(β) יש מקסימום, ובאזור המקסימום שינוי גדול ב-β כמעט לא משנה את φ. לכן "ערימה" של קרניים יוצאות יחד בזווית הזו, והאור שם חזק במיוחד. במבט תלת-ממדי הקרניים האלה יוצרות חרוט סביב הכיוון שמנוגד לשמש, ולכן הקשת היא קשת של עיגול.</div></li>
+    <li class="exp"><div class="top"><div class="task">בחרו "קרן בודדת" והזיזו את β מ-0 עד 1. הזווית φ עולה, נעצרת בערך ב-42°, ויורדת. בשיא הקרן מבזיקה.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">הזווית היא <bdi dir="ltr">φ = 4r − 2i</bdi>, כאשר <bdi dir="ltr">sin i = β</bdi> ו-<bdi dir="ltr">sin r = β/n</bdi>. המקסימום מתקבל כש-<bdi dir="ltr">dφ/dβ = 0</bdi>, כלומר <bdi dir="ltr">cos² i = (n² − 1)/3</bdi>. למים זה קורה ב-<bdi dir="ltr">β ≈ 0.86</bdi>, כלומר קרן שפוגעת קרוב לשפת הטיפה. ההבזק מראה את ה"ריכוז": כמה קרניים יוצאות באותה זווית.</div></li>
+    <li class="exp"><div class="top"><div class="task">בקרן בודדת עם אור לבן, השוו את הזווית של האדום ושל הסגול בשיא: בערך 42.6° מול 40.7°.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">לסגול n גדול יותר, ולכן השיא שלו נמוך יותר. כשמסתכלים על קשת בשמיים, הטיפות שנמצאות 42.6° מהנקודה שמנוגדת לשמש שולחות לעין אדום, ואלו שנמצאות ב-40.7° שולחות סגול. לכן <b>האדום בחוץ והסגול בפנים</b>, והקשת כולה ברוחב של כ-2°.</div></li>
+    <li class="exp"><div class="top"><div class="task"><span class="tag">מצב מורחב</span>הדליקו "קשת משנית". הקרן מוחזרת פעמיים, ויוצאת בכ-50°–53°, עם הצבעים בסדר הפוך.</div><button class="xbtn">הסבר</button></div>
+      <div class="ans">עם שתי החזרות הזווית היא <bdi dir="ltr">φ = 180° + 2i − 6r</bdi>, ולה יש <b>מינימום</b> ולא מקסימום (<bdi dir="ltr">cos² i = (n² − 1)/8</bdi>). לכן הקשת המשנית נמצאת מחוץ לראשית, היא חלשה יותר (כל החזרה מאבדת אור), וסדר הצבעים בה הפוך: אדום בפנים. בין 42° ל-50° אף טיפה לא שולחת אור לעין, ולכן השמיים שם כהים יותר. זה "הפס של אלכסנדר".</div></li>
+  </ol>
+</section>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const D2R = Math.PI/180;
+
+/* ======================================================================
+   פיזיקה
+   ====================================================================== */
+const MAT = {
+  bk7:{B:[1.03961212, 0.231792344, 1.01046945], C:[0.00600069867, 0.0200179144, 103.560653]},
+  f2: {B:[1.34533359, 0.209073176, 0.937357162], C:[0.00997743871, 0.0470450767, 111.886764]},
+  dia:{B:[0.3306, 4.3356, 0], C:[0.030625, 0.011236, 1]}
+};
+function nGlass(m, l){ const x = (l/1000)**2, M = MAT[m]; let s = 1; for (let i = 0; i < 3; i++) s += M.B[i]*x/(x - M.C[i]); return Math.sqrt(s); }
+const nWater = l => 1.31279 + 15.762/l - 4382/(l*l) + 1.1455e6/(l*l*l);
+function wlColor(l){
+  let r = 0, g = 0, b = 0;
+  if (l < 440){ r = -(l - 440)/60; b = 1; } else if (l < 490){ g = (l - 440)/50; b = 1; } else if (l < 510){ g = 1; b = -(l - 510)/20; }
+  else if (l < 580){ r = (l - 510)/70; g = 1; } else if (l < 645){ r = 1; g = -(l - 645)/65; } else r = 1;
+  const f = l < 420 ? 0.55 + 0.45*(l - 400)/20 : l > 680 ? 0.75 + 0.25*(700 - l)/20 : 1;
+  return new THREE.Color(r*f, g*f, b*f);
+}
+// וקטורים דו-ממדיים
+const add = (a, b) => [a[0] + b[0], a[1] + b[1]], sub = (a, b) => [a[0] - b[0], a[1] - b[1]], mul = (a, k) => [a[0]*k, a[1]*k], dot = (a, b) => a[0]*b[0] + a[1]*b[1];
+const nrmz = a => { const L = Math.hypot(a[0], a[1]); return [a[0]/L, a[1]/L]; };
+function refract(d, n, eta){            // n: נורמל יחידה שפונה לצד הקרן הפוגעת
+  const ci = -dot(d, n), k = 1 - eta*eta*(1 - ci*ci); if (k < 0) return null;
+  return nrmz(add(mul(d, eta), mul(n, eta*ci - Math.sqrt(k))));
+}
+const reflect = (d, n) => sub(d, mul(n, 2*dot(d, n)));
+const acosD = x => Math.acos(Math.max(-1, Math.min(1, x)))/D2R;
+
+/* פריזמה: מישור אופקי, (u,v) → (x, H, −z) */
+const S = {mode:'prism', white:true, lam:550, th1:50, alpha:60, mat:'bk7', ray:'bundle', beta:0.6, sec:false, cone:false, fx:true, view:'3d'};
+const ADV_DEF = {mat:'bk7', sec:false, cone:false, fx:true};
+let adv = false;
+const PS = 4.6, XS = 8.5, SV0 = -9, SV1 = 4;    // צלע הפריזמה, מיקום המסך וטווחו
+function prismVerts(){ const a = S.alpha*D2R/2, h = PS*Math.cos(a), w = PS*Math.sin(a), ay = 2/3*h; return [[0, ay], [-w, ay - h], [w, ay - h]]; }
+function prismEdges(V){ return [[V[0], V[1]], [V[1], V[2]], [V[2], V[0]]].map(([p, q]) => { const e = sub(q, p), L = Math.hypot(e[0], e[1]); return {p, q, n:[e[1]/L, -e[0]/L]}; }); }
+function hitSeg(p, d, a, b){
+  const e = sub(b, a), den = d[0]*e[1] - d[1]*e[0]; if (Math.abs(den) < 1e-12) return null;
+  const ap = sub(a, p), t = (ap[0]*e[1] - ap[1]*e[0])/den, s = (ap[0]*d[1] - ap[1]*d[0])/den;
+  return t > 1e-6 && s >= -1e-9 && s <= 1 + 1e-9 ? t : null;
+}
+function entryGeom(){ const V = prismVerts(), a = S.alpha*D2R/2, P = add(V[0], mul(sub(V[1], V[0]), 0.55)); return {V, P, dIn:[Math.cos(-a + S.th1*D2R), Math.sin(-a + S.th1*D2R)]}; }
+function tracePrism(n){
+  const {V, P, dIn} = entryGeom(), E = prismEdges(V);
+  const pts = [P]; let d = refract(dIn, E[0].n, 1/n), p = P, cur = 0, tir = false, out = null, th3 = null, th4 = null, exitP = null, screen = false;
+  const th2 = acosD(dot(d, mul(E[0].n, -1)));
+  for (let k = 0; k < 6; k++){
+    let best = null; E.forEach((e, j) => { if (j === cur) return; const t = hitSeg(p, d, e.p, e.q); if (t != null && (!best || t < best.t)) best = {t, j}; });
+    if (!best) break;
+    const q = add(p, mul(d, best.t)), e = E[best.j]; pts.push(q);
+    const r = refract(d, mul(e.n, -1), n);
+    if (!r){ tir = true; d = reflect(d, e.n); p = q; cur = best.j; continue; }
+    th3 = acosD(dot(d, e.n)); th4 = acosD(dot(r, e.n)); out = r; exitP = q; p = q; break;
+  }
+  if (out){
+    let L = 12; if (out[0] > 1e-6){ const t = (XS - p[0])/out[0], v = p[1] + out[1]*t; if (t > 0 && v > SV0 && v < SV1){ L = t; screen = true; } }
+    pts.push(add(p, mul(out, L)));
+  }
+  return {pts, th2, th3, th4, tir, out, exitP, screen, P, dIn, dev: out ? acosD(dot(dIn, out)) : null};
+}
+function devAnalytic(th1, n){             // δ(θ₁) למסלול הרגיל
+  const t2 = Math.asin(Math.sin(th1*D2R)/n), t3 = S.alpha*D2R - t2, s4 = n*Math.sin(t3);
+  if (Math.abs(s4) > 1) return null; return th1 + Math.asin(s4)/D2R - S.alpha;
+}
+
+/* טיפה: מישור אנכי, (u,v) → (x, H2+v, 0) */
+const RD = 3, H = 1.4, H2 = 7.4;
+function traceDrop(b, n, k){
+  const v = b*RD, u = -Math.sqrt(RD*RD - v*v), E0 = [u, v], pts = [[-13, v], E0];
+  let d = refract([1, 0], [u/RD, v/RD], 1/n), p = E0; const refl = [];
+  for (let j = 0; j <= k; j++){
+    const q = add(p, mul(d, -2*dot(p, d))), nq = [q[0]/RD, q[1]/RD]; pts.push(q);
+    if (j < k){ d = reflect(d, nq); p = q; refl.push(q); }
+    else { const o = refract(d, mul(nq, -1), n); if (!o) return null; pts.push(add(q, mul(o, 7))); return {pts, out:o, exit:q, entry:E0, refl, phi: acosD(-o[0])}; }
+  }
+}
+function phiOf(b, n, k){ const i = Math.asin(b), r = Math.asin(b/n); return k === 1 ? (4*r - 2*i)/D2R : 180 + (2*i - 6*r)/D2R; }
+function phiStar(n, k){ const c2 = (n*n - 1)/(k*k + 2*k), b = Math.sqrt(1 - c2); return {b, phi: phiOf(b, n, k)}; }
+function glowOf(b, n, k){ const h = 1e-3, b0 = Math.min(0.999 - h, Math.max(h, b)); const dp = (phiOf(b0 + h, n, k) - phiOf(b0 - h, n, k))/(2*h); return 1/(1 + Math.abs(dp)/9); }
+
+/* ======================================================================
+   סצנה
+   ====================================================================== */
+const view = $('view');
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+view.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#030409');
+const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 400);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxDistance = 60;
+let camGoal = null; controls.addEventListener('start', () => camGoal = null);
+scene.add(new THREE.AmbientLight(0xffffff, 0.35)); const dl = new THREE.DirectionalLight(0xffffff, 0.7); dl.position.set(5, 12, 8); scene.add(dl);
+
+function glowTex(){ const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); const gr = g.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(.2, 'rgba(255,255,255,.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(c); }
+const GLOW = glowTex();
+function glowSprite(col, s, op){ const sp = new THREE.Sprite(new THREE.SpriteMaterial({map:GLOW, color:col, transparent:true, opacity:op, depthWrite:false, blending:THREE.AdditiveBlending})); sp.scale.set(s, s, 1); return sp; }
+function textSprite(txt, o){
+  o = Object.assign({size:0.45, color:'#aebbd3'}, o);
+  const c = document.createElement('canvas'), ctx = c.getContext('2d'), fs = 56, font = '500 ' + fs + 'px "Segoe UI",Arial,sans-serif';
+  ctx.font = font; const w = Math.ceil(ctx.measureText(txt).width) + 20, h = Math.ceil(fs*1.4);
+  c.width = w; c.height = h; ctx.font = font; ctx.direction = 'rtl'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = o.color; ctx.fillText(txt, w/2, h/2 + 2);
+  const t = new THREE.CanvasTexture(c); t.minFilter = THREE.LinearFilter;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({map:t, transparent:true, depthWrite:false})); s.scale.set(o.size*w/h, o.size, 1); return s;
+}
+
+/* שולחן אופטי */
+const table = new THREE.Mesh(new THREE.BoxGeometry(32, 0.4, 22), new THREE.MeshStandardMaterial({color:'#0d1119', roughness:0.6, metalness:0.4}));
+table.position.y = -0.2; scene.add(table);
+(function holes(){ const g = []; for (let x = -15; x <= 15; x += 1.5) for (let z = -10; z <= 10; z += 1.5) g.push(new THREE.Vector3(x, 0.01, z)); const geo = new THREE.BufferGeometry().setFromPoints(g); scene.add(new THREE.Points(geo, new THREE.PointsMaterial({color:'#1b2333', size:0.12}))); })();
+
+/* קבוצות לפי מצב */
+const prismG = new THREE.Group(), dropG = new THREE.Group(); scene.add(prismG, dropG);
+const glassMat = new THREE.MeshPhongMaterial({color:'#a8dcff', transparent:true, opacity:0.13, shininess:120, side:THREE.DoubleSide, depthWrite:false});
+const prismMesh = new THREE.Mesh(new THREE.BufferGeometry(), glassMat), prismEdgesL = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({color:'#7fc8ff', transparent:true, opacity:0.75}));
+prismG.add(prismMesh, prismEdgesL);
+function buildPrism(){
+  const V = prismVerts(), sh = new THREE.Shape(); sh.moveTo(V[0][0], V[0][1]); sh.lineTo(V[1][0], V[1][1]); sh.lineTo(V[2][0], V[2][1]); sh.closePath();
+  const g = new THREE.ExtrudeGeometry(sh, {depth:3, bevelEnabled:false}); g.rotateX(-Math.PI/2);
+  prismMesh.geometry.dispose(); prismMesh.geometry = g;
+  prismEdgesL.geometry.dispose(); prismEdgesL.geometry = new THREE.EdgesGeometry(g);
+}
+const laserBox = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.7, 0.7), new THREE.MeshStandardMaterial({color:'#2a3142', metalness:0.7, roughness:0.35}));
+const laserGlow = glowSprite('#ffffff', 1.2, 0.9); prismG.add(laserBox, laserGlow);
+const screenM = new THREE.Mesh(new THREE.PlaneGeometry(SV1 - SV0, 3.4), new THREE.MeshStandardMaterial({color:'#2a3142', emissive:'#141925', roughness:0.95, side:THREE.DoubleSide}));
+screenM.rotation.y = -Math.PI/2; screenM.position.set(XS + 0.02, 1.7, -(SV0 + SV1)/2); prismG.add(screenM);
+const lblLaser = textSprite('לייזר', {size:0.42}), lblPrism = textSprite('פריזמה', {size:0.42}), lblScreen = textSprite('מסך', {size:0.42});
+lblScreen.position.set(XS, 3.9, -(SV0 + SV1)/2); prismG.add(lblLaser, lblPrism, lblScreen);
+const lblDelta = textSprite('δ', {size:0.6, color:'#ffd479'}); prismG.add(lblDelta);
+
+const drop = new THREE.Mesh(new THREE.SphereGeometry(RD, 64, 48), new THREE.MeshPhongMaterial({color:'#8fd0ff', transparent:true, opacity:0.08, shininess:140, depthWrite:false}));
+drop.position.set(0, H2, 0); dropG.add(drop);
+const cutDisk = new THREE.Mesh(new THREE.CircleGeometry(RD, 64), new THREE.MeshBasicMaterial({color:'#6cb8ff', transparent:true, opacity:0.07, side:THREE.DoubleSide, depthWrite:false}));
+cutDisk.position.set(0, H2, 0); dropG.add(cutDisk);
+const ring = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(Array.from({length:96}, (_, i) => new THREE.Vector3(RD*Math.cos(i/96*2*Math.PI), H2 + RD*Math.sin(i/96*2*Math.PI), 0))), new THREE.LineBasicMaterial({color:'#7fc8ff', transparent:true, opacity:0.7}));
+dropG.add(ring);
+const sun = glowSprite('#fff2c0', 5, 0.95); sun.position.set(-16, H2, 0); dropG.add(sun);
+const lblSun = textSprite('שמש', {size:0.5, color:'#ffe9a8'}); lblSun.position.set(-16, H2 + 2.4, 0); dropG.add(lblSun);
+const lblDrop = textSprite('טיפת מים', {size:0.45}); lblDrop.position.set(0, H2 + RD + 0.7, 0); dropG.add(lblDrop);
+const lblPhi = textSprite('φ', {size:0.6, color:'#ffd479'}); dropG.add(lblPhi);
+const flash = glowSprite('#ffffff', 2.5, 0); dropG.add(flash);
+const cones = [400, 700].map(l => {
+  const m = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({color:wlColor(l), transparent:true, opacity:0.07, side:THREE.DoubleSide, depthWrite:false}));
+  m.position.set(0, H2, 0); dropG.add(m); return m;
+});
+function buildCones(){
+  const k = S.sec ? 2 : 1, L = 16;
+  cones.forEach((m, j) => { const ph = phiStar(nWater(j ? 700 : 400), k).phi*D2R; const g = new THREE.ConeGeometry(L*Math.tan(ph), L, 72, 1, true); g.translate(0, -L/2, 0); g.rotateZ(-Math.PI/2); m.geometry.dispose(); m.geometry = g; });
+}
+
+/* קרניים: מאגר גלילים זוהרים + קווים */
+const cylG = new THREE.CylinderGeometry(1, 1, 1, 10, 1, true); cylG.translate(0, 0.5, 0);
+const beamsG = new THREE.Group(); scene.add(beamsG); const pool = []; let used = 0;
+const UP = new THREE.Vector3(0, 1, 0);
+function beam(a, b, col, w, op){
+  let o = pool[used];
+  if (!o){
+    o = {core:new THREE.Mesh(cylG, new THREE.MeshBasicMaterial({transparent:true, depthWrite:false, blending:THREE.AdditiveBlending})),
+         halo:new THREE.Mesh(cylG, new THREE.MeshBasicMaterial({transparent:true, depthWrite:false, blending:THREE.AdditiveBlending}))};
+    beamsG.add(o.core, o.halo); pool.push(o);
+  }
+  used++;
+  const d = b.clone().sub(a), L = d.length(); if (L < 1e-5){ o.core.visible = o.halo.visible = false; return; }
+  d.divideScalar(L);
+  [o.core, o.halo].forEach((m, j) => { m.visible = true; m.position.copy(a); m.quaternion.setFromUnitVectors(UP, d); const r = j ? w*3.2 : w; m.scale.set(r, L, r); m.material.color.copy(col); m.material.opacity = j ? op*0.22 : op; });
+}
+const lineGeo = new THREE.BufferGeometry(), LMAX = 60000;
+lineGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(LMAX*3), 3));
+lineGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(LMAX*3), 3));
+const lines = new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({vertexColors:true, transparent:true, opacity:0.9, blending:THREE.AdditiveBlending, depthWrite:false}));
+lines.frustumCulled = false; scene.add(lines); let lUsed = 0;
+function seg(a, b, c){ if (lUsed >= LMAX - 2) return; const P = lineGeo.attributes.position.array, C = lineGeo.attributes.color.array; P.set([a.x, a.y, a.z, b.x, b.y, b.z], lUsed*3); C.set([c.r, c.g, c.b, c.r, c.g, c.b], lUsed*3); lUsed += 2; }
+const dashMat = new THREE.LineDashedMaterial({color:'#93a3bf', dashSize:0.3, gapSize:0.22, transparent:true, opacity:0.8});
+const dashLine = new THREE.Line(new THREE.BufferGeometry(), dashMat); scene.add(dashLine);
+function setDash(a, b){ dashLine.geometry.dispose(); dashLine.geometry = new THREE.BufferGeometry().setFromPoints([a, b]); dashLine.computeLineDistances(); dashLine.visible = true; }
+const spots = []; const spotsG = new THREE.Group(); prismG.add(spotsG);
+function spot(i, p, col){ let s = spots[i]; if (!s){ s = glowSprite('#ffffff', 0.9, 0.9); spotsG.add(s); spots.push(s); } s.visible = true; s.position.copy(p); s.material.color.copy(col); }
+
+const P3 = p => new THREE.Vector3(p[0], H, -p[1]);           // פריזמה
+const D3 = (p, psi) => psi ? new THREE.Vector3(p[0], H2 + p[1]*Math.cos(psi), p[1]*Math.sin(psi)) : new THREE.Vector3(p[0], H2 + p[1], 0);   // טיפה
+
+/* ======================================================================
+   בנייה מחדש של הקרניים
+   ====================================================================== */
+const WL_P = Array.from({length:16}, (_, i) => 400 + i*20), WL_D = [400, 450, 490, 530, 580, 630, 700];
+const WHITE = new THREE.Color(1, 1, 1);
+let info = {}, dirty = true;
+const nPrism = l => nGlass(S.mat, l);
+function rebuild(){
+  used = 0; lUsed = 0; dashLine.visible = false; spots.forEach(s => s.visible = false); flash.material.opacity = 0;
+  if (S.mode === 'prism') buildPrismRays(); else buildDropRays();
+  for (let i = used; i < pool.length; i++) pool[i].core.visible = pool[i].halo.visible = false;
+  lineGeo.setDrawRange(0, lUsed); lineGeo.attributes.position.needsUpdate = lineGeo.attributes.color.needsUpdate = true;
+  updPanel();
+}
+function buildPrismRays(){
+  const wls = S.white ? WL_P : [S.lam], {P, dIn} = entryGeom(), src = add(P, mul(dIn, -7));
+  // לייזר
+  const s3 = P3(src), dir3 = P3(add(src, dIn)).sub(s3).normalize();
+  laserBox.position.copy(s3).add(dir3.clone().multiplyScalar(-0.9)); laserBox.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), dir3);
+  laserGlow.position.copy(s3); laserGlow.material.color.copy(S.white ? WHITE : wlColor(S.lam));
+  lblLaser.position.copy(s3).add(dir3.clone().multiplyScalar(-0.9)).add(new THREE.Vector3(0, 0.9, 0));
+  lblPrism.position.set(0, 3.7, -prismVerts()[0][1] + 0.3);
+  beam(s3, P3(P), S.white ? WHITE : wlColor(S.lam), 0.05, 1);
+  const res = {};
+  wls.forEach((l, j) => {
+    const n = nPrism(l), t = tracePrism(n), col = wlColor(l), w = S.white ? 0.03 : 0.05, op = S.white ? 0.75 : 1;
+    for (let i = 0; i + 1 < t.pts.length; i++) beam(P3(t.pts[i]), P3(t.pts[i + 1]), col, w, op);
+    if (t.screen) spot(j, P3(t.pts[t.pts.length - 1]).add(new THREE.Vector3(-0.05, 0, 0)), col);
+    res[l] = t;
+  });
+  // δ: המשך מקווקו של הקרן הנכנסת
+  setDash(P3(P), P3(add(P, mul(dIn, 7))));
+  lblDelta.position.copy(P3(add(P, mul(dIn, 5.5)))).add(new THREE.Vector3(0.3, 0.5, 0.6));
+  info = {res, wls};
+}
+function buildDropRays(){
+  const k = S.sec ? 2 : 1, wls = S.white ? WL_D : [S.lam];
+  const res = {};
+  if (S.ray === 'bundle'){
+    const bs = [], stp = S.cone ? 0.05 : 0.025; for (let b = -0.975; b <= 0.976; b += stp) bs.push(b);
+    const psis = S.cone ? Array.from({length:12}, (_, i) => i*Math.PI/12) : [0];
+    psis.forEach(psi => bs.forEach(b => {
+      if (psi && b < 0) return;
+      const inc = S.white ? WHITE.clone().multiplyScalar(0.28) : wlColor(S.lam).multiplyScalar(0.35);
+      wls.forEach((l, j) => {
+        const t = traceDrop(b, nWater(l), k); if (!t) return;
+        const c = wlColor(l).multiplyScalar((S.white ? 0.42 : 0.6)*(S.cone ? 0.45 : 1));
+        if (j === 0 && !psi) seg(D3(t.pts[0], psi), D3(t.pts[1], psi), inc);
+        for (let i = 1; i + 1 < t.pts.length; i++) seg(D3(t.pts[i], psi), D3(t.pts[i + 1], psi), c);
+      });
+    }));
+    wls.forEach(l => res[l] = {star: phiStar(nWater(l), k)});
+  } else {
+    let g = 0, exit = null;
+    wls.forEach((l, j) => {
+      const n = nWater(l), t = traceDrop(S.beta, n, k); if (!t) return;
+      const gl = glowOf(S.beta, n, k); g = Math.max(g, gl);
+      const col = wlColor(l), w = (S.white ? 0.03 : 0.05)*(0.8 + 1.2*gl), op = 0.35 + 0.65*gl;
+      if (j === 0) beam(D3(t.pts[0]), D3(t.pts[1]), S.white ? WHITE : col, S.white ? 0.05 : 0.05, 1);
+      for (let i = 1; i + 1 < t.pts.length; i++) beam(D3(t.pts[i]), D3(t.pts[i + 1]), col, w, op);
+      res[l] = {t, star: phiStar(n, k), g: gl}; exit = t.exit;
+    });
+    if (exit){
+      setDash(D3(exit), D3(add(exit, [-7, 0])));
+      const mid = S.white ? res[550] || res[WL_D[3]] : res[S.lam];
+      const o = (mid || Object.values(res)[0]).t.out, bis = nrmz(add(o, [-1, 0]));
+      lblPhi.position.copy(D3(add(exit, mul(bis, 3.2))));
+      flash.position.copy(D3(exit)); flash.material.opacity = Math.max(0, (g - 0.55)/0.45)*0.95; const fs = 1.5 + 3*g; flash.scale.set(fs, fs, 1);
+    }
+    info.g = g;
+  }
+  lblPhi.visible = S.ray === 'single';
+  info = Object.assign(info, {res, wls, k});
+  cones.forEach(c => c.visible = S.cone);
+}
+
+/* ======================================================================
+   פאנלים
+   ====================================================================== */
+const row = (col, val, max, txt) => `<div class="mt"><span class="dot" style="background:${col};color:${col}"></span><div class="bar"><i style="width:${Math.max(0, Math.min(100, val/max*100))}%;background:${col}"></i></div><span class="pc">${txt}</span></div>`;
+const css = l => '#' + wlColor(l).getHexString();
+function updPanel(){
+  $('lamV').textContent = S.lam + ' nm'; $('th1V').textContent = S.th1.toFixed(1) + '°'; $('alV').textContent = S.alpha.toFixed(1) + '°'; $('bV').textContent = S.beta.toFixed(3);
+  let h = '', st = '', rb = false;
+  if (S.mode === 'prism'){
+    const show = S.white ? [400, 700] : [S.lam];
+    show.forEach(l => { const t = (info.res && info.res[l] && info.res[l].pts) ? info.res[l] : tracePrism(nPrism(l)); h += row(css(l), t.dev || 0, 90, t.dev == null ? '—' : t.dev.toFixed(1) + '°'); });
+    const pr = Object.values(info.res || {}).filter(t => t.pts); const anyTir = pr.some(t => !t.out || (t.tir));
+    if (pr.length && pr.every(t => !t.out)) st = 'האור לא יוצא: החזרה פנימית מלאה';
+    else if (anyTir) st = 'חלק מהאור מוחזר בפנים';
+  } else {
+    const show = S.white ? [400, 700] : [S.lam], k = info.k;
+    if (S.ray === 'bundle'){
+      $('phiTtl').textContent = 'זווית הקשת φ (השיא)';
+      show.forEach(l => { const s = phiStar(nWater(l), k).phi; h += row(css(l), s, 60, s.toFixed(1) + '°'); });
+    } else {
+      $('phiTtl').textContent = 'זווית היציאה φ';
+      show.forEach(l => { const r = info.res && info.res[l] && info.res[l].t; h += row(css(l), r ? r.phi : 0, 60, r ? r.phi.toFixed(1) + '°' : '—'); });
+      h += `<div class="ttl" style="margin-top:10px">ריכוז האור</div>` + row('#ffd479', info.g || 0, 1, Math.round((info.g || 0)*100) + '%');
+      if ((info.g || 0) > 0.8){ st = '✨ קשת! ✨'; rb = true; }
+    }
+  }
+  $('meters').innerHTML = h; $('status').textContent = st; $('status').classList.toggle('rb', rb);
+  if (adv){ drawPlots(); updCalc(); }
+}
+function updCalc(){
+  const l = S.white ? 550 : S.lam; let h;
+  if (S.mode === 'prism'){
+    const n = nPrism(l), t = tracePrism(n);
+    h = `<span class="k">λ = ${l} nm → n = ${n.toFixed(4)}</span><br>sin θ₁ = n·sin θ₂ → θ₂ = ${t.th2.toFixed(2)}°<br>θ₃ = α − θ₂ = ${(S.alpha - t.th2).toFixed(2)}°<br>`;
+    h += t.out && !t.tir ? `n·sin θ₃ = sin θ₄ → θ₄ = ${t.th4.toFixed(2)}°<br><span class="k">δ = θ₁ + θ₄ − α = ${t.dev.toFixed(2)}°</span>` : `n·sin θ₃ = ${(n*Math.sin((S.alpha - t.th2)*D2R)).toFixed(3)} > 1 → TIR`;
+  } else {
+    const n = nWater(l), k = S.sec ? 2 : 1, b = S.ray === 'single' ? S.beta : phiStar(n, k).b, i = Math.asin(b)/D2R, r = Math.asin(b/n)/D2R, st = phiStar(n, k);
+    h = `<span class="k">λ = ${l} nm → n = ${n.toFixed(4)}</span><br>sin i = β → i = ${i.toFixed(2)}°<br>sin r = β/n → r = ${r.toFixed(2)}°<br>`;
+    h += k === 1 ? `φ = 4r − 2i = ${phiOf(b, n, 1).toFixed(2)}°<br>dφ/dβ = 0 → cos²i = (n²−1)/3` : `φ = 180° + 2i − 6r = ${phiOf(b, n, 2).toFixed(2)}°<br>dφ/dβ = 0 → cos²i = (n²−1)/8`;
+    h += `<br><span class="k">β* = ${st.b.toFixed(4)}, φ* = ${st.phi.toFixed(2)}°</span>`;
+  }
+  $('calc').innerHTML = h;
+}
+function prep(c){ const dpr = window.devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight; c.width = w*dpr; c.height = h*dpr; const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.font = '10px Consolas,monospace'; return [g, w, h]; }
+function plot(c, xs, series, xr, yr, marks, xt, yt){
+  const [g, w, h] = prep(c); const X = x => 34 + (x - xr[0])/(xr[1] - xr[0])*(w - 44), Y = y => 8 + (yr[1] - y)/(yr[1] - yr[0])*(h - 26);
+  g.strokeStyle = '#16213a'; g.fillStyle = '#7f8fab';
+  yt.forEach(v => { g.beginPath(); g.moveTo(34, Y(v)); g.lineTo(w - 10, Y(v)); g.stroke(); g.textAlign = 'right'; g.fillText(v, 31, Y(v) + 3); });
+  g.textAlign = 'center'; xt.forEach(v => g.fillText(v, X(v), h - 5));
+  series.forEach(s => { g.strokeStyle = s.col; g.globalAlpha = s.a || 1; g.lineWidth = 2; g.beginPath(); let st = false; xs.forEach((x, i) => { const y = s.ys[i]; if (y == null || !isFinite(y)){ st = false; return; } st ? g.lineTo(X(x), Y(y)) : g.moveTo(X(x), Y(y)); st = true; }); g.stroke(); g.globalAlpha = 1; });
+  marks.forEach(m => { g.fillStyle = m.col; g.strokeStyle = '#fff'; g.lineWidth = 1.2; g.beginPath(); g.arc(X(m.x), Y(m.y), m.r || 4, 0, 7); g.fill(); if (m.ring) g.stroke(); });
+}
+function drawPlots(){
+  if (S.mode === 'prism'){
+    const xs = []; for (let l = 400; l <= 700; l += 5) xs.push(l);
+    const ys = xs.map(nPrism), lo = Math.min(...ys), hi = Math.max(...ys), pad = (hi - lo)*0.15;
+    const ms = (S.white ? [400, 700] : [S.lam]).map(l => ({x:l, y:nPrism(l), col:css(l), ring:true}));
+    plot($('nPlot'), xs, [{ys, col:'#9fd6ff'}], [400, 700], [lo - pad, hi + pad], ms, [400, 500, 600, 700], [lo, hi].map(v => +v.toFixed(3)));
+    const ts = []; for (let t = 5; t <= 85; t += 1) ts.push(t);
+    const s4 = ts.map(t => devAnalytic(t, nPrism(400))), s7 = ts.map(t => devAnalytic(t, nPrism(700)));
+    const all = s4.concat(s7).filter(v => v != null); const dl = all.length ? Math.floor(Math.min(...all)/10)*10 : 0, dh = all.length ? Math.ceil(Math.max(...all)/10)*10 : 90;
+    const mk = (S.white ? [400, 700] : [S.lam]).map(l => { const d = devAnalytic(S.th1, nPrism(l)); return d == null ? null : {x:S.th1, y:d, col:css(l), ring:true}; }).filter(Boolean);
+    plot($('dPlot'), ts, [{ys:s4, col:'#8a6cff'}, {ys:s7, col:'#ff4d4d'}], [5, 85], [dl, Math.max(dh, dl + 10)], mk, [5, 25, 45, 65, 85], [dl, Math.round((dl + dh)/2), dh]);
+  } else {
+    const xs = []; for (let b = 0; b <= 1.0001; b += 0.01) xs.push(Math.min(b, 0.9999));
+    const k = S.sec ? 2 : 1, ser = [];
+    [[400, '#8a6cff'], [700, '#ff4d4d']].forEach(([l, c]) => ser.push({ys:xs.map(b => phiOf(b, nWater(l), 1)), col:c}));
+    if (S.sec) [[400, '#8a6cff'], [700, '#ff4d4d']].forEach(([l, c]) => ser.push({ys:xs.map(b => phiOf(b, nWater(l), 2)), col:c, a:0.5}));
+    const ms = [];
+    [400, 700].forEach(l => { const s = phiStar(nWater(l), k); ms.push({x:s.b, y:s.phi, col:'#ffd479', r:2.5}); });
+    if (S.ray === 'single') (S.white ? [400, 700] : [S.lam]).forEach(l => ms.push({x:S.beta, y:phiOf(S.beta, nWater(l), k), col:css(l), ring:true}));
+    plot($('pPlot'), xs, ser, [0, 1], [0, S.sec ? 180 : 45], ms, [0, 0.25, 0.5, 0.75, 1], S.sec ? [0, 42, 51, 90, 180] : [0, 10, 20, 30, 42]);
+    document.querySelector('.sec-leg').style.display = S.sec ? '' : 'none';
+  }
+}
+
+/* ======================================================================
+   אירועים
+   ====================================================================== */
+const mark = () => { dirty = true; };
+function setAppMode(m){
+  S.mode = m; document.body.classList.toggle('drop', m === 'drop');
+  document.querySelectorAll('#modeSeg button').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  prismG.visible = m === 'prism'; dropG.visible = m === 'drop';
+  if (S.view === 'zoom' && !adv) S.view = '3d';
+  setView(S.view); mark();
+}
+function setLight(w){ S.white = w; document.body.classList.toggle('white', w); document.querySelectorAll('#lightSeg button').forEach(b => b.classList.toggle('on', (b.dataset.l === 'white') === w)); mark(); }
+function setRay(r){ S.ray = r; document.body.classList.toggle('single', r === 'single'); document.querySelectorAll('#raySeg button').forEach(b => b.classList.toggle('on', b.dataset.r === r)); mark(); }
+$('modeSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setAppMode(b.dataset.m); });
+$('lightSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setLight(b.dataset.l === 'white'); });
+$('raySeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setRay(b.dataset.r); });
+$('sLam').addEventListener('input', e => { S.lam = +e.target.value; mark(); });
+$('sTh1').addEventListener('input', e => { S.th1 = +e.target.value; mark(); });
+$('sAl').addEventListener('input', e => { S.alpha = +e.target.value; buildPrism(); mark(); });
+$('sB').addEventListener('input', e => { S.beta = +e.target.value; mark(); });
+$('matSel').addEventListener('change', e => { S.mat = e.target.value; mark(); });
+$('secChk').addEventListener('change', e => { S.sec = e.target.checked; buildCones(); mark(); });
+$('coneChk').addEventListener('change', e => { S.cone = e.target.checked; if (S.cone && S.view === 'cut') setView('3d'); mark(); });
+$('fxBtn').addEventListener('click', () => { S.fx = !S.fx; $('fxBtn').classList.toggle('on', S.fx); document.body.classList.toggle('fx', S.fx); });
+
+function setView(v){
+  S.view = v; document.querySelectorAll('#views button[data-view]').forEach(b => b.classList.toggle('on', b.dataset.view === v));
+  let p, t;
+  if (S.mode === 'prism'){
+    if (v === 'cut'){ t = new THREE.Vector3(2, H, 1.5); p = new THREE.Vector3(2, 26, 1.51); }
+    else if (v === 'zoom'){ const {P} = entryGeom(); t = P3(P); p = t.clone().add(new THREE.Vector3(-1.2, 2.6, 3.2)); }
+    else { t = new THREE.Vector3(4.2, H, 2); p = new THREE.Vector3(5, 13, 18); }
+  } else {
+    if (v === 'cut'){ t = new THREE.Vector3(-2.5, H2, 0); p = new THREE.Vector3(-2.5, H2, 26); }
+    else if (v === 'zoom'){ const b = S.ray === 'single' ? S.beta : 0.86; t = new THREE.Vector3(-Math.sqrt(1 - b*b)*RD, H2 + b*RD, 0); p = t.clone().add(new THREE.Vector3(-1, 0.8, 4.5)); }
+    else { t = new THREE.Vector3(-3, H2, 0); p = new THREE.Vector3(-12, 12, 19); }
+  }
+  camGoal = {p, t};
+}
+document.querySelectorAll('#views button[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+function setMode(on){
+  adv = on; document.body.classList.toggle('adv', on);
+  if (!on){
+    S.mat = ADV_DEF.mat; $('matSel').value = S.mat;
+    S.sec = $('secChk').checked = ADV_DEF.sec; S.cone = $('coneChk').checked = ADV_DEF.cone; buildCones();
+    S.fx = ADV_DEF.fx; $('fxBtn').classList.add('on'); document.body.classList.add('fx');
+    if (S.view === 'zoom') setView('3d');
+  }
+  mark(); requestAnimationFrame(updPanel);
+  $('lab').scrollIntoView({behavior:'smooth'});
+}
+$('more').addEventListener('click', () => setMode(true));
+$('less').addEventListener('click', () => setMode(false));
+
+/* HUD צף (מצב מורחב) */
+const tmpV = new THREE.Vector3();
+function placeHud(el, p3, html){
+  if (!p3){ el.style.display = 'none'; return; }
+  tmpV.copy(p3).project(camera);
+  if (tmpV.z > 1){ el.style.display = 'none'; return; }
+  el.style.display = ''; el.innerHTML = html;
+  el.style.left = ((tmpV.x + 1)/2*view.clientWidth) + 'px'; el.style.top = ((1 - tmpV.y)/2*view.clientHeight - 14) + 'px';
+}
+function updHud(){
+  if (!adv || !S.fx){ return; }
+  const l = S.white ? 550 : S.lam;
+  if (S.mode === 'prism'){
+    const n = nPrism(l), t = tracePrism(n);
+    placeHud($('hud1'), P3(t.P).add(new THREE.Vector3(0, 1.4, 0)), `1·sin ${S.th1.toFixed(1)}° = ${n.toFixed(3)}·sin ${t.th2.toFixed(1)}°`);
+    placeHud($('hud2'), t.exitP && !t.tir ? P3(t.exitP).add(new THREE.Vector3(0, 1.4, 0)) : null, t.exitP ? `${n.toFixed(3)}·sin ${t.th3.toFixed(1)}° = 1·sin ${t.th4.toFixed(1)}°` : '');
+  } else {
+    const n = nWater(l), b = S.ray === 'single' ? S.beta : phiStar(n, S.sec ? 2 : 1).b, t = traceDrop(b, n, S.sec ? 2 : 1);
+    const i = Math.asin(b)/D2R, r = Math.asin(b/n)/D2R;
+    placeHud($('hud1'), t ? D3(t.entry).add(new THREE.Vector3(0, 0.9, 0)) : null, `1·sin ${i.toFixed(1)}° = ${n.toFixed(3)}·sin ${r.toFixed(1)}°`);
+    placeHud($('hud2'), t ? D3(t.exit).add(new THREE.Vector3(0, -0.4, 0)) : null, `φ = ${t ? t.phi.toFixed(2) : '—'}°`);
+  }
+}
+
+/* ======================================================================
+   לולאה
+   ====================================================================== */
+function resize(){
+  const w = view.clientWidth, h = view.clientHeight; if (!w || !h) return;
+  renderer.setSize(w, h, false); renderer.domElement.style.width = w + 'px'; renderer.domElement.style.height = h + 'px';
+  camera.aspect = w/h; camera.updateProjectionMatrix(); if (adv) updPanel();
+}
+new ResizeObserver(resize).observe(view);
+let visible = true; new IntersectionObserver(e => { visible = e[0].isIntersecting; }).observe(view);
+let last = performance.now(), clock = 0;
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt = Math.max(0, Math.min(0.05, (now - last)/1000)); last = now;
+  if (!visible) return;
+  clock += dt;
+  if (dirty){ dirty = false; rebuild(); }
+  if (S.mode === 'drop') sun.material.opacity = 0.85 + 0.1*Math.sin(clock*2);
+  if (camGoal){
+    const kc = 1 - Math.exp(-dt*3.5); camera.position.lerp(camGoal.p, kc); controls.target.lerp(camGoal.t, kc);
+    if (camera.position.distanceTo(camGoal.p) < 0.03) camGoal = null;
+  }
+  controls.update(); renderer.render(scene, camera); updHud();
+}
+
+/* ======================================================================
+   אתחול
+   ====================================================================== */
+document.body.classList.add('fx');
+buildPrism(); buildCones(); setAppMode('prism'); resize();
+camera.position.copy(camGoal.p); controls.target.copy(camGoal.t); camGoal = null;
+(function drawProblem(){                 // n(λ) לזכוכית ולמים — אותן נוסחאות של המעבדה
+  const svg = $('probSvg'), X0 = 52, X1 = 326, px = l => X0 + (l - 400)/300*(X1 - X0);
+  let h = '';
+  const panel = (f, y0, y1, lo, hi, name, ticks) => {
+    const py = n => y1 - (n - lo)/(hi - lo)*(y1 - y0);
+    ticks.forEach(n => h += `<line x1="${X0}" y1="${py(n)}" x2="${X1}" y2="${py(n)}" stroke="#16213a"/><text x="${X0 - 5}" y="${py(n) + 3}" fill="#7f8fab" font-size="9.5" text-anchor="end">${n.toFixed(3)}</text>`);
+    h += `<line x1="${X0}" y1="${y1}" x2="${X1}" y2="${y1}" stroke="#4a5d84"/><line x1="${X0}" y1="${y0}" x2="${X0}" y2="${y1}" stroke="#4a5d84"/>`;
+    let d = ''; for (let l = 400; l <= 700; l += 4) d += (l === 400 ? 'M' : 'L') + px(l).toFixed(1) + ' ' + py(f(l)).toFixed(1);
+    h += `<path d="${d}" fill="none" stroke="#9fd6ff" stroke-width="2"/>`;
+    [[400, '#8a6cff'], [700, '#ff4d4d']].forEach(([l, c]) => h += `<circle cx="${px(l)}" cy="${py(f(l))}" r="4" fill="${c}"/>`);
+    h += `<text x="${X0 + 150}" y="${y0 + 12}" fill="#cdd8ea" font-size="11" text-anchor="end">${name}</text>`;
+  };
+  panel(l => nGlass('bk7', l), 12, 98, 1.510, 1.534, 'זכוכית N-BK7', [1.512, 1.522, 1.532]);
+  panel(nWater, 120, 206, 1.328, 1.345, 'מים', [1.330, 1.336, 1.342]);
+  [400, 500, 600, 700].forEach(l => h += `<text x="${px(l)}" y="220" fill="#7f8fab" font-size="10" text-anchor="middle">${l}</text>`);
+  h += `<text x="${(X0 + X1)/2}" y="242" fill="#b9c6dc" font-size="12" text-anchor="middle">אורך גל (nm)</text>`;
+  h += `<text x="12" y="112" fill="#b9c6dc" font-size="12" text-anchor="middle" transform="rotate(-90 12 112)">מקדם שבירה n</text>`;
+  h += `<text x="${px(550)}" y="${55}" fill="#ffd479" font-size="13" font-weight="700" text-anchor="middle">?</text><text x="${px(550)}" y="${166}" fill="#ffd479" font-size="13" font-weight="700" text-anchor="middle">?</text>`;
+  svg.innerHTML = h;
+})();
+
+/* פרמטרים בכתובת (לבדיקות): #adv&drop&single&b=0.86&lam=..&th1=..&al=..&sec&cone&mono&cut&zoom&mat=f2 */
+(function(){
+  const h = location.hash.slice(1).split('&'), has = x => h.includes(x);
+  const kv = x => { const e = h.find(s => s.startsWith(x + '=')); return e ? e.split('=')[1] : null; };
+  if (has('adv')) setMode(true);
+  if (has('drop')) setAppMode('drop');
+  if (has('mono')) setLight(false);
+  if (has('single')) setRay('single');
+  if (kv('b')){ S.beta = +kv('b'); $('sB').value = S.beta; }
+  if (kv('lam')){ S.lam = +kv('lam'); $('sLam').value = S.lam; setLight(false); }
+  if (kv('th1')){ S.th1 = +kv('th1'); $('sTh1').value = S.th1; }
+  if (kv('al')){ S.alpha = +kv('al'); $('sAl').value = S.alpha; buildPrism(); }
+  if (kv('mat')){ S.mat = kv('mat'); $('matSel').value = S.mat; }
+  if (has('sec')){ S.sec = $('secChk').checked = true; buildCones(); }
+  if (has('cone')){ S.cone = $('coneChk').checked = true; }
+  if (has('cut')) setView('cut');
+  if (has('zoom')) setView('zoom');
+  rebuild();
+})();
+requestAnimationFrame(frame);
+
+document.querySelectorAll('.exp .xbtn').forEach(b => b.addEventListener('click', () => {
+  const li = b.closest('.exp'); li.classList.toggle('open'); b.textContent = li.classList.contains('open') ? 'סגור' : 'הסבר';
+}));
+</script>
+
+<script>
+/* ======================================================================
+   הדגמה אוטומטית: כפתור "▶ הדגמה" ליד כל ניסוי. סמן "רפאים" מבצע את הניסוי במעבדה
+   בזמן אמת, וההסבר מוצג במסגרת מתחת למעבדה.
+   ====================================================================== */
+(function(){
+'use strict';
+
+  const SCRIPTS = [
+    async () => { await click(seg('modeSeg', 'm', 'prism')); say('בוחרים "צבע אחד"'); await click(seg('lightSeg', 'l', 'single'));
+      await dragSlider(byId('sLam'), 400, 1200); say('מזיזים את אורך הגל מסגול לאדום...'); await dragSlider(byId('sLam'), 700, 6000);
+      say('האדום מוסט פחות מהסגול'); await sleep(2000); },
+    async () => { await click(seg('modeSeg', 'm', 'prism')); say('עוברים ל"אור לבן"'); await click(seg('lightSeg', 'l', 'white'));
+      say('הקרן מתפצלת למניפה בתוך הזכוכית ונוחתת כקשת על המסך'); await sleep(4500); },
+    async () => { await click(seg('modeSeg', 'm', 'prism')); await click(seg('lightSeg', 'l', 'white')); await dragSlider(byId('sAl'), 60, 1000);
+      await dragSlider(byId('sTh1'), 25, 1200); say('מגדילים לאט את זווית הפגיעה... (עקבו אחרי δ)'); await dragSlider(byId('sTh1'), 75, 7000);
+      say('חוזרים לנקודת ההסחה המינימלית, בערך 49°'); await dragSlider(byId('sTh1'), 49.5, 2500); await sleep(2500); },
+    async () => { await click(seg('modeSeg', 'm', 'prism')); say('מגדילים את זווית הראש ל-75°'); await dragSlider(byId('sAl'), 75, 2500);
+      say('ומקטינים את זווית הפגיעה ל-20°'); await dragSlider(byId('sTh1'), 20, 2500); say('האור לא יוצא: החזרה פנימית מלאה'); await sleep(3500);
+      await dragSlider(byId('sAl'), 60, 1200); await dragSlider(byId('sTh1'), 50, 1200); },
+    async () => { say('עוברים ל"טיפת מים"'); await click(seg('modeSeg', 'm', 'drop')); await click(seg('raySeg', 'r', 'bundle'));
+      say('הקרניים היוצאות מצטופפות סביב זווית אחת'); await click(viewBtn('cut')); await sleep(5000); await click(viewBtn('3d')); },
+    async () => { await click(seg('modeSeg', 'm', 'drop')); say('בוחרים "קרן בודדת"'); await click(seg('raySeg', 'r', 'single'));
+      await dragSlider(byId('sB'), 0, 1000); say('מזיזים את β מהמרכז אל השפה...'); await dragSlider(byId('sB'), 0.99, 7000);
+      say('חוזרים לשיא: β ≈ 0.86, והקרן מבזיקה'); await dragSlider(byId('sB'), 0.86, 2000); await sleep(3000); },
+    async () => { await click(seg('modeSeg', 'm', 'drop')); await click(seg('raySeg', 'r', 'single')); say('אור לבן, קרן בודדת'); await click(seg('lightSeg', 'l', 'white'));
+      await dragSlider(byId('sB'), 0.86, 2000); say('השוו: האדום יוצא בכ-42.6° והסגול בכ-40.7°'); await sleep(5000); },
+    async () => { await ensureAdv(); await click(seg('modeSeg', 'm', 'drop')); say('מדליקים "קשת משנית"'); await toggle(byId('secChk'), true);
+      await click(seg('raySeg', 'r', 'single')); await dragSlider(byId('sB'), 0.95, 3000); say('שתי החזרות: הקרן יוצאת בכ-50°–53°, והצבעים בסדר הפוך'); await sleep(4500); }
+  ];
+
+  const byId = id => document.getElementById(id);
+  const LAB = document.querySelector('section.lab'), VIEW = LAB.querySelector('.view');
+  const cur = byId('demoCursor'), D = {alive:0, i:-1, x:0, y:0};
+  const sleep = ms => { const tok = D.alive; return new Promise(r => setTimeout(r, ms)).then(() => { if (D.alive !== tok) throw 'stop'; }); };
+  const ease = k => k*k*(3 - 2*k);
+  function anim(dur, fn){
+    const tok = D.alive;
+    return new Promise((res, rej) => { const t0 = performance.now();
+      (function step(now){ if (D.alive !== tok) return rej('stop'); const k = Math.min(1, (now - t0)/dur); fn(ease(k)); if (k < 1) requestAnimationFrame(step); else res(); })(t0); });
+  }
+  function place(x, y){ D.x = x; D.y = y; cur.style.transform = 'translate(' + (x - 3) + 'px,' + (y - 2) + 'px)'; }
+  function moveTo(x, y, dur){ const x0 = D.x, y0 = D.y; dur = dur || Math.min(1100, 350 + Math.hypot(x - x0, y - y0)*0.9); return anim(dur, k => place(x0 + (x - x0)*k, y0 + (y - y0)*k)); }
+  const center = el => { const r = el.getBoundingClientRect(); return [r.left + r.width/2, r.top + r.height/2]; };
+  function ripple(){ const r = document.createElement('div'); r.className = 'demoRipple'; r.style.left = D.x + 'px'; r.style.top = D.y + 'px'; document.body.appendChild(r); setTimeout(() => r.remove(), 600); }
+  async function press(){ cur.classList.add('down'); ripple(); await sleep(140); cur.classList.remove('down'); }
+  async function click(el){ if (!el) return; await moveTo(...center(el)); await press(); el.click(); await sleep(400); }
+  async function select(el, v){ if (el.value === v) return; await moveTo(...center(el)); await press(); el.value = v; el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(500); }
+  async function toggle(el, want){                   // מתג (checkbox מוסתר בתוך label)
+    if (el.checked === want) return;
+    await moveTo(...center(el.closest('label') || el)); await press(); el.click(); await sleep(400);
+  }
+  async function dragSlider(el, to, dur){            // גרירה אמיתית: אירועי input בזמן אמת ו-change בסוף
+    const r = el.getBoundingClientRect(), mn = +el.min, mx = +el.max, rtl = getComputedStyle(el).direction === 'rtl';
+    const xOf = v => { const f = (v - mn)/(mx - mn); return rtl ? r.right - 8 - f*(r.width - 16) : r.left + 8 + f*(r.width - 16); };
+    const from = +el.value, y = r.top + r.height/2;
+    await moveTo(xOf(from), y); cur.classList.add('down');
+    try { await anim(dur || 1500, k => { const v = from + (to - from)*k; el.value = v; el.dispatchEvent(new Event('input', {bubbles:true})); place(xOf(+el.value), y); }); }
+    finally { cur.classList.remove('down'); }
+    el.dispatchEvent(new Event('change', {bubbles:true})); await sleep(300);
+  }
+  async function waitFor(fn, limit){ const t0 = performance.now(); while (!fn() && performance.now() - t0 < (limit || 30000)) await sleep(200); }
+  async function ensureAdv(){ if (!document.body.classList.contains('adv')){ say('פותחים את המצב המורחב'); await click(byId('more')); await sleep(900); } }
+  const say = t => { byId('demoSay').textContent = t; };
+  const seg = (id, attr, v) => document.querySelector('#' + id + ' button[data-' + attr + '="' + v + '"]');
+  const viewBtn = v => document.querySelector('#views button[data-view="' + v + '"]');
+
+  async function runDemo(i){
+    stopDemo(false);
+    const tok = D.alive; D.i = i;
+    const li = document.querySelectorAll('.exp')[i];
+    byId('demoNum').textContent = i + 1; byId('demoTitle').textContent = li.querySelector('.task').textContent;
+    byId('demoText').innerHTML = li.querySelector('.ans').innerHTML; say('עוברים למעבדה...');
+    byId('demoStop').style.display = '';
+    document.body.classList.add('demo');
+    LAB.scrollIntoView({behavior:'smooth', block:'start'});
+    try {
+      await sleep(850);
+      const r = VIEW.getBoundingClientRect(); place(r.left + r.width/2, r.top + r.height/2); cur.classList.add('on');
+      await SCRIPTS[i]();
+      if (D.alive === tok){ cur.classList.remove('on'); byId('demoStop').style.display = 'none'; }
+    } catch (e) { if (e !== 'stop') console.warn(e); }
+  }
+  function stopDemo(close){ D.alive++; cur.classList.remove('on', 'down'); if (close){ document.body.classList.remove('demo'); D.i = -1; } }
+  byId('demoStop').addEventListener('click', () => { stopDemo(false); say('ההדגמה נעצרה. אפשר להמשיך לשחק במעבדה בעצמכם.'); byId('demoStop').style.display = 'none'; });
+  byId('demoAgain').addEventListener('click', () => { if (D.i >= 0) runDemo(D.i); });
+  byId('demoClose').addEventListener('click', () => stopDemo(true));
+  document.querySelectorAll('.exp').forEach((li, i) => {
+    if (!SCRIPTS[i]) return;
+    const b = document.createElement('button'); b.className = 'pbtn'; b.type = 'button'; b.title = 'הדגמה אוטומטית במעבדה';
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>הדגמה';
+    li.querySelector('.top').insertBefore(b, li.querySelector('.xbtn'));
+    b.addEventListener('click', () => runDemo(i));
+  });
+  if (location.hash.startsWith('#demo')) setTimeout(() => runDemo(+location.hash.slice(5) || 0), 400);
+
+})();
+</script>
+</body>
+</html>
