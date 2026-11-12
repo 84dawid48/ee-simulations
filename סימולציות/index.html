@@ -11,24 +11,8 @@
   try { if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark'); } catch (e) {}
 </script>
 
-<!-- Tailwind (גרסת CDN, אין צורך בהתקנה) -->
-<script src="https://cdn.tailwindcss.com/3.4.16"></script>
-<script>
-  tailwind.config = {
-    darkMode: 'class',
-    theme: {
-      extend: {
-        fontFamily: { sans: ['Rubik', 'Segoe UI', 'Arial', 'sans-serif'] },
-        colors: { neon: { blue: '#38bdf8', violet: '#a855f7' } },
-        keyframes: {
-          rise: { '0%': { opacity: 0, transform: 'translateY(24px)' }, '100%': { opacity: 1, transform: 'none' } },
-          float: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-14px)' } }
-        },
-        animation: { rise: 'rise .7s cubic-bezier(.2,.7,.2,1) both', float: 'float 9s ease-in-out infinite' }
-      }
-    }
-  };
-</script>
+<!-- Tailwind: CSS בנוי מראש (gallery/tailwind.css). הוראות בנייה מחדש: gallery/tailwind.config.js -->
+<link rel="stylesheet" href="gallery/tailwind.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="gallery/styles.css">
@@ -85,6 +69,7 @@
       <!-- המחשה חיה: כף יד מרשת לייזר שממששת כדור דמיוני (gallery/hero3d.js) -->
       <div class="animate-rise relative -mx-4 mt-2 sm:-mx-6 [animation-delay:.22s]">
         <div id="hero3d" class="relative mx-auto h-[400px] max-w-6xl sm:h-[560px]">
+          <img id="heroPoster" src="gallery/hand-poster.webp" alt="" aria-hidden="true" class="hero-fade pointer-events-none absolute inset-0 h-full w-full object-cover">
           <canvas id="heroCanvas" class="hero-fade absolute inset-0 h-full w-full cursor-grab active:cursor-grabbing" aria-label="כף יד תלת-ממדית מרשת לייזר שממששת כדור דמיוני"></canvas>
           <div aria-hidden="true" class="hero-fade hero-scan pointer-events-none absolute inset-0"></div>
         </div>
@@ -179,17 +164,14 @@
   <!-- קודם הנתונים, אחר כך הקוד שמצייר אותם -->
   <script src="simulationsData.js"></script>
   <script src="gallery/app.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <!-- זוהר הלייזר (Bloom) -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="gallery/handModel.js"></script>
-  <script src="gallery/hero3d.js"></script>
+  <!-- ההמחשה התלת-ממדית נטענת רק אחרי שהדף כבר מוצג; עד אז רואים את תמונת היד (gallery/hand-poster.webp) -->
+  <script>
+    window.addEventListener('load', () => {
+      const go = () => ['gallery/hero.bundle.js', 'gallery/handModel.js', 'gallery/hero3d.js'].forEach(src => {
+        const el = document.createElement('script'); el.src = src; el.async = false; document.body.appendChild(el);
+      });
+      'requestIdleCallback' in window ? requestIdleCallback(go, {timeout: 600}) : setTimeout(go, 150);
+    });
+  </script>
 </body>
 </html>

@@ -27,7 +27,9 @@
 
   /* ---------- סצנה, מצלמה ושליטה בעכבר ---------- */
   const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
-  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  // רזולוציה מוגבלת: הזוהר מרכך את הקווים ממילא, וכך כל פריים זול בהרבה
+  const PR = Math.min(1.25, window.devicePixelRatio || 1);
+  renderer.setPixelRatio(PR);
   renderer.setClearColor(0x030806, 1);
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(30, 1, 0.05, 100);
@@ -40,7 +42,7 @@
   }
   let composer = null;
   if (THREE.EffectComposer && THREE.UnrealBloomPass && THREE.RenderPass){
-    composer = new THREE.EffectComposer(renderer);
+    composer = new THREE.EffectComposer(renderer); composer.setPixelRatio(PR);
     composer.addPass(new THREE.RenderPass(scene, camera));
     composer.addPass(new THREE.UnrealBloomPass(new THREE.Vector2(512, 512), 0.75, 0.3, 0.4));
   }
@@ -128,6 +130,7 @@
     const ctr = new THREE.Vector3(), m1 = new THREE.Vector3(); (w || chains[1][0].b).getWorldPosition(ctr); chains[1][1].b.getWorldPosition(m1); ctr.lerp(m1, 0.75);   // מרכז כף היד
     handRoot.position.sub(ctr).add(new THREE.Vector3(0, 0.1, 0));
     applyColor(); draw();
+    requestAnimationFrame(() => box.classList.add('live'));        // מחליפים את תמונת הפתיחה ביד החיה
   }
   const onErr = err => console.warn('hand model failed to load', err);
   if (window.HAND_GLB_B64){

@@ -61,3 +61,9 @@ input.spec::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; ba
 
 /* קווי סריקה אופקיים עדינים מעל ההמחשה (כמו מסך הולוגרפי) */
 .hero-scan { background: repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 1px, transparent 1px 3px); mix-blend-mode: multiply; }
+
+/* תמונת הפתיחה של היד מתחלפת ביד החיה כשהיא מוכנה */
+#hero3d canvas { opacity: 0; transition: opacity .9s ease; }
+#hero3d.live canvas { opacity: 1; }
+#heroPoster { transition: opacity .9s ease; }
+#hero3d.live #heroPoster { opacity: 0; }
