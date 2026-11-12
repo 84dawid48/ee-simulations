@@ -23,6 +23,28 @@
 
 window.SIMULATIONS = [
   {
+    id: "gaussian-pulse-dispersion",
+    title: "פולס גאוסי בסיב דיספרסיבי",
+    description: "למה פולס צר מתרחב מהר יותר? הפולס נע לאורך הסיב, מתרחב ונעשה מצויץ, והצבעים מראים איך התדרים מתמיינים. כולל T₀ אופטימלי, טווח מרבי לקצב נתון ונוף תלת-ממדי.",
+    category: "תקשורת אופטית",
+    tags: ["דיספרסיה כרומטית", "β₂", "L_D", "ציוץ", "תלת-ממד"],
+    thumbnailUrl: "gallery/thumbs/gaussian-pulse.svg",
+    simulationUrl: "תקשורת אופטית/פולס גאוסי בסיב דיספרסיבי.html",
+    accent: "#ff5a5a",
+    added: "2026-11-12"
+  },
+  {
+    id: "slab-waveguide-modes",
+    title: "אופנים במוליך גלים מישורי",
+    description: "הפתרון הגרפי בידיים: מעגל V חותך את עקומות ה-tan, וכל חיתוך הוא אופן. מקטינים את המוליך עד שנשאר אופן אחד, ורואים את פעימת האופנים בתלת-ממד.",
+    category: "תקשורת אופטית",
+    tags: ["אופנים", "מספר V", "חד-אופני", "TE/TM", "תלת-ממד"],
+    thumbnailUrl: "gallery/thumbs/slab-modes.svg",
+    simulationUrl: "תקשורת אופטית/אופנים במוליך גלים מישורי.html",
+    accent: "#6cb8ff",
+    added: "2026-11-12"
+  },
+  {
     id: "modal-dispersion",
     title: "דיספרסיה מודאלית: step-index מול graded-index",
     description: "מרוץ קרניים בשני סיבים: ב-step-index התלולות מאחרות והפולס נמרח, ב-graded-index כולן מגיעות יחד. פי 300 ב-B·L, כולל רכבת ביטים ותלת-ממד.",

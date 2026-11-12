@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.c{animation:grow 6s ease-in-out infinite alternate;transform-origin:120px 320px}
+@keyframes grow{from{transform:scale(.8)}to{transform:scale(1.12)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".5" r=".8"><stop offset="0" stop-color="#101a36"/><stop offset="1" stop-color="#05070d"/></radialGradient></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<path d="M120 320H600M120 320V30" stroke="#4a5d84" stroke-width="2"/>
+<path d="M120 320C200 318 240 250 262 40" fill="none" stroke="#6cb8ff" stroke-width="4"/>
+<path d="M262 320C330 316 380 240 404 40" fill="none" stroke="#ff9f43" stroke-width="4"/>
+<path d="M404 320C470 316 520 240 546 40" fill="none" stroke="#6cb8ff" stroke-width="4"/>
+<g class="c"><path d="M120 60A260 260 0 0 1 380 320" fill="none" stroke="#ffd479" stroke-width="5"/></g>
+<circle cx="236" cy="96" r="10" fill="#fff"/><circle cx="342" cy="190" r="8" fill="#ff9f43"/>
+</svg>

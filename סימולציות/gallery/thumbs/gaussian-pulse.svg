@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><style>
+.w{animation:sp 4s ease-in-out infinite alternate;transform-origin:320px 300px}
+@keyframes sp{from{transform:scaleX(.45) scaleY(1.6)}to{transform:scaleX(1.25) scaleY(.75)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style><defs><radialGradient id="b" cx=".5" cy=".5" r=".8"><stop offset="0" stop-color="#16142e"/><stop offset="1" stop-color="#05070d"/></radialGradient>
+<linearGradient id="ch" x1="0" x2="1"><stop offset="0" stop-color="#5a8cff"/><stop offset=".5" stop-color="#ffffff"/><stop offset="1" stop-color="#ff5a5a"/></linearGradient></defs>
+<rect width="640" height="360" fill="url(#b)"/>
+<line x1="40" y1="300" x2="600" y2="300" stroke="#4a5d84" stroke-width="2"/>
+<path d="M240 300C290 300 300 80 320 80S350 300 400 300" fill="none" stroke="#93a3bf" stroke-width="2.5" stroke-dasharray="7 6"/>
+<g class="w"><path d="M120 300C230 300 260 170 320 170S410 300 520 300Z" fill="url(#ch)" fill-opacity=".35"/>
+<path d="M120 300C230 300 260 170 320 170S410 300 520 300" fill="none" stroke="#ffd479" stroke-width="5"/></g>
+</svg>
