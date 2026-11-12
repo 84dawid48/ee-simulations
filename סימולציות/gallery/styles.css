@@ -67,3 +67,10 @@ input.spec::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; ba
 #hero3d.live canvas { opacity: 1; }
 #heroPoster { transition: opacity .9s ease; }
 #hero3d.live #heroPoster { opacity: 0; }
+
+/* הלוגו הגדול בפתיח: הילה נושמת ואייקון שמרחף קלות */
+.lockup-halo { background: radial-gradient(circle, rgba(52,211,216,.38), rgba(123,85,230,.22) 45%, transparent 70%); filter: blur(18px); animation: halo 5s ease-in-out infinite; }
+.lockup-icon { filter: drop-shadow(0 10px 30px rgba(79,111,224,.45)); animation: bob 6s ease-in-out infinite; }
+@keyframes halo { 0%,100% { opacity: .65; transform: scale(.94); } 50% { opacity: 1; transform: scale(1.06); } }
+@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .lockup-halo, .lockup-icon { animation: none; } }

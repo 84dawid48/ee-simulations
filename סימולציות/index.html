@@ -69,20 +69,73 @@
   </header>
 
   <main id="top">
-    <!-- ===================== פתיח ===================== -->
-    <section class="mx-auto max-w-7xl px-4 pb-12 pt-16 text-center sm:px-6 sm:pt-20">
-      <div class="animate-rise mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/60 px-4 py-1.5 text-sm text-slate-600 backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
+    <!-- ===================== פתיח: הלוגו בגדול, LIMA מימין והסיסמה משמאל ===================== -->
+    <section class="mx-auto max-w-7xl px-4 pb-10 pt-14 text-center sm:px-6 sm:pt-20">
+      <div class="animate-rise mx-auto mb-10 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/60 px-4 py-1.5 text-sm text-slate-600 backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
         <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400"></span>
         <span id="simCount">סימולציות אינטראקטיביות</span>
       </div>
-      <h1 class="animate-rise text-4xl font-extrabold leading-tight tracking-tight [animation-delay:.08s] sm:text-6xl">
-        לחוש את המשוואות
-        <span class="bg-gradient-to-l from-emerald-300 via-neon-blue to-neon-violet bg-clip-text text-transparent">בידיים</span>
+      <h1 class="lockup animate-rise mx-auto grid max-w-6xl grid-cols-1 items-center justify-items-center gap-5 [animation-delay:.08s] md:grid-cols-[1fr_auto_1fr] md:gap-10">
+        <span class="sr-only">LIMA Simulative Labs: לחוש את המשוואות בידיים</span>
+        <!-- ימין: LIMA -->
+        <span aria-hidden="true" dir="ltr" class="order-2 flex flex-col items-center md:order-none md:items-start md:justify-self-end">
+          <svg viewBox="0 0 226 76" class="h-[54px] w-[160px] text-slate-900 sm:h-[72px] sm:w-[214px] dark:text-white"><g fill="none" stroke="currentColor" stroke-width="5" stroke-miterlimit="2"><path d="M3 16V72H40"/><path d="M64 27V72"/><path d="M88 72V16L117 60L146 16V72"/><path d="M168 72L195 16L222 72"/><path d="M178 52H212"/></g><circle cx="64" cy="17" r="4.75" fill="currentColor"/></svg>
+          <span class="mt-3 pl-[.1em] text-[11px] font-medium tracking-[.52em] text-slate-500 sm:text-[13px] dark:text-slate-400">SIMULATIVE LABS</span>
+        </span>
+        <!-- אמצע: האייקון בגדול, עם הילה -->
+        <span aria-hidden="true" class="order-1 relative grid place-items-center md:order-none">
+          <span class="lockup-halo absolute inset-[-22%] rounded-full"></span>
+          <img src="gallery/brand/lima-icon.svg" alt="" class="lockup-icon relative h-32 w-32 sm:h-44 sm:w-44">
+        </span>
+        <!-- שמאל: הסיסמה -->
+        <span aria-hidden="true" class="order-3 text-4xl font-extrabold leading-[1.15] tracking-tight sm:text-5xl md:justify-self-start md:text-right">
+          <span class="whitespace-nowrap">לחוש את המשוואות</span><br>
+          <span class="bg-gradient-to-l from-emerald-300 via-neon-blue to-neon-violet bg-clip-text text-transparent">בידיים</span>
+        </span>
       </h1>
-      <p class="animate-rise mx-auto mt-6 max-w-2xl text-[19px] leading-relaxed text-slate-700 [animation-delay:.16s] sm:text-xl dark:text-slate-300">
+      <p class="animate-rise mx-auto mt-10 max-w-2xl text-[19px] leading-relaxed text-slate-700 [animation-delay:.16s] sm:text-xl dark:text-slate-300">
         מעבדות וירטואליות שבניתי כדי להבין לעומק נושאים מסובכים.
         כל סימולציה מתחילה בהסבר קצר, ממשיכה למעבדה שאפשר לשחק בה, ומסתיימת בניסויים מודרכים.
       </p>
+
+      <!-- המחשה חיה: כף יד מרשת לייזר שממששת כדור דמיוני (gallery/hero3d.js) -->
+      <div class="animate-rise relative -mx-4 mt-2 sm:-mx-6 [animation-delay:.22s]">
+        <div id="hero3d" class="relative mx-auto h-[400px] max-w-6xl sm:h-[560px]">
+          <img id="heroPoster" src="gallery/hand-poster.webp" alt="" aria-hidden="true" class="hero-fade pointer-events-none absolute inset-0 h-full w-full object-cover">
+          <canvas id="heroCanvas" class="hero-fade absolute inset-0 h-full w-full cursor-grab active:cursor-grabbing" aria-label="כף יד תלת-ממדית מרשת לייזר שממששת כדור דמיוני"></canvas>
+          <div aria-hidden="true" class="hero-fade hero-scan pointer-events-none absolute inset-0"></div>
+        </div>
+        <!-- פאנל שליטה בצד -->
+        <div id="handPanel" class="relative mx-auto mt-2 w-[min(18rem,calc(100%-2rem))] rounded-2xl border border-white/10 bg-white/60 p-4 text-right text-sm shadow-xl backdrop-blur-xl sm:absolute sm:left-6 sm:top-1/2 sm:mt-0 sm:-translate-y-1/2 dark:bg-black/45">
+          <div class="mb-4 flex items-center gap-3">
+            <button id="playBtn" type="button" aria-label="עצירה / הפעלה"
+              class="grid h-12 w-12 shrink-0 place-items-center rounded-full text-white shadow-lg transition hover:scale-105"
+              style="background:var(--laser,#3dff6a);box-shadow:0 0 24px var(--laser,#3dff6a)">
+              <svg id="icPause" class="h-5 w-5" viewBox="0 0 24 24" fill="#05070d"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+              <svg id="icPlay" class="hidden h-5 w-5" viewBox="0 0 24 24" fill="#05070d"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+            <div class="leading-tight">
+                            <div id="lamName" class="text-xs text-slate-500 dark:text-slate-400"></div>
+            </div>
+          </div>
+          <label class="mb-3 block">
+            <span class="mb-1.5 flex justify-between text-slate-700 dark:text-slate-200"><span>מהירות</span><span id="spdV" class="font-mono text-xs" dir="ltr"></span></span>
+            <input id="spd" type="range" min="0.1" max="2.5" step="0.05" value="1" class="w-full accent-neon-blue">
+          </label>
+          <label class="block">
+            <span class="mb-1.5 flex justify-between text-slate-700 dark:text-slate-200"><span>אורך גל</span><span id="lamV" class="font-mono text-xs" dir="ltr"></span></span>
+            <input id="lam" type="range" min="400" max="700" step="1" value="532" class="spec w-full">
+          </label>
+        </div>
+      </div>
+
+
+      <div class="animate-rise mt-10 flex flex-wrap items-center justify-center gap-3 [animation-delay:.24s]">
+        <a href="#gallery" class="btn-glow group inline-flex items-center gap-2 rounded-2xl bg-gradient-to-l from-neon-blue to-neon-violet px-7 py-3.5 font-semibold text-white shadow-xl shadow-neon-violet/30 transition hover:-translate-y-0.5">
+          לקורסים
+          <svg class="h-5 w-5 transition group-hover:translate-y-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        </a>
+      </div>
     </section>
 
     <!-- ===================== גלריית הקורסים (נבנית מ-window.COURSES ב-simulationsData.js) ===================== -->
@@ -106,5 +159,14 @@
   <!-- קודם הנתונים, אחר כך הקוד שמצייר אותם -->
   <script src="simulationsData.js"></script>
   <script src="gallery/app.js"></script>
+  <!-- ההמחשה התלת-ממדית נטענת רק אחרי שהדף כבר מוצג; עד אז רואים את תמונת היד (gallery/hand-poster.webp) -->
+  <script>
+    window.addEventListener('load', () => {
+      const go = () => ['gallery/hero.bundle.js', 'gallery/handModel.js', 'gallery/hero3d.js'].forEach(src => {
+        const el = document.createElement('script'); el.src = src; el.async = false; document.body.appendChild(el);
+      });
+      'requestIdleCallback' in window ? requestIdleCallback(go, {timeout: 600}) : setTimeout(go, 150);
+    });
+  </script>
 </body>
 </html>
